@@ -37,7 +37,7 @@
 - [x] Reservar D10 para expansión RS485/Signature sin poblar el bridge en la línea base Insight.
 - [x] Verificar el contrato contra `Nebula_ArduinoAPPLab_UNOQ` `main` en el commit `cf100b38df890f61aed472e934241e145425569b`.
 - [x] Documentar divergencias actuales del firmware: build Signature, A3 humedad y D9 CO2 flow PWM.
-- [ ] ERC del root schematic = 0 mediante GitHub Actions.
+- [x] ERC del root schematic = 0 mediante GitHub Actions.
 
 ### Migración posterior por bloques
 
