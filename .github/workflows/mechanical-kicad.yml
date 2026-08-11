@@ -1,0 +1,57 @@
+name: Validación mecánica KiCad
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kicad/**'
+      - 'tools/validate_mechanical.py'
+      - '.github/workflows/mechanical-kicad.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'kicad/**'
+      - 'tools/validate_mechanical.py'
+      - '.github/workflows/mechanical-kicad.yml'
+
+jobs:
+  mechanical:
+    name: Geometría congelada y parseo KiCad
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Validar coordenadas mecánicas
+        run: python3 tools/validate_mechanical.py
+
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Parsear board y ejecutar DRC de errores
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --output /tmp/drc_mechanical.rpt \
+            --severity-error \
+            --exit-code-violations
+
+      - name: Mostrar reporte DRC
+        if: always()
+        run: |
+          if [ -f /tmp/drc_mechanical.rpt ]; then
+            cat /tmp/drc_mechanical.rpt
+          fi
+
+      - name: Guardar reporte DRC
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drc-mecanico
+          path: /tmp/drc_mechanical.rpt
