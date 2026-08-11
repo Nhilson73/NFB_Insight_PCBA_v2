@@ -1,0 +1,66 @@
+(kicad_sch
+  (version 20250114)
+  (generator "nfb_analog_migration")
+  (generator_version "1.0")
+  (uuid "b2ee9b70-5512-4d13-a7b3-6eece9d6f1a4")
+  (paper "A3")
+  (title_block
+    (title "NFB Insight PCBA v2 — Analógico y Aislamiento")
+    (date "2026-08-11")
+    (rev "0.4")
+    (company "Cafelium SRL / Nebula Ecosystem")
+    (comment 1 "PR #4 — Arquitectura heredada y depurada desde Q-Shield")
+    (comment 2 "Canales activos: pH(A0), ORP(A1), Temp(A2), CO2(A4), DO(A5)")
+    (comment 3 "A3/HUM no existe en la línea base Insight V2")
+    (comment 4 "Hoja de arquitectura: componentes a nivel manifiesto; netlist de producción se materializa tras revisión eléctrica")
+  )
+  (lib_symbols)
+  (text "PR #4 — Z1 ANALÓGICO / AISLAMIENTO\nFUENTE PRIMARIA DONANTE: kicad/analog_acquisition.kicad_sch @ 2aa42a08...\nMANIFIESTO V2: hardware/analog_insight_manifest.json\nBOM DE HERENCIA: bom/insight_analog_inheritance.csv"
+    (at 38.1 35.56 0)
+    (effects (font (size 2.0 2.0)) (justify left bottom))
+    (uuid "9bd8e253-94a1-4cac-9479-8710dfb654c2")
+  )
+  (text "PH / A0 / PH_ADC — AISLADO\nBNC/panel → PESD5V0S1BSF → 1k + 100nF + 10M → MCP6002 → SN6501 + T1 → AMC1301 → PH_ADC\nDominios: VDD_ISO_PH / GND_ISO_PH. Revisar impedancia de entrada y escalamiento antes del netlist final."
+    (at 38.1 66.04 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "c056bbd4-bdd6-410d-a578-b50c8889c2a1")
+  )
+  (text "ORP / A1 / ORP_ADC — AISLADO\nBNC/panel → PESD5V0S1BSF → 1k + 100nF + 10M → MCP6002 → SN6501 + T2 → AMC1301 → ORP_ADC\nDominios: VDD_ISO_ORP / GND_ISO_ORP. Revisar rango bipolar y divisor 4.02k/1.00k."
+    (at 38.1 91.44 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "f4c10bb1-1d20-462d-ab3e-e94d26434da1")
+  )
+  (text "TEMP / A2 / TEMP_ADC — GND COMPARTIDO\nJST-XH 2p → PESD3V3S1BSF → 1k + 100nF → TEMP_ADC\nLa topología NTC/divisor queda obligatoriamente bajo revisión eléctrica antes de asignar valores definitivos."
+    (at 38.1 116.84 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "519eb3cf-7274-4ea1-a875-997287156bc7")
+  )
+  (text "CO2 / A4 / CO2_ADC — GND COMPARTIDO\nJST-XH 3p → PESD5V0S1BSF → 1k + 100nF + 10M → MCP6002 → CO2_ADC\nRevisar tensión de alimentación, rango real del transductor y escalamiento al ADC UNO Q."
+    (at 38.1 142.24 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "89d73c1e-ac90-4a37-b9c2-c17455df4720")
+  )
+  (text "DO / A5 / DO_ADC — AISLADO\nBNC/panel → PESD5V0S1BSF → 1k + 100nF + 10M → MCP6002 → SN6501 + T3 → AMC1301 → DO_ADC\nDominios: VDD_ISO_DO / GND_ISO_DO. La electrónica final depende del tipo exacto de sonda DO."
+    (at 38.1 167.64 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "c912ecb4-6702-420b-a6d2-6b2013bc8fe0")
+  )
+  (text "EXCLUSIÓN EXPLÍCITA\nA3 / HUM_ADC: NO MIGRAR. Donor refs J7, D8, R17, R18 y C23 quedan fuera de Insight V2."
+    (at 38.1 195.58 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "57a16b7a-b164-4bac-93fc-c3f0a11d2589")
+  )
+  (text "REGLA MECÁNICA Z1\nTodos los conectores de campo se diseñan para el borde Y=0 y salida hacia -Y. Los BNC se prefieren panel-mount del enclosure con enlace interno corto."
+    (at 38.1 218.44 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "cafc0767-6045-4490-9134-b9545917807f")
+  )
+  (text "GATE PR #4\nEsta hoja congela qué se hereda y qué se descarta; NO pretende ocultar como validada la electrónica analógica donante.\nLos valores sensibles de pH/ORP/DO/NTC/CO2 deberán superar revisión de datasheet antes de materializar el netlist de producción."
+    (at 38.1 243.84 0)
+    (effects (font (size 1.5 1.5)) (justify left bottom))
+    (uuid "8300de41-d81b-4e57-b140-f9194ef36e01")
+  )
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)

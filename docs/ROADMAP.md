@@ -39,9 +39,23 @@
 - [x] Documentar divergencias actuales del firmware: build Signature, A3 humedad y D9 CO2 flow PWM.
 - [x] ERC del root schematic = 0 mediante GitHub Actions.
 
+### PR #4 — Arquitectura analógica y aislamiento Insight
+
+- [x] Tomar `kicad/analog_acquisition.kicad_sch` del Q-Shield como fuente primaria del circuito donante.
+- [x] Crear `hardware/analog_insight_manifest.json` con trazabilidad por canal y precedencia esquemático > BOM histórica.
+- [x] Crear `bom/insight_analog_inheritance.csv` separando `INHERIT` y `REVIEW`.
+- [x] Congelar como activos únicamente pH/A0, ORP/A1, TEMP/A2, CO2/A4 y DO/A5.
+- [x] Mantener aislamiento independiente para pH, ORP y DO como arquitectura base heredada.
+- [x] Mantener TEMP y CO2 en dominio GND compartido.
+- [x] Excluir explícitamente A3/HUM y refs donantes `J7`, `D8`, `R17`, `R18`, `C23`.
+- [x] Aplicar a todos los conectores de campo la regla mecánica `Y=0` / salida `-Y`.
+- [x] Crear `kicad/analog_insight.kicad_sch` como hoja de arquitectura Z1 parseable por KiCad.
+- [x] Añadir gate automático de manifiesto/BOM/contrato y ERC de la hoja analógica.
+- [ ] Revisar datasheets, impedancias, rangos y ganancias antes de convertir los bloques heredados en netlist discreto de producción.
+- [ ] Materializar el netlist discreto de producción para pH/ORP/TEMP/CO2/DO manteniendo ERC = 0.
+
 ### Migración posterior por bloques
 
-- [ ] Construir hoja analógica/aislamiento desde los circuitos donantes aceptados, eliminando funciones fuera de Insight.
 - [ ] Construir hoja digital/bajo ruido para HX711, RTC/GPS, I2C, HMI y watchdog.
 - [ ] Construir hoja de potencia únicamente después de congelar la arquitectura de potencia de Fase 3.
 - [ ] Construir hoja de actuadores con control Insight y sin arrastrar etapas Signature innecesarias.

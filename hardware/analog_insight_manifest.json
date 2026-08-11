@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "source": {
+    "repository": "Nhilson73/nebula_qshield_pcb",
+    "commit": "2aa42a08d675ad01d18e79157f46008357dbcb0c",
+    "primary_artifact": "kicad/analog_acquisition.kicad_sch",
+    "secondary_artifact": "docs/04_BOM_PRODUCTION.md",
+    "precedence": "El esquemático donante prevalece cuando la BOM documental y el circuito real difieren."
+  },
+  "design_policy": {
+    "board_zone": "Z1_ANALOG_ISOLATION",
+    "field_io_edge": "Y=0",
+    "connector_facing": "-Y",
+    "active_outputs": ["PH_ADC", "ORP_ADC", "TEMP_ADC", "CO2_ADC", "DO_ADC"],
+    "excluded_outputs": ["HUM_ADC"],
+    "wet_sensor_isolation_channels": ["PH", "ORP", "DO"],
+    "shared_ground_channels": ["TEMP", "CO2"],
+    "routing_intent": "Conector de campo -> protección ESD -> filtro/acondicionamiento -> aislamiento cuando aplique -> ADC UNO Q",
+    "production_status": "ARCHITECTURE_FROZEN_COMPONENT_LEVEL_REVIEW_PENDING"
+  },
+  "channels": [
+    {
+      "id": "PH",
+      "arduino": "A0",
+      "output_net": "PH_ADC",
+      "isolated": true,
+      "field_connector": {"type": "BNC aislado", "donor_ref": "J2", "mpn": "31-221-RFX", "service_edge": "Y=0", "facing": "-Y", "mechanical_status": "PANEL_MOUNT_PREFERRED_REVIEW"},
+      "donor_components": [
+        {"ref":"D3","function":"ESD","value":"PESD5V0S1BSF","mpn":"PESD5V0S1BSF"},
+        {"ref":"R7","function":"serie entrada","value":"1k 1%","mpn":"CRCW04021K00FKED"},
+        {"ref":"C12","function":"filtro RC","value":"100nF","mpn":null},
+        {"ref":"R8","function":"bias/pulldown","value":"10M","mpn":null},
+        {"ref":"U4","function":"buffer analógico","value":"MCP6002","mpn":"MCP6002-I/SN"},
+        {"ref":"U5","function":"driver de potencia aislada","value":"SN6501","mpn":"SN6501DBVR"},
+        {"ref":"U6","function":"amplificador aislado","value":"AMC1301","mpn":"AMC1301DWVR"},
+        {"ref":"T1","function":"transformador aislado","value":"750315371","mpn":"750315371"},
+        {"ref":"D19","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"D20","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"C28","function":"bulk aislado","value":"10uF","mpn":"GRM21BR61C106KE15L"},
+        {"ref":"R30","function":"divisor precisión","value":"511 0.1%","mpn":null},
+        {"ref":"R31","function":"divisor precisión","value":"511 0.1%","mpn":null},
+        {"ref":"TP1","function":"test point","value":"PH_BUF","mpn":null}
+      ],
+      "review_gates": ["Impedancia de entrada de sonda pH", "Rango del AMC1301 y divisor", "Dominio GND_ISO_PH/VDD_ISO_PH", "Conector BNC vs panel del enclosure"]
+    },
+    {
+      "id": "ORP",
+      "arduino": "A1",
+      "output_net": "ORP_ADC",
+      "isolated": true,
+      "field_connector": {"type": "BNC aislado", "donor_ref": "J3", "mpn": "31-221-RFX", "service_edge": "Y=0", "facing": "-Y", "mechanical_status": "PANEL_MOUNT_PREFERRED_REVIEW"},
+      "donor_components": [
+        {"ref":"D4","function":"ESD","value":"PESD5V0S1BSF","mpn":"PESD5V0S1BSF"},
+        {"ref":"R9","function":"serie entrada","value":"1k 1%","mpn":"CRCW04021K00FKED"},
+        {"ref":"C15","function":"filtro RC","value":"100nF","mpn":null},
+        {"ref":"R10","function":"bias/pulldown","value":"10M","mpn":null},
+        {"ref":"U7","function":"buffer analógico","value":"MCP6002","mpn":"MCP6002-I/SN"},
+        {"ref":"U8","function":"driver de potencia aislada","value":"SN6501","mpn":"SN6501DBVR"},
+        {"ref":"U9","function":"amplificador aislado","value":"AMC1301","mpn":"AMC1301DWVR"},
+        {"ref":"T2","function":"transformador aislado","value":"750315371","mpn":"750315371"},
+        {"ref":"D21","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"D22","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"C29","function":"bulk aislado","value":"10uF","mpn":"GRM21BR61C106KE15L"},
+        {"ref":"R32","function":"divisor precisión","value":"4.02k 0.1%","mpn":null},
+        {"ref":"R33","function":"divisor precisión","value":"1.00k 0.1%","mpn":null},
+        {"ref":"TP2","function":"test point","value":"ORP_BUF","mpn":null}
+      ],
+      "review_gates": ["Rango bipolar ORP y bias", "Rango del AMC1301 y divisor", "Dominio GND_ISO_ORP/VDD_ISO_ORP", "Conector BNC vs panel del enclosure"]
+    },
+    {
+      "id": "TEMP",
+      "arduino": "A2",
+      "output_net": "TEMP_ADC",
+      "isolated": false,
+      "field_connector": {"type": "JST-XH 2-pin", "donor_ref": "J6", "mpn": null, "service_edge": "Y=0", "facing": "-Y", "mechanical_status": "FOOTPRINT_REVIEW"},
+      "donor_components": [
+        {"ref":"D7","function":"ESD","value":"PESD3V3S1BSF","mpn":"PESD3V3S1BSF"},
+        {"ref":"R15","function":"serie entrada","value":"1k 1%","mpn":"CRCW04021K00FKED"},
+        {"ref":"C22","function":"filtro RC","value":"100nF","mpn":null},
+        {"ref":"R16","function":"bias/pulldown","value":"10M","mpn":null}
+      ],
+      "review_gates": ["Topología final NTC/divisor", "Curva beta y rango ADC", "Protección ESD 3V3"]
+    },
+    {
+      "id": "CO2",
+      "arduino": "A4",
+      "output_net": "CO2_ADC",
+      "isolated": false,
+      "field_connector": {"type": "JST-XH 3-pin", "donor_ref": "J4", "mpn": null, "service_edge": "Y=0", "facing": "-Y", "mechanical_status": "FOOTPRINT_REVIEW"},
+      "donor_components": [
+        {"ref":"D5","function":"ESD","value":"PESD5V0S1BSF","mpn":"PESD5V0S1BSF"},
+        {"ref":"R11","function":"serie entrada","value":"1k 1%","mpn":"CRCW04021K00FKED"},
+        {"ref":"C18","function":"filtro RC","value":"100nF","mpn":null},
+        {"ref":"R12","function":"bias/pulldown","value":"10M","mpn":null},
+        {"ref":"U10","function":"buffer analógico","value":"MCP6002","mpn":"MCP6002-I/SN"}
+      ],
+      "review_gates": ["Rango real del transductor CO2", "Alimentación del transductor", "Escalamiento a rango ADC UNO Q"]
+    },
+    {
+      "id": "DO",
+      "arduino": "A5",
+      "output_net": "DO_ADC",
+      "isolated": true,
+      "field_connector": {"type": "BNC aislado", "donor_ref": "J5", "mpn": "31-221-RFX", "service_edge": "Y=0", "facing": "-Y", "mechanical_status": "PANEL_MOUNT_PREFERRED_REVIEW"},
+      "donor_components": [
+        {"ref":"D6","function":"ESD","value":"PESD5V0S1BSF","mpn":"PESD5V0S1BSF"},
+        {"ref":"R13","function":"serie entrada","value":"1k 1%","mpn":"CRCW04021K00FKED"},
+        {"ref":"C19","function":"filtro RC","value":"100nF","mpn":null},
+        {"ref":"R14","function":"bias/pulldown","value":"10M","mpn":null},
+        {"ref":"U11","function":"buffer analógico","value":"MCP6002","mpn":"MCP6002-I/SN"},
+        {"ref":"U12","function":"driver de potencia aislada","value":"SN6501","mpn":"SN6501DBVR"},
+        {"ref":"U13","function":"amplificador aislado","value":"AMC1301","mpn":"AMC1301DWVR"},
+        {"ref":"T3","function":"transformador aislado","value":"750315371","mpn":"750315371"},
+        {"ref":"D23","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"D24","function":"rectificador aislado","value":"BAT54","mpn":"BAT54,115"},
+        {"ref":"C30","function":"bulk aislado","value":"10uF","mpn":"GRM21BR61C106KE15L"}
+      ],
+      "review_gates": ["Tipo/salida eléctrica de la sonda DO definitiva", "Rango del AMC1301", "Dominio GND_ISO_DO/VDD_ISO_DO", "Conector BNC vs panel del enclosure"]
+    }
+  ],
+  "explicitly_not_inherited": [
+    {"channel":"HUM","arduino":"A3","donor_refs":["J7","D8","R17","R18","C23"],"reason":"Humedad eliminada de Insight V2"}
+  ],
+  "shared_items": [
+    {"donor_ref":"C24","value":"100nF","function":"desacoplo 3V3 analógico","disposition":"REVIEW_AT_IMPLEMENTATION"}
+  ]
+}
