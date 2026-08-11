@@ -1,58 +1,58 @@
-# Migration from `nebula_qshield_pcb`
+# Migración desde `nebula_qshield_pcb`
 
-The previous Q-Shield repository is an **engineering donor**, not a PCB-layout template.
+El repositorio anterior del Q-Shield se considera un **donante de ingeniería**, no una plantilla de layout de PCB.
 
-## Inherit
+## Heredar
 
-- Validated component selections and manufacturer part numbers.
-- KiCad symbols and footprints that have already been checked against the physical part.
-- UNO Q shield/header pattern and official mechanical reference.
-- Net naming that already matches the Insight firmware contract.
-- ESD/protection concepts for sensor interfaces.
-- Analog front-end circuit intent for pH, ORP, temperature, CO2 pressure and DO.
-- HX711/load-cell interface.
-- RTC, GPS, HMI UART and I2C architecture.
-- Watchdog architecture.
-- BOM/DNP metadata where it remains relevant to Insight.
-- Existing validation scripts such as schematic-to-PCB parity checks.
-- Useful 3D models and enclosure/cable documentation after review.
+- Selecciones de componentes y MPN ya validados.
+- Símbolos y footprints de KiCad ya verificados contra la pieza física.
+- Patrón de headers/shield del UNO Q y su referencia mecánica oficial.
+- Nombres de nets que ya coinciden con el contrato del firmware Insight.
+- Conceptos de protección ESD para interfaces de sensores.
+- Intención de diseño de los front-end analógicos para pH, ORP, temperatura, presión de CO2 y DO.
+- Interfaz HX711/celda de carga.
+- Arquitectura RTC, GPS, HMI UART e I2C.
+- Arquitectura de watchdog.
+- Metadata BOM/DNP que siga siendo aplicable a Insight.
+- Scripts existentes de validación, incluyendo paridad esquemático↔PCB.
+- Modelos 3D y documentación de enclosure/cables que resulten útiles después de revisión.
 
-## Review before inheritance
+## Revisar antes de heredar
 
-These items must not be copied without re-approval:
+Estos elementos no se copiarán sin una nueva aprobación:
 
-- 12 V input protection chain and current ratings.
-- F1 PTC sizing.
-- D2 reverse-polarity diode sizing/topology.
-- buck regulator thermal/current margin.
-- actuator power distribution.
-- chiller power architecture.
-- relay contact use and clearance classification.
-- connector families and panel-vs-PCBA termination strategy.
-- galvanic isolation implementation and isolated power islands.
-- any item whose tier/DNP assignment is inconsistent across donor documentation.
+- cadena de protección de entrada de 12 V y ratings de corriente;
+- dimensionamiento de F1 PTC;
+- dimensionamiento/topología de D2 para polaridad inversa;
+- margen térmico y de corriente del buck;
+- distribución de potencia de actuadores;
+- arquitectura de potencia del chiller;
+- uso de contactos de relé y clasificación de clearances;
+- familias de conectores y estrategia panel vs. PCBA;
+- implementación del aislamiento galvánico e islas de potencia aisladas;
+- cualquier componente cuya asignación Tier/DNP sea inconsistente en la documentación donante.
 
-## Do not inherit
+## No heredar
 
-- PCB component coordinates.
-- tracks, vias or autorouter output.
-- copper pours/zones.
-- donor board Edge.Cuts.
-- donor board dimensions.
-- routing compromises involving `In1.Cu`.
-- reduced clearances introduced only to make routing pass.
-- unconnected-net state.
+- Coordenadas de componentes de la PCB anterior.
+- Tracks, vias ni salida del autorouter.
+- Pours/zones de cobre.
+- `Edge.Cuts` de la board donante.
+- Dimensiones de la board donante.
+- Compromisos de routing relacionados con `In1.Cu`.
+- Clearances reducidos únicamente para lograr pasar el routing.
+- Estado de nets desconectadas.
 
-## Frozen Insight signal contract for bootstrap
+## Contrato de señales Insight congelado para el arranque
 
-The V2 bootstrap adopts the following mapping as its source of truth pending a direct firmware cross-check:
+La V2 adopta el siguiente mapeo como fuente de verdad inicial, pendiente de una comprobación directa contra el firmware:
 
-| UNO Q pin | V2 function | Tier |
+| Pin UNO Q | Función V2 | Tier |
 |---|---|---|
 | A0 | PH_ADC | Insight |
 | A1 | ORP_ADC | Insight |
 | A2 | TEMP_ADC | Insight |
-| A3 | RESERVED / humidity removed | DNP |
+| A3 | RESERVADO / humedad eliminada | DNP |
 | A4 | CO2_ADC | Insight |
 | A5 | DO_ADC | Insight |
 | D0 | HMI_RX | Insight |
@@ -63,15 +63,15 @@ The V2 bootstrap adopts the following mapping as its source of truth pending a d
 | D5 | PUMP_PWM | Insight |
 | D6 | PUMP_DIR | Insight |
 | D7 | CO2_SOL_CTL | Insight |
-| D8 | CHILLER_CTL | Insight control only |
-| D9 | RESERVED / proportional gas valve removed | DNP |
-| D10 | RS485_IRQ | reserve for future Signature path |
+| D8 | CHILLER_CTL | Solo control Insight |
+| D9 | RESERVADO / válvula proporcional eliminada | DNP |
+| D10 | RS485_IRQ | Reserva para futura ruta Signature |
 | D13 | LED_STATUS | Insight |
 | D20 | I2C_SDA | Insight |
 | D21 | I2C_SCL | Insight |
 
-## V2 product principle
+## Principio de producto V2
 
-V2 is designed first as **NFB Insight**, not as a physically congested universal board for every future tier.
+La V2 se diseña primero como **NFB Insight**, no como una board universal congestionada para todos los tiers futuros.
 
-Future Signature capability should be enabled by deliberate expansion hooks, reserved interfaces or an optional daughterboard when that is electrically/mechanically cleaner than populating unused circuitry on every Insight PCBA.
+La futura capacidad Signature deberá habilitarse mediante puntos de expansión deliberados, interfaces reservadas o una daughterboard opcional cuando esa solución sea eléctrica y mecánicamente más limpia que poblar circuitería no utilizada en cada PCBA Insight.
