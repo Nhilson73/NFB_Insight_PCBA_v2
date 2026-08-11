@@ -1,0 +1,63 @@
+name: Validación analógica Insight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hardware/analog_insight_manifest.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'bom/insight_analog_inheritance.csv'
+      - 'kicad/analog_insight.kicad_sch'
+      - 'tools/validate_analog_manifest.py'
+      - '.github/workflows/analog-insight.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/analog_insight_manifest.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'bom/insight_analog_inheritance.csv'
+      - 'kicad/analog_insight.kicad_sch'
+      - 'tools/validate_analog_manifest.py'
+      - '.github/workflows/analog-insight.yml'
+
+jobs:
+  analog:
+    name: Herencia analógica y parseo KiCad
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Validar manifiesto y BOM analógica
+        run: python3 tools/validate_analog_manifest.py
+
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Ejecutar ERC de la hoja analógica
+        run: |
+          kicad-cli sch erc kicad/analog_insight.kicad_sch \
+            --output /tmp/erc_analog.rpt \
+            --severity-all \
+            --exit-code-violations
+
+      - name: Mostrar reporte ERC
+        if: always()
+        run: |
+          if [ -f /tmp/erc_analog.rpt ]; then
+            cat /tmp/erc_analog.rpt
+          fi
+
+      - name: Guardar reporte ERC
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-analog-insight
+          path: /tmp/erc_analog.rpt
