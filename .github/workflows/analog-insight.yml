@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - 'hardware/analog_insight_manifest.json'
+      - 'hardware/sensor_interface_contract.json'
       - 'hardware/insight_pin_contract.json'
       - 'bom/insight_analog_inheritance.csv'
+      - 'bom/insight_sensor_interface_bom.csv'
       - 'kicad/analog_insight.kicad_sch'
       - 'tools/validate_analog_manifest.py'
       - '.github/workflows/analog-insight.yml'
@@ -14,15 +16,17 @@ on:
     branches: [main]
     paths:
       - 'hardware/analog_insight_manifest.json'
+      - 'hardware/sensor_interface_contract.json'
       - 'hardware/insight_pin_contract.json'
       - 'bom/insight_analog_inheritance.csv'
+      - 'bom/insight_sensor_interface_bom.csv'
       - 'kicad/analog_insight.kicad_sch'
       - 'tools/validate_analog_manifest.py'
       - '.github/workflows/analog-insight.yml'
 
 jobs:
   analog:
-    name: Herencia analógica y parseo KiCad
+    name: Trazabilidad analógica PR4 vs baseline PR5
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -32,7 +36,7 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Validar manifiesto y BOM analógica
+      - name: Validar trazabilidad PR4 contra contrato PR5
         run: python3 tools/validate_analog_manifest.py
 
       - name: Inicializar librerías globales KiCad
@@ -41,7 +45,7 @@ jobs:
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
 
-      - name: Ejecutar ERC de la hoja analógica
+      - name: Ejecutar ERC de la hoja histórica analógica
         run: |
           kicad-cli sch erc kicad/analog_insight.kicad_sch \
             --output /tmp/erc_analog.rpt \
@@ -59,5 +63,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: erc-analog-insight
+          name: erc-analog-insight-historico
           path: /tmp/erc_analog.rpt

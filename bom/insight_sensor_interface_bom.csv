@@ -1,0 +1,25 @@
+canal,logical_ref,funcion,valor_objetivo,mpn,disposicion,nota
+PH,J_PH,Conector salida acondicionador,3-pin PH2.0 compatible,,SELECT_AT_PLACEMENT,No BNC en la PCBA NFB; BNC permanece en módulo DFRobot
+PH,D_PH,Protección entrada,low-leakage ESD clamp,,REVIEW,Seleccionar después de análisis de fuga/ruido
+PH,R_PH,Serie/filtro,TBD,,REVIEW,Congelar junto con C_PH según ancho de banda requerido
+PH,C_PH,Filtro RC,TBD,,REVIEW,Congelar corte después de prueba de ruido
+PH,SYS_PH_ISO,Aislador externo opcional,DFR0504 o equivalente,DFR0504,SYSTEM_OPTION,No es placement de la PCBA
+ORP,J_ORP,Conector salida acondicionador,3-pin PH2.0 compatible,,SELECT_AT_PLACEMENT,Entrada desde SEN0464 ya acondicionada
+ORP,D_ORP,Protección entrada,low-leakage ESD clamp,,REVIEW,Seleccionar después de análisis de fuga/ruido
+ORP,R_ORP_TOP,Divisor ADC,10k 0.1%,,PROVISIONAL_VALIDATED,Con R_ORP_BOT produce relación 2/3
+ORP,R_ORP_BOT,Divisor ADC,20k 0.1%,,PROVISIONAL_VALIDATED,4.5 V máximo -> 3.0 V al UNO Q
+ORP,C_ORP,Filtro RC,TBD,,REVIEW,Congelar corte después de prueba de ruido
+ORP,SYS_ORP_ISO,Aislador externo opcional,DFR0504 o equivalente,DFR0504,SYSTEM_OPTION,No es placement de la PCBA
+TEMP,J_TEMP,Conector DS18B20,3-pin digital,,SELECT_AT_PLACEMENT,Orientado Y=0 hacia -Y
+TEMP,D_TEMP,Protección 1-Wire,3.3V compatible,,REVIEW,Seleccionar baja capacitancia
+TEMP,R_TEMP_PU,Pull-up 1-Wire,4.7k a 3.3V,,DNP_REVIEW,Kit KIT0021 ya incluye módulo/resistencia; evitar duplicación innecesaria
+CO2,J_CO2,Conector transductor presión,3-pin analog,,SELECT_AT_PLACEMENT,Sensor de producción aún por seleccionar
+CO2,D_CO2,Protección entrada,3.3V ADC compatible,,REVIEW,Congelar con sensor final
+CO2,R_CO2_TOP,Divisor legado MPX5700,18k 0.1%,,PROVISIONAL_LEGACY_ONLY,No congelar hasta seleccionar sensor vigente
+CO2,R_CO2_BOT,Divisor legado MPX5700,30k 0.1%,,PROVISIONAL_LEGACY_ONLY,4.813 V worst case -> 3.008 V al UNO Q
+CO2,C_CO2,Filtro RC,TBD,,REVIEW,Congelar con sensor final
+DO,J_DO,Conector salida acondicionador,3-pin PH2.0 compatible,,SELECT_AT_PLACEMENT,No BNC en la PCBA NFB; BNC permanece en módulo DFRobot
+DO,D_DO,Protección entrada,low-leakage ESD clamp,,REVIEW,Seleccionar después de análisis de fuga/ruido
+DO,R_DO,Serie/filtro,TBD,,REVIEW,Congelar junto con C_DO según ancho de banda requerido
+DO,C_DO,Filtro RC,TBD,,REVIEW,Congelar corte después de prueba de ruido
+DO,SYS_DO_ISO,Aislador externo opcional,DFR0504 o equivalente,DFR0504,SYSTEM_OPTION,No es placement de la PCBA
