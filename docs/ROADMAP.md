@@ -14,12 +14,15 @@
 
 ## Fase 1 — Activos mecánicos donantes
 
-- [ ] Importar/crear footprint inmutable del UNO Q rotado en el origen global.
-- [ ] Verificar los cuatro agujeros de montaje usando las coordenadas transformadas.
-- [ ] Añadir keepouts de USB-C, botón de power, JCTL, SPI/Qwiic y conectores.
-- [ ] Crear contorno inicial de la board con `H = 68.58 mm`; ancho provisional.
-- [ ] Añadir corredor de courtyards para conectores del lado de servicio/enclosure en `Y=0`.
-- [ ] Verificar relación UNO Q + carrier en KiCad 3D Viewer.
+- [x] Crear footprint inmutable del UNO Q rotado en el origen global.
+- [x] Verificar los cuatro agujeros de montaje usando las coordenadas transformadas.
+- [x] Incorporar referencias mecánicas conservadoras para USB-C/PMIC, JCTL, SPI2/JSPI y Qwiic en `Eco1.User`.
+- [x] Crear contorno inicial de la board con `H = 68.58 mm` y ancho provisional de `220 mm`.
+- [x] Añadir zonificación visual Z0–Z4 y declarar `Y=0` como FIELD I/O EDGE.
+- [x] Añadir validación automática de origen, altura, agujeros y pads extremos del UNO Q.
+- [ ] Convertir las exclusiones mecánicas necesarias en keepouts DRC-enforced únicamente después de contrastarlas con CAD/STEP oficial y enclosure.
+- [ ] Añadir corredor/courtyards definitivos de conectores del lado de servicio en `Y=0` cuando se seleccione cada familia de conectores.
+- [ ] Verificar relación UNO Q + carrier en KiCad 3D Viewer con modelo STEP oficial.
 
 ## Fase 2 — Migración limpia del esquemático Insight
 
