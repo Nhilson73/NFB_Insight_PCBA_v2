@@ -1,19 +1,19 @@
 # NFB Insight PCBA v2
 
-Clean-sheet carrier/PCBA for **Nebula Fermentation Insight®** built around the Arduino UNO Q immutable mechanical form factor.
+PCBA/carrier diseñada desde cero para **Nebula Fermentation Insight®**, construida alrededor del factor de forma mecánico inmutable del Arduino UNO Q.
 
-This repository intentionally starts from a clean geometry. The previous `Nhilson73/nebula_qshield_pcb` repository is treated as an **engineering donor** for validated BOM items, symbols, footprints, net naming, test concepts and documentation — not as a placement/routing template.
+Este repositorio parte intencionalmente de una geometría limpia. El repositorio anterior `Nhilson73/nebula_qshield_pcb` se trata como **donante de ingeniería** para componentes validados de la BOM, símbolos, footprints, nomenclatura de nets, conceptos de prueba y documentación; no se usa como plantilla de placement ni routing.
 
-## Frozen V2 mechanical convention
+## Convención mecánica V2 congelada
 
-- Global board origin: `(0,0)` at the lower-left of the rotated UNO Q envelope.
-- UNO Q rotated so its USB-C points toward `-Y`.
-- UNO Q immutable envelope after rotation: `53.34 mm × 68.58 mm`.
-- Board height is frozen at `68.58 mm`.
-- PCBA grows only toward `+X`.
-- Field wiring/connectors are placed along the lower `Y=0` edge and face `-Y` toward the enclosure cable-exit side.
-- Functional zoning grows left-to-right: UNO Q → analog/isolation → digital/low-noise → power → actuators.
+- Origen global de la board: `(0,0)` en la esquina inferior izquierda de la envolvente rotada del UNO Q.
+- UNO Q rotado de modo que su USB-C apunte hacia `-Y`.
+- Envolvente inmutable del UNO Q después de la rotación: `53.34 mm × 68.58 mm`.
+- Altura de la board congelada en `68.58 mm`.
+- La PCBA crece únicamente hacia `+X`.
+- Los conectores y cables de campo se ubican a lo largo del borde inferior `Y=0` y orientan su conexión hacia `-Y`, correspondiente al lado de salida de cables del enclosure.
+- La zonificación funcional crece de izquierda a derecha: UNO Q → analógico/aislamiento → digital/bajo ruido → potencia → actuadores.
 
-## First milestone
+## Primer hito
 
-Bootstrap the geometry, inherited engineering assets and Insight BOM before placement or routing.
+Congelar la geometría, los activos de ingeniería heredables y la BOM de Insight antes de iniciar placement o routing.
