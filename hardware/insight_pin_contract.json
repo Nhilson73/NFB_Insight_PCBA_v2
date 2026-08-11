@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
   "firmware_reference": {
     "repository": "Nhilson73/Nebula_ArduinoAPPLab_UNOQ",
@@ -7,11 +7,13 @@
     "commit": "cf100b38df890f61aed472e934241e145425569b",
     "observed_build_tier": "NEBULA_TIER_SIGNATURE",
     "documented_divergences": [
+      "A2 sigue definido como PIN_TEMPERATURE_ANALOG en firmware, pero NFB Insight V2 usa KIT0021/DS18B20 digital 1-Wire sobre A2/D16 y la net TEMP_1WIRE",
       "A3 sigue definido como PIN_HUMIDITY_ANALOG en firmware, pero es DNP/Reserva en Insight V2",
       "D9 sigue definido como PIN_CO2_FLOW_PWM en firmware, pero es DNP/Reserva en Insight V2",
       "El firmware describe chiller como función Signature; V2 conserva D8 solo como salida de control"
     ]
   },
+  "sensor_interface_source_of_truth": "hardware/sensor_interface_contract.json",
   "pins": [
     {"pad":1,"arduino":"BOOT","net":null,"status":"NC"},
     {"pad":2,"arduino":"IOREF","net":null,"status":"NC"},
@@ -23,7 +25,7 @@
     {"pad":8,"arduino":"VIN","net":"12V_RAIL","status":"REVIEW"},
     {"pad":9,"arduino":"A0","net":"PH_ADC","status":"ACTIVE"},
     {"pad":10,"arduino":"A1","net":"ORP_ADC","status":"ACTIVE"},
-    {"pad":11,"arduino":"A2","net":"TEMP_ADC","status":"ACTIVE"},
+    {"pad":11,"arduino":"A2/D16","net":"TEMP_1WIRE","status":"ACTIVE_DIGITAL"},
     {"pad":12,"arduino":"A3","net":null,"status":"DNP_RESERVE"},
     {"pad":13,"arduino":"A4","net":"CO2_ADC","status":"ACTIVE"},
     {"pad":14,"arduino":"A5","net":"DO_ADC","status":"ACTIVE"},
