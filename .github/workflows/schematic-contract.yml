@@ -1,0 +1,61 @@
+name: Validación contrato esquemático Insight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hardware/insight_pin_contract.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_schematic_contract.py'
+      - '.github/workflows/schematic-contract.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/insight_pin_contract.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_schematic_contract.py'
+      - '.github/workflows/schematic-contract.yml'
+
+jobs:
+  contract:
+    name: Contrato de pines y ERC KiCad
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Validar contrato Insight
+        run: python3 tools/validate_schematic_contract.py
+
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Ejecutar ERC del root schematic
+        run: |
+          kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch \
+            --output /tmp/erc_contract.rpt \
+            --severity-all \
+            --exit-code-violations
+
+      - name: Mostrar reporte ERC
+        if: always()
+        run: |
+          if [ -f /tmp/erc_contract.rpt ]; then
+            cat /tmp/erc_contract.rpt
+          fi
+
+      - name: Guardar reporte ERC
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-contrato-insight
+          path: /tmp/erc_contract.rpt
