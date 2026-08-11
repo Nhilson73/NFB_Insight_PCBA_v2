@@ -1,22 +1,21 @@
 (kicad_sch
   (version 20250114)
   (generator "nfb_contract_bootstrap")
-  (generator_version "1.0")
+  (generator_version "1.1")
   (uuid "8d1b8c9c-4f38-4be9-a83e-5bd34c8eef41")
   (paper "A3")
   (title_block
     (title "NFB Insight PCBA v2 — Contrato Eléctrico Base")
     (date "2026-08-11")
-    (rev "0.3")
+    (rev "0.5")
     (company "Cafelium SRL / Nebula Ecosystem")
-    (comment 1 "Baseline contract-first para Arduino UNO Q")
-    (comment 2 "Pinout fuente de verdad: hardware/insight_pin_contract.json")
-    (comment 3 "A3 y D9 reservados/DNP en Insight")
-    (comment 4 "Sin migración de bloques funcionales en PR #3")
+    (comment 1 "Contrato corregido PR #5: interfaces reales de sensores")
+    (comment 2 "Pinout: hardware/insight_pin_contract.json")
+    (comment 3 "Sensores: hardware/sensor_interface_contract.json")
+    (comment 4 "A2/D16 = TEMP_1WIRE; A3 y D9 reservados/DNP")
   )
   (lib_symbols)
-  (text "PR #3 — BASELINE CONTRACT-FIRST\nEste root schematic se crea deliberadamente limpio.\nEl contrato de 32 pines se valida en hardware/insight_pin_contract.json.\nLos bloques funcionales se incorporarán por fases después de revisión."
-    (exclude_from_sim no)
+  (text "PR #5 — CONTRATO DE INTERFACES REALES\nEl Q-Shield se conserva como donante, no como topología de producción.\nFuente de verdad de sensores: hardware/sensor_interface_contract.json\nBNC de electrodo en módulos OEM; PCBA recibe señales acondicionadas."
     (at 50.8 50.8 0)
     (effects
       (font (size 2.54 2.54))
@@ -24,8 +23,7 @@
     )
     (uuid "0ae3fcad-546c-465b-af07-35f8cfa70edc")
   )
-  (text "INSIGHT V2: A0 pH | A1 ORP | A2 TEMP | A3 DNP | A4 CO2 | A5 DO"
-    (exclude_from_sim no)
+  (text "INSIGHT V2: A0 PH_ADC | A1 ORP_ADC | A2/D16 TEMP_1WIRE | A3 DNP | A4 CO2_ADC | A5 DO_ADC"
     (at 50.8 76.2 0)
     (effects
       (font (size 1.27 1.27))
@@ -33,14 +31,21 @@
     )
     (uuid "618b7fd1-fb83-46c1-80bd-a3268220c128")
   )
-  (text "D4 WDI | D5/D6 PUMP | D7 CO2 SOL | D8 CHILLER CONTROL | D9 DNP | D20/D21 I2C"
-    (exclude_from_sim no)
+  (text "A0/A5: 0–3 V acondicionados | A1: divisor 10k/20k | A4: sensor final pendiente, entrada ≤3.05 V"
     (at 50.8 81.28 0)
     (effects
       (font (size 1.27 1.27))
       (justify left bottom)
     )
     (uuid "0f5a3e52-bf95-46f6-8822-d11e2b063bde")
+  )
+  (text "D4 WDI | D5/D6 PUMP | D7 CO2 SOL | D8 CHILLER CONTROL | D9 DNP | D20/D21 I2C"
+    (at 50.8 86.36 0)
+    (effects
+      (font (size 1.27 1.27))
+      (justify left bottom)
+    )
+    (uuid "d1f83284-56e7-421b-9ca5-45f23c654193")
   )
   (sheet_instances
     (path "/"
