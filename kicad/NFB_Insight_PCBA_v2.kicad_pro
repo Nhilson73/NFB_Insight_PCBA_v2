@@ -1,0 +1,22 @@
+{
+  "board": {},
+  "boards": [],
+  "cvpcb": {
+    "equivalence_files": []
+  },
+  "erc": {},
+  "libraries": {},
+  "meta": {
+    "filename": "NFB_Insight_PCBA_v2.kicad_pro",
+    "version": 1
+  },
+  "net_settings": {
+    "classes": [],
+    "meta": {
+      "version": 3
+    }
+  },
+  "pcbnew": {},
+  "schematic": {},
+  "text_variables": {}
+}
