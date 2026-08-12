@@ -6,6 +6,7 @@ on:
     paths:
       - 'README.md'
       - 'docs/FOOTPRINT_AUDIT.md'
+      - 'docs/PR11_TECHNICAL_NOTES.md'
       - 'docs/ROADMAP.md'
       - 'hardware/footprint_audit.json'
       - 'hardware/electrical_integration_contract.json'
@@ -24,6 +25,7 @@ on:
     paths:
       - 'README.md'
       - 'docs/FOOTPRINT_AUDIT.md'
+      - 'docs/PR11_TECHNICAL_NOTES.md'
       - 'docs/ROADMAP.md'
       - 'hardware/footprint_audit.json'
       - 'hardware/electrical_integration_contract.json'
