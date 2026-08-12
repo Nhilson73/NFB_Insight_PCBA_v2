@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Valida arquitectura PR9/PR10 bajo contrato UNO Q schema v6 PR12."""
+"""Valida arquitectura PR9/PR10 bajo contrato UNO Q schema v6 PR12 y placement PR17."""
 from __future__ import annotations
-import json, math
+import json, math, re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"
+POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"
 ARDUINO_SNAPSHOT="196feda03787005572a059f030677b8a1de9bcd2"
 def fail(m): raise SystemExit("ERROR: "+m)
 def main():
@@ -44,8 +44,18 @@ def main():
     n4={x["name"]:set(x["nodes"]) for x in z4["nets"]}
     if "12V_ACT" not in n4 or "U_PUMP_DRV.6" not in n4["12V_ACT"] or "U_CO2_DRV.8" not in n4["12V_ACT"]: fail("Z4 no consume rama 12V_ACT")
     if any(x in n4["12V_ACT"] for x in ("U_CHILLER.3","U_CHILLER.4")): fail("chiller conectado a potencia PCBA")
-    pcb=PCB.read_text(encoding="utf-8"); premature=[r for r in ("U_EFUSE","U_5V","U_3V3","D_IN_TVS","U_PUMP_DRV","U_CO2_DRV","U_CHILLER") if f'"{r}"' in pcb]
-    if premature: fail(f"placement prematuro: {premature}")
+
+    pcb=PCB.read_text(encoding="utf-8")
+    placed_power=[r for r in ("U_EFUSE","U_5V","U_3V3","D_IN_TVS","U_PUMP_DRV","U_CO2_DRV","U_CHILLER") if f'"{r}"' in pcb]
+    if placed_power:
+        if not PLACEMENT.exists(): fail(f"placement sin contrato PR17: {placed_power}")
+        pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
+        if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False:
+            fail("placement de potencia presente sin gate PR17 válido")
+        refs={x["ref"] for x in pm.get("placements",[])}
+        if not set(placed_power)<=refs: fail(f"placement de potencia no trazado en manifest PR17: {sorted(set(placed_power)-refs)}")
+        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17: potencia tiene cobre/routing prematuro")
+
     src=SOURCES.read_text(encoding="utf-8")
     for m in ("https://github.com/Arduino","arduino/docs-content","Regla de conflicto"):
         if m not in src: fail(f"SOURCE_OF_TRUTH sin {m}")
@@ -55,6 +65,6 @@ def main():
     if "Fuente primaria UNO Q" not in readme: fail("README perdió jerarquía de fuentes")
     required_road=("PR #9","PR #10","potencia de producción","12 V protegido → VIN UNO Q","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR")
     if any(m not in road for m in required_road): fail("roadmap no preserva arquitectura PR9/PR10")
-    print("OK: arquitectura potencia PR9/10 preservada bajo root EDA PR14")
+    print("OK: arquitectura potencia PR9/10 preservada; placement PR17 permitido solo sin routing")
     return 0
 if __name__=="__main__": raise SystemExit(main())
