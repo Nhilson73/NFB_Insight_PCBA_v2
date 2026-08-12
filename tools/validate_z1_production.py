@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate Z1: preserva sensores PR6, potencia PR9, audit PR11 y reasignación A4 PR12."""
+"""Gate Z1: preserva sensores PR6, potencia PR9, audit PR11/12 y reasignación A4 PR12."""
 from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
@@ -15,7 +15,7 @@ def main():
     if n.get("schema_version")!=2 or n.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("netlist Z1 no refleja potencia PR9")
     if p.get("schema_version")!=6: fail("pin contract no es schema v6")
     if power.get("status")!="POWER_ARCHITECTURE_BASELINE_PR9": fail("contrato potencia no es PR9")
-    if audit.get("status")!="FOOTPRINT_AUDIT_BASELINE_PR11": fail("audit footprints no es PR11")
+    if audit.get("status")!="FOOTPRINT_AUDIT_EXTENDED_PR12": fail("audit footprints no es extensión PR12")
     if z4.get("status")!="Z4_PRODUCTION_BASELINE_PR12": fail("Z4 no es PR12")
     aud={x["id"]:x for x in audit["audits"]}; mpr_a=aud.get("MPR_LONG_PORT_12PAD",{})
     if mpr_a.get("status")!="CLOSED_PRIMARY_DATASHEET" or mpr_a.get("placement_allowed") is not True or mpr_a.get("verified_geometry",{}).get("recommended_layout_outer_span_mm")!=4.20: fail("MPR audit PR11 no cerrado")
@@ -32,8 +32,8 @@ def main():
     if pins[4].get("net") is not None or pins[5].get("net") is not None: fail("rails locales unidos al host")
     if "CO2_ADC" in {x.get("net") for x in p["pins"]}: fail("CO2_ADC reapareció")
     for name in ("PH","DO"):
-        c=ch[name]
-        if max(c["conditioned_output_v"])>3.05 or c["filter"]["series_ohm"]!=1000 or not close(c["filter"]["cap_f"],1e-7): fail(f"{name} baseline cambió")
+        cc=ch[name]
+        if max(cc["conditioned_output_v"])>3.05 or cc["filter"]["series_ohm"]!=1000 or not close(cc["filter"]["cap_f"],1e-7): fail(f"{name} baseline cambió")
     d=ch["ORP"]["divider"]
     if (d["top_ohm"],d["bottom_ohm"])!=(10000,20000) or not close(d["input_max_v"]*d["bottom_ohm"]/(d["top_ohm"]+d["bottom_ohm"]),3.0): fail("ORP divisor cambió")
     if ch["TEMP"]["pullup"]["population"]!="POPULATE" or ch["TEMP"]["pullup"]["ohm"]!=4700: fail("TEMP pull-up cambió")
@@ -42,8 +42,7 @@ def main():
     comps={x["ref"]:x for x in n["components"]}; nets={x["name"]:set(x["nodes"]) for x in n["nets"]}
     for ref,c in comps.items():
         for pin,net in c["pins"].items():
-            if net=="NC": continue
-            if net not in nets or f"{ref}.{pin}" not in nets[net]: fail(f"{ref}.{pin} no aparece en {net}")
+            if net!="NC" and f"{ref}.{pin}" not in nets.get(net,set()): fail(f"{ref}.{pin} no aparece en {net}")
     if "J_UNOQ.4" in nets.get("3V3_RAIL",set()) or "J_UNOQ.5" in nets.get("5V_RAIL",set()): fail("back-feed Z1")
     for c in comps.values():
         token=(str(c.get("value",""))+" "+str(c.get("mpn",""))).upper()
