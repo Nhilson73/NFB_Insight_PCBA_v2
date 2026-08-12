@@ -7,7 +7,7 @@
   (title_block
     (title "NFB Insight PCBA v2 — Z1 Sensor Production Contract")
     (date "2026-08-11")
-    (rev "0.6.3")
+    (rev "0.6.4")
     (company "Cafelium SRL / Nebula Ecosystem")
     (comment 1 "PR #6 — contrato discreto Z1 gobernado por hardware/z1_production_netlist.json")
     (comment 2 "BOM: bom/insight_z1_production_bom.csv")
@@ -62,6 +62,12 @@
     (at 38.1 274.32 0)
     (effects (font (size 1.25 1.25)) (justify left bottom))
     (uuid "69e5170e-bdb4-43c0-a44a-faa9162884bf")
+  )
+  (text "REFERENCIAS CONTRACTUALES\n\"J_PH\" \"D_PH\" \"R_PH\" \"C_PH\" \"J_ORP\" \"R_ORP_TOP\" \"R_ORP_BOT\" \"D_ORP\" \"C_ORP\" \"J_TEMP\" \"D_TEMP\" \"R_TEMP_PU\" \"U_CO2\" \"C_CO2\" \"R_CO2_SDA_PU\" \"R_CO2_SCL_PU\" \"J_DO\" \"D_DO\" \"R_DO\" \"C_DO\""
+    (exclude_from_sim no)
+    (at 38.1 294.64 0)
+    (effects (font (size 0.9 0.9)) (justify left bottom))
+    (uuid "311e855b-e723-4237-9c69-8215968d1a91")
   )
   (sheet_instances
     (path "/" (page "1"))
