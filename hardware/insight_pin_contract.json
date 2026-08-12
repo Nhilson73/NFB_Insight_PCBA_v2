@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "product": "NFB Insight PCBA v2",
   "firmware_reference": {
     "repository": "Nhilson73/Nebula_ArduinoAPPLab_UNOQ",
@@ -11,11 +11,15 @@
       "A4 sigue definido como PIN_CO2_PRESSURE_ANALOG en firmware; PR #6 retira CO2_ADC y mide presión con Honeywell MPRLS0030PA00002A por I2C 0x28 sobre D20/D21.",
       "A3 sigue definido como PIN_HUMIDITY_ANALOG en firmware, pero es DNP/Reserva en Insight V2.",
       "D9 sigue definido como PIN_CO2_FLOW_PWM en firmware, pero es DNP/Reserva en Insight V2.",
-      "El firmware describe chiller como función Signature; V2 conserva D8 solo como salida de control."
+      "El firmware describe chiller como función Signature; V2 conserva D8 solo como salida de control.",
+      "Firmware mantiene GPS I2C 0x42 y RTC I2C 0x68 separados; PR #7 los supersede con DFR1103 combinado por I2C 0x66.",
+      "HMI conserva las nets lógicas HMI_RX/HMI_TX en D0/D1; PR #7 añade traducción física TXU0202DCUR 3.3V↔5V sin cambiar el contrato lógico."
     ]
   },
   "sensor_interface_source_of_truth": "hardware/sensor_interface_contract.json",
   "z1_netlist_source_of_truth": "hardware/z1_production_netlist.json",
+  "z2_contract_source_of_truth": "hardware/z2_digital_contract.json",
+  "z2_netlist_source_of_truth": "hardware/z2_production_netlist.json",
   "pins": [
     {"pad":1,"arduino":"BOOT","net":null,"status":"NC"},
     {"pad":2,"arduino":"IOREF","net":null,"status":"NC"},
@@ -52,8 +56,16 @@
   ],
   "i2c_devices_reserved_or_active": [
     {"device":"MPRLS0030PA00002A","address_hex":"0x28","status":"ACTIVE_Z1"},
-    {"device":"GPS","address_hex":"0x42","status":"PLANNED_Z2"},
-    {"device":"CELL_DENSITY","address_hex":"0x55","status":"PLANNED_SIGNATURE_NOT_INSIGHT_BASE"},
-    {"device":"RTC_DS3231","address_hex":"0x68","status":"PLANNED_Z2"}
-  ]
+    {"device":"DFR1103_GNSS_RTC","address_hex":"0x66","status":"ACTIVE_Z2"},
+    {"device":"GPS_LEGACY","address_hex":"0x42","status":"SUPERSEDED_BY_DFR1103"},
+    {"device":"RTC_DS3231_LEGACY","address_hex":"0x68","status":"SUPERSEDED_BY_DFR1103"},
+    {"device":"CELL_DENSITY","address_hex":"0x55","status":"SIGNATURE_NOT_INSIGHT_BASE"}
+  ],
+  "z2_implementation": {
+    "hx711": {"dout_pad":17,"sck_pad":18,"supply_v":3.3,"status":"ACTIVE_Z2"},
+    "hmi_uart": {"rx_pad":15,"tx_pad":16,"translator":"TXU0202DCUR","status":"ACTIVE_Z2"},
+    "watchdog": {"wdi_pad":19,"reset_pad":3,"supervisor":"TPS3823-30DBVR","watchdog_timeout_s":1.6,"status":"ACTIVE_Z2"},
+    "status_led": {"pad":28,"implementation":"UNO_Q_BUILTIN_LED_PLUS_TESTPOINT","status":"ACTIVE_Z2"},
+    "i2c": {"sda_pad":31,"scl_pad":32,"global_pullup_ohm":4700,"status":"ACTIVE_Z2"}
+  }
 }

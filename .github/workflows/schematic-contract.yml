@@ -1,30 +1,14 @@
 name: Validación contrato esquemático Insight
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'hardware/insight_pin_contract.json'
-      - 'hardware/sensor_interface_contract.json'
-      - 'hardware/z1_production_netlist.json'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'tools/validate_schematic_contract.py'
-      - '.github/workflows/schematic-contract.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'hardware/insight_pin_contract.json'
-      - 'hardware/sensor_interface_contract.json'
-      - 'hardware/z1_production_netlist.json'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'tools/validate_schematic_contract.py'
-      - '.github/workflows/schematic-contract.yml'
+  push:
+    branches: [main]
 
 jobs:
   contract:
-    name: Contrato UNO Q + Z1 y ERC
+    name: Contrato UNO Q + Z1 + Z2 y ERC
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -39,9 +23,12 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Ejecutar ERC
-        run: |
-          kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_contract.rpt --severity-all --exit-code-violations
+      - name: Ejecutar ERC Z1
+        run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_contract_z1.rpt --severity-all --exit-code-violations
+      - name: Ejecutar ERC Z2
+        run: kicad-cli sch erc kicad/z2_digital_contract.kicad_sch --output /tmp/erc_contract_z2.rpt --severity-all --exit-code-violations
       - name: Mostrar ERC
         if: always()
-        run: test ! -f /tmp/erc_contract.rpt || cat /tmp/erc_contract.rpt
+        run: |
+          test ! -f /tmp/erc_contract_z1.rpt || cat /tmp/erc_contract_z1.rpt
+          test ! -f /tmp/erc_contract_z2.rpt || cat /tmp/erc_contract_z2.rpt
