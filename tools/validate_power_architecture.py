@@ -53,8 +53,8 @@ def main():
     for m in ("PR #9","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR","12V_HOST_VIN"):
         if m not in readme and m not in pd: fail(f"docs potencia sin {m}")
     if "Fuente primaria UNO Q" not in readme: fail("README perdió jerarquía de fuentes")
-    # El roadmap evoluciona por fases; verificar semánticamente que PR9/PR10 y sus decisiones sigan documentados.
-    if "PR #9/#10 — potencia" not in road or "12 V protegido → VIN UNO Q" not in road or "TPS259470ARPWR" not in road or "TPSM33625RDNR" not in road or "TLV75533PDBVR" not in road: fail("roadmap no preserva arquitectura PR9/10")
+    required_road=("PR #9","PR #10","potencia de producción","12 V protegido → VIN UNO Q","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR")
+    if any(m not in road for m in required_road): fail("roadmap no preserva arquitectura PR9/PR10")
     print("OK: arquitectura potencia PR9/10 preservada bajo root EDA PR14")
     return 0
 if __name__=="__main__": raise SystemExit(main())
