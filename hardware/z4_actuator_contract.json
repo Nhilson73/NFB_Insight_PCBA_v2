@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "Z4_PRODUCTION_BASELINE_PR12",
+  "decision_date": "2026-08-12",
+  "design_policy": {
+    "zone": "Z4_ACTUATORS_DIRTY_POWER",
+    "placement_in_scope": false,
+    "routing_in_scope": false,
+    "field_io_edge": "Y=0",
+    "connector_facing": "-Y",
+    "power_net": "12V_ACT",
+    "logic_net": "3V3_RAIL",
+    "dirty_return_rule": "retornos de bomba y solenoide hacia región estrella de potencia; no cruzar Z1/Z2",
+    "chiller_power_on_pcba": false,
+    "legacy_discrete_power_stage_allowed": false
+  },
+  "arduino_source": {
+    "repository": "arduino/docs-content",
+    "commit": "24445a32e249d410c1e4359bdc99d8c0dcb17bd2",
+    "path": "content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+    "verified_fact": "JDIGITAL/JANALOG are STM32U585 3.3-V MCU I/O; D10 can be used as a 3.3-V digital diagnostic input by NFB firmware."
+  },
+  "pump": {
+    "driver": {
+      "ref": "U_PUMP_DRV",
+      "mpn": "DRV8242HQRHLRQ1",
+      "manufacturer": "Texas Instruments",
+      "variant": "HW",
+      "package": "RHL-20 VQFN 4.5x3.5 mm",
+      "supply_range_v": [4.5,35.0],
+      "abs_max_v": 40.0,
+      "peak_output_a": 6.0,
+      "ron_bridge_typ_mohm": 250,
+      "logic_3v3_supported": true,
+      "control_mode": "PH_EN",
+      "configuration": {
+        "MODE": "GND_LVL1_PH_EN",
+        "SR": "22k_to_GND_LVL3_approx_15_to_17_V_per_us",
+        "DIAG": "GND_LVL1_retry_offstate_diag_disabled",
+        "ITRIP": "GND_LVL1_internal_regulation_disabled",
+        "DRVOFF": "GND",
+        "nSLEEP": "3V3_RAIL",
+        "IPROPI": "ACTIVE_CURRENT_TELEMETRY"
+      },
+      "pinout": {
+        "1":"PUMP_SR_CFG","2":"GND","3":"PUMP_DIR_DRV","4":"PUMP_PWM_DRV","5":"GND",
+        "6":"12V_ACT","7":"PUMP_OUT1","8":"PUMP_OUT1","9":"GND","10":"GND","11":"GND","12":"GND",
+        "13":"PUMP_OUT2","14":"PUMP_OUT2","15":"12V_ACT","16":"3V3_RAIL","17":"PUMP_CURRENT_ADC",
+        "18":"ACT_FAULT_N","19":"GND","20":"GND"
+      }
+    },
+    "uno_q": {
+      "pwm":{"pad":20,"net":"PUMP_PWM"},
+      "direction":{"pad":21,"net":"PUMP_DIR"},
+      "current_adc":{"pad":13,"arduino":"A4","net":"PUMP_CURRENT_ADC"}
+    },
+    "control_conditioning": {
+      "pwm_series_ohm":100,
+      "pwm_pulldown_ohm":100000,
+      "dir_series_ohm":100,
+      "dir_pulldown_ohm":100000
+    },
+    "current_telemetry": {
+      "r_ipropi_ohm":1500,
+      "c_ipropi_f":1e-7,
+      "a_ipropi_typ_a_per_a":1425,
+      "a_ipropi_min_top_range_a_per_a":1354,
+      "nominal_pump_a":0.8,
+      "nominal_adc_v_typ":0.8421,
+      "max_current_for_3p05v_using_min_ratio_a":2.753,
+      "purpose":"detectar corriente anormal, atasco/degradación y validar inrush sin shunt externo"
+    },
+    "decoupling": {
+      "hf":"100nF X7R VM-GND",
+      "local_bulk":"22uF 25V X7R or qualified effective >=10uF"
+    },
+    "connector": {
+      "ref":"J_PUMP",
+      "mpn":"1757242",
+      "footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled",
+      "pins":{"1":"PUMP_OUT1","2":"PUMP_OUT2"}
+    },
+    "source":"TI DRV8242-Q1 datasheet Rev A and product page"
+  },
+  "co2_solenoid": {
+    "driver": {
+      "ref":"U_CO2_DRV",
+      "mpn":"TPS1HC120CQDYCRQ1",
+      "manufacturer":"Texas Instruments",
+      "variant":"C",
+      "package":"DYC SOT-5X3 8",
+      "supply_range_v":[3.0,28.0],
+      "rated_current_a":1.5,
+      "ron_typ_mohm":120,
+      "integrated_inductive_clamp":true,
+      "external_flyback_diode":"NOT_POPULATED_BASELINE",
+      "pinout":{"1":"ACT_FAULT_N","2":"CO2_ILIM","3":"GND","4":"CO2_EN_DRV","5":"CO2_OPENLOAD_N","6":"GND","7":"CO2_SOL_POS","8":"12V_ACT"}
+    },
+    "uno_q":{"control":{"pad":22,"net":"CO2_SOL_CTL"}},
+    "control_conditioning":{"series_ohm":100,"pulldown_ohm":100000},
+    "current_limit":{"r_ilim_ohm":27000,"formula":"R_ILIM_kohm ~= 13.5 / I_LIM_A","target_a":0.5},
+    "diagnostics": {
+      "flt1":"ACT_FAULT_N shared open-drain",
+      "flt2":"CO2_OPENLOAD_N with 10k pull-up to 3V3_RAIL and test point"
+    },
+    "decoupling":"100nF 50V X7R VBB-GND",
+    "connector": {
+      "ref":"J_CO2_SOL",
+      "mpn":"1757242",
+      "footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled",
+      "pins":{"1":"CO2_SOL_POS","2":"GND"}
+    },
+    "source":"TI TPS1HC120-Q1 datasheet Dec 2025; C version"
+  },
+  "chiller": {
+    "interface":"ISOLATED_DRY_CONTACT_SELV_ONLY",
+    "power_on_pcba":false,
+    "max_recommended_external_contact_voltage_v":48,
+    "mains_switching_allowed":false,
+    "photomos": {
+      "ref":"U_CHILLER",
+      "mpn":"AQY212EHAX",
+      "manufacturer":"Panasonic Industry",
+      "package":"GE DIP4 SMD 1 Form A",
+      "load_voltage_rating_v":60,
+      "recommended_load_voltage_max_v":48,
+      "continuous_load_current_a":0.55,
+      "io_isolation_vrms":5000,
+      "recommended_led_current_ma":[5,30],
+      "pinout":{"1":"CHILLER_LED_A","2":"CHILLER_LED_K","3":"CHILLER_CONTACT_A","4":"CHILLER_CONTACT_B"}
+    },
+    "input_driver": {
+      "ref":"Q_CHILLER",
+      "mpn":"2N7002,215",
+      "manufacturer":"Nexperia",
+      "package":"SOT23",
+      "gate_net":"CHILLER_GATE",
+      "source_net":"GND",
+      "drain_net":"CHILLER_LED_K",
+      "gate_series_ohm":1000,
+      "gate_pulldown_ohm":100000,
+      "led_series_ohm":360,
+      "led_current_ma_typ_vf1p25":5.69,
+      "led_current_ma_worst_vf1p5":5.0
+    },
+    "uno_q":{"control":{"pad":23,"net":"CHILLER_CTL"}},
+    "connector": {
+      "ref":"J_CHILLER_CTL",
+      "mpn":"1757242",
+      "footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled",
+      "pins":{"1":"CHILLER_CONTACT_A","2":"CHILLER_CONTACT_B"},
+      "isolation":"no connection to shield GND/power on contact side"
+    },
+    "sources":["Panasonic AQY212EHAX official product/CAD page","Nexperia 2N7002 official product page"]
+  },
+  "diagnostic_bus": {
+    "net":"ACT_FAULT_N",
+    "uno_q_pad":25,
+    "arduino_pin":"D10",
+    "logic":"active-low wired-OR/open-drain",
+    "pullup_ohm":10000,
+    "pullup_net":"3V3_RAIL",
+    "contributors":["U_PUMP_DRV.nFAULT","U_CO2_DRV.FLT1"],
+    "testpoint":"TP_ACT_FAULT",
+    "firmware_action":"new input interrupt/polling; identify source using state and CO2 FLT2 test/diagnostic during bring-up"
+  },
+  "excluded_legacy": ["IR2104","IRLZ44N","HF46F","PC817","2N7002_AS_POWER_STAGE","CO2_PROPORTIONAL_PWM_D9"],
+  "footprint_policy": {
+    "DRV8242_RHL20":"BLOCKED_UNTIL_VENDOR_CAD_AUDIT",
+    "TPS1HC120_DYC8":"BLOCKED_UNTIL_VENDOR_CAD_AUDIT",
+    "AQY212EHAX_DIP4_SMD":"BLOCKED_UNTIL_PANASONIC_CAD_AUDIT",
+    "placement":false
+  }
+}
