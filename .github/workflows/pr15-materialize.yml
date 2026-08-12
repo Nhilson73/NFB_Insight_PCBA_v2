@@ -16,10 +16,15 @@ on:
       - 'bom/insight_power_production_bom.csv'
       - 'bom/insight_z4_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/uno_q_interface.kicad_sch'
+      - 'kicad/z1_interface.kicad_sch'
+      - 'kicad/z2_interface.kicad_sch'
+      - 'kicad/z3_interface.kicad_sch'
+      - 'kicad/z4_interface.kicad_sch'
       - '.github/workflows/pr15-materialize.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   materialize:
@@ -34,21 +39,8 @@ jobs:
           ref: agent/pr15-production-symbol-materialization
       - name: Compilar generador
         run: python3 -m py_compile tools/generate_production_schematics.py
-      - name: Regenerar hojas Z0-Z4
-        run: python3 tools/generate_production_schematics.py
       - name: Verificar generación determinista
         run: python3 tools/generate_production_schematics.py --check
-      - name: Commit generado si cambió
-        run: |
-          if git diff --quiet -- kicad/uno_q_interface.kicad_sch kicad/z1_interface.kicad_sch kicad/z2_interface.kicad_sch kicad/z3_interface.kicad_sch kicad/z4_interface.kicad_sch; then
-            echo 'No generated changes'
-          else
-            git config user.name 'nfb-eda-bot'
-            git config user.email 'nfb-eda-bot@users.noreply.github.com'
-            git add kicad/uno_q_interface.kicad_sch kicad/z1_interface.kicad_sch kicad/z2_interface.kicad_sch kicad/z3_interface.kicad_sch kicad/z4_interface.kicad_sch
-            git commit -m 'eda: materializar hojas de producción Z0-Z4 PR15'
-            git push origin HEAD:agent/pr15-production-symbol-materialization
-          fi
       - name: Inicializar librerías globales KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
