@@ -1,0 +1,35 @@
+name: PR17 pcbnew probe
+
+on:
+  push:
+    branches: [agent/pr17-production-placement]
+    paths:
+      - '.github/workflows/pr17-pcbnew-probe.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe Python pcbnew API
+        run: |
+          python3 - <<'PY'
+          try:
+              import pcbnew
+              print('PCBNEW_IMPORT_OK')
+              print('version', pcbnew.GetBuildVersion())
+              for name in ['LoadBoard','SaveBoard','FootprintLoad','NETINFO_ITEM','VECTOR2I','FromMM','Refresh']:
+                  print(name, hasattr(pcbnew,name), getattr(pcbnew,name,None))
+              board=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb')
+              print('board footprints', len(board.GetFootprints()))
+              print('board nets', len(board.GetNetInfo().NetsByName()))
+              print('BOARD methods add?', hasattr(board,'Add'), 'findnet?', hasattr(board,'FindNet'), 'getnetinfo?', hasattr(board,'GetNetInfo'))
+          except Exception as exc:
+              print('PCBNEW_IMPORT_FAILED', type(exc).__name__, exc)
+              raise
+          PY
+      - name: Probe DRC CLI options
+        run: kicad-cli pcb drc --help
