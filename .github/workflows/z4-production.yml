@@ -1,0 +1,64 @@
+name: Validación Z4 actuadores Insight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/Z4_ACTUATORS.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/z4_actuator_contract.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/electrical_integration_contract.json'
+      - 'hardware/footprint_audit.json'
+      - 'bom/insight_z4_production_bom.csv'
+      - 'kicad/z4_actuators.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_z4_production.py'
+      - '.github/workflows/z4-production.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/Z4_ACTUATORS.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/z4_actuator_contract.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/electrical_integration_contract.json'
+      - 'hardware/footprint_audit.json'
+      - 'bom/insight_z4_production_bom.csv'
+      - 'kicad/z4_actuators.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_z4_production.py'
+      - '.github/workflows/z4-production.yml'
+
+jobs:
+  z4:
+    name: Netlist, BOM, diagnóstico y ERC Z4
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Validar Z4 producción
+        run: python3 tools/validate_z4_production.py
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Ejecutar ERC Z4
+        run: kicad-cli sch erc kicad/z4_actuators.kicad_sch --output /tmp/erc_z4_pr12.rpt --severity-all --exit-code-violations
+      - name: Mostrar ERC Z4
+        if: always()
+        run: test ! -f /tmp/erc_z4_pr12.rpt || cat /tmp/erc_z4_pr12.rpt
+      - name: Guardar ERC Z4
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-z4-pr12
+          path: /tmp/erc_z4_pr12.rpt
