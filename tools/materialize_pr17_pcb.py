@@ -34,12 +34,27 @@ def fail(msg: str) -> None:
     raise SystemExit("ERROR: " + msg)
 
 
+def set_fpid(fp, lib: str, name: str) -> None:
+    """Preserva explícitamente nickname:item en el footprint serializado por pcbnew."""
+    try:
+        fp.SetFPID(pcbnew.LIB_ID(lib, name))
+    except TypeError:
+        fid = pcbnew.LIB_ID()
+        if hasattr(fid, "SetLibNickname") and hasattr(fid, "SetLibItemName"):
+            fid.SetLibNickname(lib)
+            fid.SetLibItemName(name)
+            fp.SetFPID(fid)
+        else:
+            fail(f"KiCad no permite fijar LIB_ID explícito para {lib}:{name}")
+
+
 def load_fp(fid: str):
     lib, name = fid.split(":", 1)
     libdir = LOCAL if lib == "NFB" else STD / f"{lib}.pretty"
     fp = pcbnew.FootprintLoad(str(libdir), name)
     if fp is None:
         fail(f"no pudo cargar footprint {fid}")
+    set_fpid(fp, lib, name)
     return fp
 
 
@@ -122,11 +137,8 @@ def main() -> int:
     if len(fps0) != 1 or fps0[0].GetReference() != "J_UNOQ":
         fail("board base PR16 no contiene exactamente J_UNOQ")
 
-    # Crear todas las nets una sola vez desde contratos machine-readable.
     pin_contract = json.loads(PIN.read_text(encoding="utf-8"))
-    netnames = {
-        p["net"] for p in pin_contract["pins"] if p.get("net")
-    }
+    netnames = {p["net"] for p in pin_contract["pins"] if p.get("net")}
     for comp in comps.values():
         netnames.update(n for n in comp["pins"].values() if n and n != "NC")
     nets = {}
@@ -135,7 +147,6 @@ def main() -> int:
         board.Add(item)
         nets[name] = item
 
-    # Netear host inmutable sin moverlo.
     host = fps0[0]
     host_map = {str(p["pad"]): p.get("net") for p in pin_contract["pins"]}
     for pad in host.Pads():
@@ -144,7 +155,6 @@ def main() -> int:
         if name:
             pad.SetNet(nets[name])
 
-    # Añadir los 119 footprints de producción exactamente según manifest.
     for ref in sorted(comps):
         comp = comps[ref]
         p = placements[ref]
