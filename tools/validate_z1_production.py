@@ -4,7 +4,7 @@ from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-SENSOR=ROOT/"hardware"/"sensor_interface_contract.json"; NETLIST=ROOT/"hardware"/"z1_production_netlist.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; POWER=ROOT/"hardware"/"power_architecture_contract.json"; AUDIT=ROOT/"hardware"/"footprint_audit.json"; Z4=ROOT/"hardware"/"z4_actuator_contract.json"; BOM=ROOT/"bom"/"insight_z1_production_bom.csv"; SCH=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_sch"; MPR_FP=ROOT/"kicad"/"lib"/"nfb_footprints.pretty"/"Honeywell_MPR_LongPort_12Pad.kicad_mod"
+SENSOR=ROOT/"hardware"/"sensor_interface_contract.json"; NETLIST=ROOT/"hardware"/"z1_production_netlist.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; POWER=ROOT/"hardware"/"power_architecture_contract.json"; AUDIT=ROOT/"hardware"/"footprint_audit.json"; Z4=ROOT/"hardware"/"z4_actuator_contract.json"; BOM=ROOT/"bom"/"insight_z1_production_bom.csv"; SCH=ROOT/"kicad"/"z1_sensor_contract.kicad_sch"; MPR_FP=ROOT/"kicad"/"lib"/"nfb_footprints.pretty"/"Honeywell_MPR_LongPort_12Pad.kicad_mod"
 def fail(m): raise SystemExit("ERROR: "+m)
 def close(a,b,tol=1e-6): return math.isclose(float(a),float(b),rel_tol=tol,abs_tol=tol)
 def main():
@@ -53,6 +53,9 @@ def main():
     if pads!=set(range(1,13)): fail("footprint MPR incompleto")
     for marker in ('(at 1.27 1.775)','(at -1.775 -1.27)','HONEYWELL 32332628 ISSUE L FIG.10'):
         if marker not in fp: fail(f"MPR sin {marker}")
-    print("OK: Z1 preservado bajo cierre físico PR13; A4=PUMP_CURRENT_ADC y CO2 sigue I2C")
+    sch=SCH.read_text(encoding="utf-8")
+    for marker in ("Z1 SENSOR CONTRACT","MPRLS0030PA00002A","PH_ADC","ORP_ADC","TEMP_1WIRE","DO_ADC","NO CO2_ADC"):
+        if marker not in sch: fail(f"contrato Z1 separado sin {marker}")
+    print("OK: Z1 preservado bajo root PR14; ERC Z1 usa hoja separada z1_sensor_contract.kicad_sch")
     return 0
 if __name__=="__main__": raise SystemExit(main())
