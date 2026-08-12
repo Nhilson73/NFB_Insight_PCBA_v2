@@ -90,7 +90,7 @@ Fuentes: `hardware/z4_actuator_contract.json`, `hardware/z4_production_netlist.j
 
 Fuente machine-readable: `hardware/root_eda_contract.json`; detalle: `docs/FASE3_PR14_ROOT_EDA.md`.
 
-`kicad/NFB_Insight_PCBA_v2.kicad_sch` es ahora un **root jerárquico real** con cinco hojas:
+`kicad/NFB_Insight_PCBA_v2.kicad_sch` es ahora un **root jerárquico inter-zona** con cinco hojas:
 
 - Z0 → `uno_q_interface.kicad_sch`
 - Z1 → `z1_interface.kicad_sch`
@@ -100,10 +100,21 @@ Fuente machine-readable: `hardware/root_eda_contract.json`; detalle: `docs/FASE3
 
 Las fronteras entre zonas se materializan como sheet pins/nets KiCad. `GND` incluye Z0–Z4; `5V_RAIL` y `3V3_RAIL` son exclusivamente rails locales del shield y **no incluyen Z0**. I²C se comparte Z0/Z1/Z2; `12V_ACT` enlaza Z3/Z4; controles y diagnóstico de actuadores enlazan Z0/Z4.
 
-**Alcance deliberado de PR #14:** `zone_internal_component_symbols=false`. La conectividad interna de Z1/Z2/Z3/Z4 continúa gobernada por los netlists JSON/BOM de producción. No se pretende duplicar manualmente >100 referencias dentro de KiCad. El siguiente PR materializará esos símbolos/conexiones internas de forma reproducible antes de autorizar placement.
+**Alcance deliberado de PR #14:** `zone_internal_component_symbols=false`. La conectividad interna de Z1/Z2/Z3/Z4 continúa gobernada por los netlists JSON/BOM de producción; no se duplican manualmente >100 referencias dentro de KiCad.
+
+### Gate ERC de transición PR #14
+
+Como las hojas de interfaz aún no contienen sus símbolos internos, KiCad 10.0.5 reporta una deuda transitoria y reproducible de **125 `label_dangling`**. Esta deuda está congelada en `hardware/root_eda_contract.json` y el CI exige simultáneamente:
+
+- exactamente 125 eventos `label_dangling`;
+- **0 violaciones de cualquier otro tipo**;
+- 0 warnings adicionales;
+- severidades ERC de KiCad **sin relajar**.
+
+Por tanto, PR #14 no se presenta como ERC=0. El requisito del siguiente gate es eliminar completamente esta deuda al materializar los símbolos/conexiones internos: **PR #15 debe alcanzar ERC=0 del hierarchy completo antes de placement**.
 
 ## Estado
 
-Z0 mecánico, Z1, Z2, Z3, Z4, EU Compliance, footprints críticos y la **jerarquía EDA inter-zona Z0–Z4** están protegidos por contratos y CI. El `.kicad_pcb` continúa sin placement de los bloques de producción y no existe routing nuevo.
+Z0 mecánico, Z1, Z2, Z3, Z4, EU Compliance, footprints críticos y la jerarquía EDA inter-zona Z0–Z4 están protegidos por contratos y CI. El `.kicad_pcb` continúa sin placement de los bloques de producción y no existe routing nuevo.
 
-Siguiente frente: **PR #15 — materialización reproducible de símbolos/conectividad interna de producción Z1+Z2+Z3+Z4**, con paridad JSON/BOM↔KiCad y ERC antes de Fase 4 placement.
+Siguiente frente: **PR #15 — materialización reproducible de símbolos/conectividad interna de producción Z1+Z2+Z3+Z4**, con paridad JSON/BOM↔KiCad y ERC=0 antes de Fase 4 placement.
