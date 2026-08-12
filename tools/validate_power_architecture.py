@@ -52,7 +52,9 @@ def main():
     readme=README.read_text(encoding="utf-8"); road=ROADMAP.read_text(encoding="utf-8"); pd=POWERDOC.read_text(encoding="utf-8")
     for m in ("PR #9","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR","12V_HOST_VIN"):
         if m not in readme and m not in pd: fail(f"docs potencia sin {m}")
-    if "Fuente primaria UNO Q" not in readme or "PR #9" not in road or "PR #10" not in road: fail("README/roadmap no preservan potencia")
-    print("OK: arquitectura potencia PR9/10 preservada bajo Z4 PR12")
+    if "Fuente primaria UNO Q" not in readme: fail("README perdió jerarquía de fuentes")
+    required_road=("PR #9","PR #10","potencia de producción","12 V protegido → VIN UNO Q","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR")
+    if any(m not in road for m in required_road): fail("roadmap no preserva arquitectura PR9/PR10")
+    print("OK: arquitectura potencia PR9/10 preservada bajo root EDA PR14")
     return 0
 if __name__=="__main__": raise SystemExit(main())

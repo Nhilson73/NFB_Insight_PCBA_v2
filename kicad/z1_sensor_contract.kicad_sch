@@ -1,0 +1,35 @@
+(kicad_sch
+  (version 20250114)
+  (generator "nfb_pr12_z1_contract_archived_pr14")
+  (generator_version "1.0")
+  (uuid "1e50e3db-4ba5-4e99-888b-f0348a1d6f4d")
+  (paper "A3")
+  (title_block
+    (title "NFB Insight PCBA v2 — Z1 Sensor Contract")
+    (date "2026-08-12")
+    (rev "0.14.0")
+    (company "Cafelium SRL / Nebula Ecosystem")
+    (comment 1 "Z1 PR6 preservado; separado del root por PR14")
+    (comment 2 "Z1 netlist: hardware/z1_production_netlist.json")
+    (comment 3 "CO2=MPRLS0030PA00002A I2C 0x28; CO2_ADC retirado")
+    (comment 4 "A4/pad13=PUMP_CURRENT_ADC pertenece a Z4")
+  )
+  (lib_symbols)
+  (text "Z1 SENSOR CONTRACT — PR #14 ARCHIVE OF PR6/12 BASELINE\nZ1 sensores: hardware/z1_production_netlist.json\nRoot inter-zone: kicad/NFB_Insight_PCBA_v2.kicad_sch"
+    (exclude_from_sim no) (at 38.1 35.56 0) (effects (font (size 2 2)) (justify left bottom)) (uuid "186b84ed-c7b4-4a6d-8b3c-d0d79ca472ca"))
+  (text "J_UNOQ ENDPOINTS\nA0/pad9=PH_ADC\nA1/pad10=ORP_ADC\nA2-D16/pad11=TEMP_1WIRE\nA3/pad12=DNP_RESERVE\nA4/pad13=PUMP_CURRENT_ADC (Z4; NO CO2_ADC)\nA5/pad14=DO_ADC\nD20/pad31=I2C_SDA\nD21/pad32=I2C_SCL"
+    (exclude_from_sim no) (at 38.1 76.2 0) (effects (font (size 1.5 1.5)) (justify left bottom)) (uuid "ac6ab697-f063-4b1c-b8d9-c711f2f79b90"))
+  (text "PH / A0\nJ_PH → D_PH PESD3V3U1UL → R_PH 1k → PH_ADC; C_PH 100nF a GND."
+    (exclude_from_sim no) (at 38.1 127 0) (effects (font (size 1.4 1.4)) (justify left bottom)) (uuid "cc7cfec7-ea71-4312-84d7-702f18f6e850"))
+  (text "ORP / A1\nJ_ORP → 10k/20k → ORP_ADC; D_ORP PESD3V3U1UL + C_ORP 100nF; 4.5V max → 3.0V."
+    (exclude_from_sim no) (at 38.1 157.48 0) (effects (font (size 1.4 1.4)) (justify left bottom)) (uuid "d56274aa-c214-41df-9763-2997780e8274"))
+  (text "TEMP / A2-D16\nJ_TEMP → TEMP_1WIRE; PESD3V3U1UL; pull-up 4.7k a 3V3_RAIL local; DS18B20/KIT0021."
+    (exclude_from_sim no) (at 38.1 187.96 0) (effects (font (size 1.4 1.4)) (justify left bottom)) (uuid "0bd4ac4d-4c61-4ed3-86f7-10b51d16f17b"))
+  (text "CO2 PRESSURE — DIGITAL I2C\nU_CO2=MPRLS0030PA00002A 0–30psi absolute, I2C 0x28.\nU_CO2.2=I2C_SDA | U_CO2.3=I2C_SCL | U_CO2.10=GND | U_CO2.12=3V3_RAIL.\nMPX5700AP y CO2_ADC permanecen fuera de producción."
+    (exclude_from_sim no) (at 38.1 218.44 0) (effects (font (size 1.4 1.4)) (justify left bottom)) (uuid "ef3c8b82-9578-4af6-a57e-12cb38e0f0e7"))
+  (text "DO / A5\nJ_DO → D_DO PESD3V3U1UL → R_DO 1k → DO_ADC; C_DO 100nF a GND."
+    (exclude_from_sim no) (at 38.1 259.08 0) (effects (font (size 1.4 1.4)) (justify left bottom)) (uuid "0fca9fed-a30a-4113-a3e2-a6aa3d551bb3"))
+  (text "Z1 REFS: J_PH D_PH R_PH C_PH J_ORP R_ORP_TOP R_ORP_BOT D_ORP C_ORP J_TEMP D_TEMP R_TEMP_PU U_CO2 C_CO2 R_CO2_SDA_PU R_CO2_SCL_PU J_DO D_DO R_DO C_DO\nFootprint MPR auditado PR11/13."
+    (exclude_from_sim no) (at 38.1 289.56 0) (effects (font (size 0.9 0.9)) (justify left bottom)) (uuid "595fbe61-15df-488f-b7e1-7950e149f806"))
+  (sheet_instances (path "/" (page "1")))
+)

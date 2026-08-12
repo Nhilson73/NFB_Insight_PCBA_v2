@@ -24,107 +24,96 @@
 
 ## Fase 2 — Arquitectura eléctrica Insight
 
-### PR #3 — contrato UNO Q
-- [x] 32 pads machine-readable + ERC + snapshot firmware.
-
-### PR #4/#5 — donante e interfaces reales
-- [x] Trazabilidad analog donor.
-- [x] pH/ORP/DO acondicionados; TEMP DS18B20; humedad eliminada.
-
-### PR #6 — Z1
-- [x] MPR `0x28`; CO2 pressure retirado de A4.
-- [x] ESD/filtros/JST/pull-up TEMP + netlist/BOM/gates.
-- [x] PR #11 cerró footprint MPR Honeywell Issue L.
-- [x] PR #12 reutiliza A4 exclusivamente como `PUMP_CURRENT_ADC`; `CO2_ADC` sigue prohibido.
-- [ ] Validar ruido/filtros durante HIL.
-
-### PR #7 — Z2
-- [x] HX711 D2/D3, DFR1103 `0x66`, I²C 4.7 kΩ.
-- [x] HMI TXU0202 + watchdog TPS3823-30.
-- [x] Netlist/BOM/gates.
-- [ ] Calificar fuente/lifecycle HX711 y cargas reales HIL.
+### PR #3–#7 — contratos Z0/Z1/Z2
+- [x] 32 pads UNO Q + snapshot firmware.
+- [x] Interfaces reales pH/ORP/DO, TEMP DS18B20, MPR `0x28`.
+- [x] Z1 netlist/BOM/gates.
+- [x] Z2 HX711, DFR1103 `0x66`, HMI TXU0202, watchdog.
+- [x] A4 reutilizado en PR #12 como `PUMP_CURRENT_ADC`; `CO2_ADC` continúa prohibido.
 
 ### PR #8 — EU Compliance Design Gate
-- [x] Frontera shield/carrier UNO Q y RF host preservada.
+- [x] Frontera shield/carrier y RF UNO Q preservada.
 - [x] EMC / RoHS 3 / WEEE / RED / REACH / CE.
-- [x] CI y reglas de plano GND, ESD, ruido, retornos.
-- [ ] Archivar certificados/DoC SKU UNO Q final.
+- [x] CI para GND, ESD, ruido, RF keepout y evidencia.
+- [ ] Archivar certificados/DoC del SKU UNO Q final.
 - [ ] Confirmar normas/plan de laboratorio final.
 
-## Fase 3 — Potencia e integración eléctrica
+## Fase 3 — Potencia, actuadores e integración EDA
 
-### PR #9 — power tree
-- [x] Arduino/GitHub revalidado.
-- [x] 12 V protegido -> VIN UNO Q.
-- [x] Rails locales `5V_RAIL` / `3V3_RAIL` sin back-feed.
-- [x] `TPS259470ARPWR`, `SMBJ15A`, `TPSM33625RDNR`, `TLV75533PDBVR`.
-- [x] Split `12V_HOST_VIN / 12V_LOGIC / 12V_ACT`; chiller potencia externa.
+### PR #9 / PR #10 — potencia de producción
+- [x] PR #9: 12 V protegido → VIN UNO Q.
+- [x] PR #9: rails locales 5 V / 3.3 V sin back-feed.
+- [x] PR #10: `TPS259470ARPWR` + `SMBJ15A`.
+- [x] PR #10: `TPSM33625RDNR` 1 MHz + `TLV75533PDBVR`.
+- [x] PR #10: `12V_HOST_VIN / 12V_LOGIC / 12V_ACT`; chiller power externa.
+- [x] PR #10: netlist/BOM/netclasses/`power.kicad_sch` + ERC.
+- [ ] DC-bias efectivo 2×22 µF ≥25 µF.
+- [ ] HIL/termografía 60 °C e inrush `F_ACT`.
 
-### PR #10 — potencia de producción
-- [x] Phoenix 1757242, SMBJ15A-TR, bulk 100 µF.
-- [x] eFuse: `470k/11k/47k`, `R_ILIM=750 Ω`, `C_DVDT=3.3 nF`, `C_ITIMER=2.2 nF`.
-- [x] `F_ACT=045401.5MR` 1.5 A Slo-Blo.
-- [x] TPSM33625 1 MHz, `40.2k/10k`, capacitores/PGOOD.
-- [x] TLV75533 1 µF/1 µF, EN por PGOOD.
-- [x] Netlist/BOM/netclasses + `power.kicad_sch` + ERC.
-- [ ] DC-bias efectivo de 2×22 µF ≥25 µF.
-- [ ] Termografía/HIL 60 °C y validar `F_ACT` con inrush real.
-
-### PR #11 — footprints + integración Z1/Z2/Z3
-- [x] `hardware/footprint_audit.json` y gate de placement.
-- [x] MPR CLOSED.
-- [x] RPW0010A y RDN-11 identificados y bloqueados hasta CAD exacto.
-- [x] `electrical_integration_contract.json` + hoja/CI integración.
+### PR #11 — auditoría/integración inicial
+- [x] `hardware/footprint_audit.json`.
+- [x] MPR cerrado contra Honeywell.
+- [x] Contrato de integración Z1/Z2/Z3 y CI.
 
 ### PR #12 — Z4 actuadores
-- [x] Revalidar UNO Q 3.3-V MCU I/O contra `arduino/docs-content` actual.
-- [x] Bomba: `DRV8242HQRHLRQ1`, PH/EN D5/D6, reemplaza IR2104/IRLZ44N.
-- [x] `IPROPI -> A4/PUMP_CURRENT_ADC`, 1.5 kΩ + 100 nF.
-- [x] Solenoide CO₂: `TPS1HC120CQDYCRQ1`, D7, ILIM 27 kΩ ~0.5 A, clamp integrado.
-- [x] Chiller: `AQY212EHAX` + `2N7002,215`, dry contact aislado **SELV <=48 V / NO MAINS**.
-- [x] D10=`ACT_FAULT_N` wired-OR bomba + solenoide; deja reserva RS485.
-- [x] Fail-safe pull-downs en PWM/DIR/solenoide/chiller.
-- [x] Netlist/BOM/hoja Z4 + gate numérico/CI.
-- [x] Integración global extendida a Z4.
-- [x] PR #13 cierra footprints RHL/DYC/AQY.
-- [ ] Migrar firmware para A4 current diagnostic y D10 fault.
+- [x] Bomba `DRV8242HQRHLRQ1`, D5/D6, IPROPI→A4.
+- [x] Solenoide `TPS1HC120CQDYCRQ1`, D7, ILIM ~0.5 A.
+- [x] Chiller `AQY212EHAX`, dry contact SELV ≤48 V / NO MAINS.
+- [x] D10=`ACT_FAULT_N` wired-OR.
+- [x] Netlist/BOM/contrato/gates Z4.
+- [ ] Migrar firmware A4/D10.
 
 ### PR #13 — cierre de footprints críticos
-- [x] Gemini Spark utilizado como auditor independiente/cross-check, no fuente de verdad.
-- [x] `TPS259470ARPWR`: cerrar RPW0010A HotRod contra TI `MPQF568 / 4225183/A`.
-- [x] `TPSM33625RDNR`: cerrar RDN0011A contra TI `qfnd871 / 4226623/F`.
-- [x] `DRV8242HQRHLRQ1`: corregir a package vigente `RHL0020B / 4226154/B` y cerrar EP21/paste.
-- [x] `TPS1HC120CQDYCRQ1`: cerrar DYC0008A contra `MPSS142A / 4226548/B`, 8 pads sin PowerPAD.
-- [x] `AQY212EHAX`: cerrar GE DIP4 surface-mount contra Panasonic del MPN exacto.
-- [x] Sustituir placeholders de BOM/netlists por footprints `NFB:*` auditados.
-- [x] Gate CI impide regresiones geométricas y placeholders críticos.
-- [x] Mantener `.kicad_pcb` sin placement: PR #13 cierra geometría, no XY.
+- [x] Spark como cross-check independiente, no autoridad.
+- [x] RPW0010A HotRod — TI `4225183/A`.
+- [x] RDN0011A — TI `4226623/F`.
+- [x] DRV8242 package vigente RHL0020B — TI `4226154/B`.
+- [x] DYC0008A — TI `4226548/B`, 8 pads sin PowerPAD.
+- [x] AQY212EHAX surface-mount — Panasonic exacto.
+- [x] BOM/netlists sin placeholders críticos.
+- [x] 9/9 gates verdes; sin placement/routing.
 
-### PR #14 — integración EDA raíz
-- [ ] Materializar root real Z1 + Z2 + Z3 + Z4 con símbolos/netlist de producción.
-- [ ] Coherencia JSON/BOM ↔ EDA.
-- [ ] ERC = 0 errores / 0 warnings.
-- [ ] Mantener placement/routing fuera del alcance de este PR.
-- [ ] Preparar gate que habilite Fase 4 solamente con jerarquía completa y footprints cerrados.
+### PR #14 — root EDA inter-zona
+- [x] Separar el antiguo contrato textual Z1 a `kicad/z1_sensor_contract.kicad_sch`.
+- [x] Crear child interfaces Z0/Z1/Z2/Z3/Z4 con `hierarchical_label`.
+- [x] Convertir `kicad/NFB_Insight_PCBA_v2.kicad_sch` en root jerárquico real.
+- [x] Congelar `hardware/root_eda_contract.json`.
+- [x] GND común Z0–Z4; 3V3/5V locales excluyen Z0.
+- [x] I²C Z0/Z1/Z2; `12V_ACT` Z3/Z4; controles/diagnóstico Z0/Z4.
+- [x] Gate `tools/validate_root_eda.py` + workflow root.
+- [x] Mantener `zone_internal_component_symbols=false`: no duplicar manualmente >100 refs.
+- [x] Congelar deuda ERC intencional de interfaz: exactamente 125 `label_dangling`, cero tipos inesperados y sin bajar severidades KiCad.
+- [ ] CI PR #14 totalmente verde y merge.
+
+### PR #15 — materialización interna de símbolos de producción
+- [ ] Crear/generar símbolos y conectividad interna Z1 desde `z1_production_netlist.json` + BOM.
+- [ ] Crear/generar símbolos y conectividad interna Z2 desde `z2_production_netlist.json` + BOM.
+- [ ] Crear/generar símbolos y conectividad interna Z3 desde `power_production_netlist.json` + BOM.
+- [ ] Crear/generar símbolos y conectividad interna Z4 desde `z4_production_netlist.json` + BOM.
+- [ ] Paridad refs/pines/nets/footprints JSON↔KiCad.
+- [ ] Eliminar completamente la deuda ERC PR #14.
+- [ ] ERC = 0 del hierarchy completo.
+- [ ] Mantener placement/routing fuera de alcance hasta cerrar paridad.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado + keepout RF confirmado.
-- [x] Cinco footprints críticos PR #13 `CLOSED`; MPR ya cerrado.
-- [ ] Auditar footprints restantes que entren al placement contra librería oficial/drawing cuando el riesgo lo requiera.
+- [x] MPR + cinco footprints críticos PR #13 cerrados.
+- [ ] Todos los símbolos internos de producción materializados y paridad EDA cerrada.
+- [ ] Auditar footprints restantes de riesgo antes de colocarlos.
 - [ ] Z1/Z2 conectores hacia `Y=0/-Y`.
-- [ ] Z3 loops potencia mínimos.
+- [ ] Z3 loops de potencia mínimos.
 - [ ] Z4 drivers/conectores/retornos sucios junto al borde de campo.
-- [ ] PhotoMOS clearance SELV deliberado; nunca mains.
+- [ ] PhotoMOS SELV deliberado; nunca mains.
 - [ ] Revisión 3D y ancho final.
 
 ## Fase 5 — Routing
 
 - [ ] Aplicar netclasses reales.
-- [ ] Plano referencia continuo; In1.Cu GND si se congela así.
-- [ ] No cruzar keepout RF.
+- [ ] Plano de referencia continuo; In1.Cu GND si se congela así.
+- [ ] No cruzar RF keepout.
 - [ ] SW buck confinado Z3.
-- [ ] `PUMP_CURRENT_ADC` lejos de switching y referenciado a GND.
+- [ ] `PUMP_CURRENT_ADC` lejos de switching.
 - [ ] Retornos `12V_ACT` a estrella sin atravesar Z1/Z2.
 - [ ] DRC=0; 0 desconectados inesperados.
 
@@ -132,20 +121,20 @@
 
 - [ ] Lifecycle y fuentes calificadas.
 - [ ] Todos los footprints auditados en release BOM/CPL.
-- [ ] RoHS3/REACH de BOM, PCB y ensamblaje.
+- [ ] RoHS3/REACH PCB+BOM+ensamblaje.
 - [ ] Evidencia UNO Q archivada.
 - [ ] Pre-compliance EMC/ESD/inmunidad.
 - [ ] Gerbers/drill + BOM + CPL + stackup.
-- [ ] `v2.0-RC1` tras gates.
+- [ ] Tag `v2.0-RC1` tras gates.
 
 ## Fase 7 — Bring-up / HIL
 
 - [ ] Rails, secuencia y ausencia de back-feed.
-- [ ] Termografía a 60 °C.
+- [ ] Termografía 60 °C.
 - [ ] Sensores Z1 + Z2.
-- [ ] Bomba: PWM/DIR, corriente IPROPI, stall/inrush/fault.
-- [ ] Solenoide: corriente, open-load, fault y clamp.
-- [ ] Chiller: contacto seco aislado SELV y fail-safe.
+- [ ] Bomba PWM/DIR/IPROPI/stall/inrush/fault.
+- [ ] Solenoide current/open-load/fault/clamp.
+- [ ] Chiller dry contact SELV/fail-safe.
 - [ ] D10 `ACT_FAULT_N` y firmware failsafe.
 - [ ] Pre-scan EMC con cables/actuadores reales.
-- [ ] Fixture HIL repetible de producción.
+- [ ] Fixture HIL repetible.

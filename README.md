@@ -41,6 +41,7 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 - CO₂ pressure: Honeywell `MPRLS0030PA00002A`, I²C `0x28`; **CO2_ADC permanece retirado**.
 - PR #11 cerró el footprint MPR contra Honeywell `32332628 Issue L / Fig.10`.
 - PR #12 reutiliza A4/pad13 como `PUMP_CURRENT_ADC` desde IPROPI del driver de bomba.
+- Desde PR #14 el contrato textual Z1 vive en `kicad/z1_sensor_contract.kicad_sch`; el root ya no se usa como hoja Z1.
 
 ## Z2 digital / bajo ruido — PR #7 / #9
 
@@ -63,60 +64,57 @@ Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production
 - 5 V: `TPSM33625RDNR`, 1 MHz, feedback `40.2 kΩ / 10 kΩ`.
 - 3.3 V: `TLV75533PDBVR`.
 - Chiller no toma potencia de la PCBA.
-- PR #13 sustituye los placeholders físicos de `U_EFUSE` y `U_5V` por footprints auditados contra drawings TI.
 
 ## Cierre de footprints críticos — PR #13
 
-Fuente machine-readable: `hardware/footprint_audit.json`. Detalle: `docs/FASE3_PR13_FOOTPRINT_CLOSURE.md`.
+Fuente: `hardware/footprint_audit.json`; detalle: `docs/FASE3_PR13_FOOTPRINT_CLOSURE.md`.
 
-Se materializaron y congelaron cinco land patterns críticos:
+- `U_EFUSE` → `NFB:TI_RPW0010A_TPS259470A` — TI `MPQF568 / 4225183/A`.
+- `U_5V` → `NFB:TI_RDN0011A_TPSM33625` — TI `qfnd871 / 4226623/F`.
+- `U_PUMP_DRV` → `NFB:TI_RHL0020B_DRV8242` — TI `RHL0020B / 4226154/B`, thermal pad 21.
+- `U_CO2_DRV` → `NFB:TI_DYC0008A_TPS1HC120` — TI `DYC0008A / 4226548/B`, 8 pads y sin PowerPAD.
+- `U_CHILLER` → `NFB:Panasonic_AQY212EHAX_DIP4_SMD` — Panasonic MPN exacto `AQY212EHAX`.
 
-- `U_EFUSE` → `NFB:TI_RPW0010A_TPS259470A` — HotRod VQFN-HR `RPW0010A`, TI `MPQF568 / 4225183/A`.
-- `U_5V` → `NFB:TI_RDN0011A_TPSM33625` — QFN-FCMOD `RDN0011A`, TI `qfnd871 / 4226623/F`.
-- `U_PUMP_DRV` → `NFB:TI_RHL0020B_DRV8242` — VQFN `RHL0020B`, TI `4226154/B`, con thermal pad 21.
-- `U_CO2_DRV` → `NFB:TI_DYC0008A_TPS1HC120` — `DYC0008A`, TI `MPSS142A / 4226548/B`, exactamente 8 pads y **sin PowerPAD**.
-- `U_CHILLER` → `NFB:Panasonic_AQY212EHAX_DIP4_SMD` — Panasonic GE DIP4 surface-mount del MPN exacto `AQY212EHAX`.
-
-Gemini Spark se utilizó como **auditor independiente/cross-check**. Sus resultados no son fuente de verdad. La revisión NFB contra TI/Panasonic corrigió geometrías simplificadas del RPW/RDN, la revisión de package del DRV8242 y un PowerPAD inexistente reportado para DYC-8.
-
-El gate PR #13 exige fuentes primarias, prohíbe placeholders críticos y bloquea cambios silenciosos de geometría.
+Gemini Spark fue auditor independiente/cross-check, no fuente de verdad. La revisión NFB contra TI/Panasonic corrigió geometrías simplificadas del RPW/RDN, la revisión de package del DRV8242 y un PowerPAD inexistente reportado para DYC-8.
 
 ## Z4 actuadores — PR #12 / footprints PR #13
 
-Fuentes: `hardware/z4_actuator_contract.json`, `hardware/z4_production_netlist.json`, `bom/insight_z4_production_bom.csv`, `kicad/z4_actuators.kicad_sch`, `docs/Z4_ACTUATORS.md`.
+Fuentes: `hardware/z4_actuator_contract.json`, `hardware/z4_production_netlist.json`, `bom/insight_z4_production_bom.csv`, `kicad/z4_actuators.kicad_sch`.
 
-### Bomba
+- Bomba: `DRV8242HQRHLRQ1`, D5/D6 PH/EN, `IPROPI → 1.5 kΩ/100 nF → A4=PUMP_CURRENT_ADC`, nFAULT al bus diagnóstico.
+- Solenoide CO₂: `TPS1HC120CQDYCRQ1`, D7, `R_ILIM=27 kΩ` (~0.5 A), clamp inductivo integrado.
+- Chiller: `AQY212EHAX` PhotoMOS mediante `2N7002,215`; **dry contact SELV ≤48 V / NO MAINS**; potencia externa.
+- D10/pad25=`ACT_FAULT_N` wired-OR; D9 continúa DNP/Reserva.
 
-- Driver **TI `DRV8242HQRHLRQ1`**, H-bridge automotriz integrado; sustituye `IR2104 + IRLZ44N`.
-- D5=`PUMP_PWM`, D6=`PUMP_DIR`, modo PH/EN.
-- SR=22 kΩ para limitar slew/EMI; 100 nF + 22 µF local en `12V_ACT`.
-- IPROPI + `1.5 kΩ / 100 nF` → **A4=`PUMP_CURRENT_ADC`**.
-- ~0.842 V esperados a 0.8 A típico; margen ADC hasta ~2.75 A usando el factor mínimo contractual.
-- PR #13 usa el package actual `RHL0020B`; thermal pad 21 se conecta a GND por decisión de ingeniería NFB para desempeño térmico/EMI, sin sustituir los pines GND eléctricos 9–12.
+## Root EDA inter-zona — PR #14
 
-### Solenoide CO₂
+Fuente machine-readable: `hardware/root_eda_contract.json`; detalle: `docs/FASE3_PR14_ROOT_EDA.md`.
 
-- Driver **TI `TPS1HC120CQDYCRQ1`**, smart high-side protegido.
-- D7=`CO2_SOL_CTL`.
-- `R_ILIM=27 kΩ` → límite objetivo ~0.5 A.
-- Clamp inductivo integrado; no se puebla flyback discreto legacy.
-- FLT1 comparte diagnóstico común; FLT2 queda como `CO2_OPENLOAD_N`.
+`kicad/NFB_Insight_PCBA_v2.kicad_sch` es ahora un **root jerárquico inter-zona** con cinco hojas:
 
-### Chiller
+- Z0 → `uno_q_interface.kicad_sch`
+- Z1 → `z1_interface.kicad_sch`
+- Z2 → `z2_interface.kicad_sch`
+- Z3 → `z3_interface.kicad_sch`
+- Z4 → `z4_interface.kicad_sch`
 
-- D8 controla **Panasonic `AQY212EHAX` PhotoMOS** mediante `2N7002,215`.
-- Salida = **contacto seco aislado**, separado de GND/rails del shield.
-- Uso contractual **SELV ≤48 V exclusivamente; NO MAINS**.
-- La potencia del chiller permanece externa.
+Las fronteras entre zonas se materializan como sheet pins/nets KiCad. `GND` incluye Z0–Z4; `5V_RAIL` y `3V3_RAIL` son exclusivamente rails locales del shield y **no incluyen Z0**. I²C se comparte Z0/Z1/Z2; `12V_ACT` enlaza Z3/Z4; controles y diagnóstico de actuadores enlazan Z0/Z4.
 
-### Diagnóstico
+**Alcance deliberado de PR #14:** `zone_internal_component_symbols=false`. La conectividad interna de Z1/Z2/Z3/Z4 continúa gobernada por los netlists JSON/BOM de producción; no se duplican manualmente >100 referencias dentro de KiCad.
 
-- **D10/pad25 = `ACT_FAULT_N`**, active-low wired-OR de bomba + solenoide.
-- D10 deja de ser reserva RS485 en Insight.
-- D9 continúa DNP/Reserva.
+### Gate ERC de transición PR #14
+
+Como las hojas de interfaz aún no contienen sus símbolos internos, KiCad 10.0.5 reporta una deuda transitoria y reproducible de **125 `label_dangling`**. Esta deuda está congelada en `hardware/root_eda_contract.json` y el CI exige simultáneamente:
+
+- exactamente 125 eventos `label_dangling`;
+- **0 violaciones de cualquier otro tipo**;
+- 0 warnings adicionales;
+- severidades ERC de KiCad **sin relajar**.
+
+Por tanto, PR #14 no se presenta como ERC=0. El requisito del siguiente gate es eliminar completamente esta deuda al materializar los símbolos/conexiones internos: **PR #15 debe alcanzar ERC=0 del hierarchy completo antes de placement**.
 
 ## Estado
 
-Z0 mecánico, Z1, Z2, Z3, Z4, EU Compliance y los **cinco footprints críticos del PR #13** están contractualmente definidos. El `.kicad_pcb` todavía no recibe placement de estos bloques: PR #13 cierra geometría física, no coordenadas XY.
+Z0 mecánico, Z1, Z2, Z3, Z4, EU Compliance, footprints críticos y la jerarquía EDA inter-zona Z0–Z4 están protegidos por contratos y CI. El `.kicad_pcb` continúa sin placement de los bloques de producción y no existe routing nuevo.
 
-El siguiente frente es **PR #14 — integración EDA raíz Z1 + Z2 + Z3 + Z4 con ERC = 0**. Después de esa jerarquía integrada se habilitará el placement por zonas, la revisión 3D y el congelamiento del ancho final del PCB.
+Siguiente frente: **PR #15 — materialización reproducible de símbolos/conectividad interna de producción Z1+Z2+Z3+Z4**, con paridad JSON/BOM↔KiCad y ERC=0 antes de Fase 4 placement.

@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "product": "NFB Insight PCBA v2",
+  "status": "ROOT_EDA_INTERZONE_BASELINE_PR14",
+  "decision_date": "2026-08-12",
+  "scope": {
+    "interzone_hierarchy": true,
+    "zone_internal_component_symbols": false,
+    "placement": false,
+    "routing": false,
+    "pcb_geometry_change": false
+  },
+  "root_schematic": "kicad/NFB_Insight_PCBA_v2.kicad_sch",
+  "sheets": [
+    {"id":"Z0","name":"Z0 — Arduino UNO Q Host","file":"kicad/uno_q_interface.kicad_sch","source":"hardware/insight_pin_contract.json"},
+    {"id":"Z1","name":"Z1 — Sensors","file":"kicad/z1_interface.kicad_sch","source":"hardware/z1_production_netlist.json"},
+    {"id":"Z2","name":"Z2 — Digital / Low Noise","file":"kicad/z2_interface.kicad_sch","source":"hardware/z2_production_netlist.json"},
+    {"id":"Z3","name":"Z3 — Power","file":"kicad/z3_interface.kicad_sch","source":"hardware/power_production_netlist.json"},
+    {"id":"Z4","name":"Z4 — Actuators","file":"kicad/z4_interface.kicad_sch","source":"hardware/z4_production_netlist.json"}
+  ],
+  "interzone_nets": {
+    "UNO_IOREF_3V3": ["Z0","Z3"],
+    "12V_HOST_VIN": ["Z0","Z3"],
+    "5V_RAIL": ["Z1","Z2","Z3"],
+    "3V3_RAIL": ["Z1","Z2","Z3","Z4"],
+    "GND": ["Z0","Z1","Z2","Z3","Z4"],
+    "PH_ADC": ["Z0","Z1"],
+    "ORP_ADC": ["Z0","Z1"],
+    "TEMP_1WIRE": ["Z0","Z1"],
+    "DO_ADC": ["Z0","Z1"],
+    "I2C_SDA": ["Z0","Z1","Z2"],
+    "I2C_SCL": ["Z0","Z1","Z2"],
+    "HMI_RX": ["Z0","Z2"],
+    "HMI_TX": ["Z0","Z2"],
+    "HX711_DOUT": ["Z0","Z2"],
+    "HX711_SCK": ["Z0","Z2"],
+    "MCU_WDI": ["Z0","Z2"],
+    "MCU_NRST": ["Z0","Z2"],
+    "LED_STATUS": ["Z0","Z2"],
+    "12V_ACT": ["Z3","Z4"],
+    "PUMP_PWM": ["Z0","Z4"],
+    "PUMP_DIR": ["Z0","Z4"],
+    "PUMP_CURRENT_ADC": ["Z0","Z4"],
+    "CO2_SOL_CTL": ["Z0","Z4"],
+    "CHILLER_CTL": ["Z0","Z4"],
+    "ACT_FAULT_N": ["Z0","Z4"]
+  },
+  "erc_interzone_policy": {
+    "mode": "BOUNDED_INTENTIONAL_INTERFACE_DEBT_PR14",
+    "expected_violation_type": "label_dangling",
+    "expected_violation_count": 125,
+    "unexpected_violation_count_allowed": 0,
+    "reason": "PR14 materializa fronteras jerárquicas, pero no símbolos internos. Los labels/hierarchical labels quedan intencionalmente sin pin interno hasta PR15; no se baja la severidad global de KiCad.",
+    "removal_gate": "PR15 must materialize zone-internal symbols/connectivity and reduce full hierarchy ERC to zero before placement."
+  },
+  "hard_prohibitions": [
+    "CO2_ADC must not exist as an active inter-zone net",
+    "TEMP_ADC must not exist",
+    "HUM_ADC must not exist",
+    "CO2_PWM and CO2_FLOW_PWM must not exist",
+    "RS485_IRQ_RSVD must not be active in Insight",
+    "J_UNOQ.4 must never feed 3V3_RAIL",
+    "J_UNOQ.5 must never feed 5V_RAIL",
+    "PR14 must not place or route production components"
+  ],
+  "next_gate": "PR15: materialize zone-internal production symbols from JSON/BOM, prove parity, and eliminate intentional PR14 ERC debt before placement."
+}
