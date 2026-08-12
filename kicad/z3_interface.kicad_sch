@@ -1,0 +1,18 @@
+(kicad_sch
+  (version 20250114)
+  (generator "nfb_pr14_root_interface")
+  (generator_version "1.0")
+  (uuid "84e28f44-6393-48f8-845c-ddf9c6efc1f9")
+  (paper "A4")
+  (title_block (title "NFB Insight PCBA v2 — Z3 Power Interface") (date "2026-08-12") (rev "0.14.0") (company "Cafelium SRL / Nebula Ecosystem") (comment 1 "PR #14 — frontera jerárquica Z3") (comment 2 "Interno: hardware/power_production_netlist.json"))
+  (lib_symbols)
+  (text "Z3 POWER INTERFACE\n12V protegido, host VIN, rails locales 5V/3V3 y rama 12V_ACT.\nLa conectividad interna permanece gobernada por hardware/power_production_netlist.json."
+    (exclude_from_sim no) (at 30.48 25.4 0) (effects (font (size 1.5 1.5)) (justify left bottom)) (uuid "cfca4180-6ac1-4da0-adb1-5830d8a5ea31"))
+  (hierarchical_label "UNO_IOREF_3V3" (shape input) (at 20.32 50.8 180) (effects (font (size 1.27 1.27))) (uuid "d1805050-3e6f-4a9b-bbcc-030ae3c9518a"))
+  (hierarchical_label "GND" (shape bidirectional) (at 20.32 55.88 180) (effects (font (size 1.27 1.27))) (uuid "274572d0-e699-4468-a5f6-1584674303d7"))
+  (hierarchical_label "12V_HOST_VIN" (shape output) (at 101.6 50.8 0) (effects (font (size 1.27 1.27))) (uuid "26287921-2ee0-48ec-b167-57337257a424"))
+  (hierarchical_label "12V_ACT" (shape output) (at 101.6 55.88 0) (effects (font (size 1.27 1.27))) (uuid "c7274c14-4a32-4f71-a2d1-c1bad802c7b5"))
+  (hierarchical_label "5V_RAIL" (shape output) (at 101.6 60.96 0) (effects (font (size 1.27 1.27))) (uuid "f175a7f0-a828-4fd5-8d83-cb049a4612c0"))
+  (hierarchical_label "3V3_RAIL" (shape output) (at 101.6 66.04 0) (effects (font (size 1.27 1.27))) (uuid "899458c6-3861-4a85-b840-e97b6e5cb274"))
+  (sheet_instances (path "/" (page "1")))
+)
