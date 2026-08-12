@@ -1,0 +1,238 @@
+{
+  "schema_version": 2,
+  "source": "KiCad 10.0.5 pcbnew F.CrtYd with pad fallback",
+  "field_gap_mm": 1.0,
+  "zone_margin_mm": 1.0,
+  "internal_gap_mm": 0.8,
+  "zones": {
+    "Z1": {
+      "current_width_mm": 51.66,
+      "field_required_width_mm": 55.45,
+      "planned_width_mm": 55.5,
+      "internal_shelf_height_mm": 2.05,
+      "field_refs": [
+        "J_PH",
+        "J_ORP",
+        "J_TEMP",
+        "U_CO2",
+        "J_DO"
+      ],
+      "internal_ref_count": 15,
+      "pad_fallback_refs": []
+    },
+    "Z2": {
+      "current_width_mm": 40.0,
+      "field_required_width_mm": 54.27,
+      "planned_width_mm": 54.5,
+      "internal_shelf_height_mm": 14.6,
+      "field_refs": [
+        "J_LOADCELL",
+        "J_GNSS_RTC",
+        "J_HMI"
+      ],
+      "internal_ref_count": 31,
+      "pad_fallback_refs": []
+    },
+    "Z3": {
+      "current_width_mm": 35.0,
+      "field_required_width_mm": 15.22,
+      "planned_width_mm": 35.0,
+      "internal_shelf_height_mm": 23.3,
+      "field_refs": [
+        "J_PWR_IN"
+      ],
+      "internal_ref_count": 33,
+      "pad_fallback_refs": [
+        "NT_HOST",
+        "NT_LOGIC"
+      ]
+    },
+    "Z4": {
+      "current_width_mm": 40.0,
+      "field_required_width_mm": 43.66,
+      "planned_width_mm": 44.0,
+      "internal_shelf_height_mm": 16.65,
+      "field_refs": [
+        "J_PUMP",
+        "J_CO2_SOL",
+        "J_CHILLER_CTL"
+      ],
+      "internal_ref_count": 28,
+      "pad_fallback_refs": []
+    }
+  },
+  "field_sequence": [
+    {
+      "ref": "J_PH",
+      "zone": "Z1",
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        7.975,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 10.95,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "J_ORP",
+      "zone": "Z1",
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        7.975,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 10.95,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "J_TEMP",
+      "zone": "Z1",
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        7.975,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 10.95,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "U_CO2",
+      "zone": "Z1",
+      "footprint": "NFB:Honeywell_MPR_LongPort_12Pad",
+      "bbox_mm": [
+        -2.825,
+        -2.825,
+        2.825,
+        2.825
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 5.65,
+      "h_mm": 5.65
+    },
+    {
+      "ref": "J_DO",
+      "zone": "Z1",
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        7.975,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 10.95,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "J_LOADCELL",
+      "zone": "Z2",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_4-G-5,08_1x04_P5.08mm_Horizontal",
+      "bbox_mm": [
+        -4.065,
+        -2.525,
+        19.305,
+        10.525
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 23.37,
+      "h_mm": 13.05
+    },
+    {
+      "ref": "J_GNSS_RTC",
+      "zone": "Z2",
+      "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        10.475,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.45,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "J_HMI",
+      "zone": "Z2",
+      "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+      "bbox_mm": [
+        -2.975,
+        -2.835,
+        10.475,
+        9.725
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.45,
+      "h_mm": 12.56
+    },
+    {
+      "ref": "J_PWR_IN",
+      "zone": "Z3",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_mm": [
+        -4.065,
+        -2.525,
+        9.155,
+        10.525
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.22,
+      "h_mm": 13.05
+    },
+    {
+      "ref": "J_PUMP",
+      "zone": "Z4",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_mm": [
+        -4.065,
+        -2.525,
+        9.155,
+        10.525
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.22,
+      "h_mm": 13.05
+    },
+    {
+      "ref": "J_CO2_SOL",
+      "zone": "Z4",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_mm": [
+        -4.065,
+        -2.525,
+        9.155,
+        10.525
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.22,
+      "h_mm": 13.05
+    },
+    {
+      "ref": "J_CHILLER_CTL",
+      "zone": "Z4",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_mm": [
+        -4.065,
+        -2.525,
+        9.155,
+        10.525
+      ],
+      "bbox_source": "F.CrtYd",
+      "w_mm": 13.22,
+      "h_mm": 13.05
+    }
+  ],
+  "planned_board_width_mm": 242.34,
+  "current_board_width_mm": 220.0,
+  "board_height_mm": 68.58,
+  "growth_only": "+X"
+}

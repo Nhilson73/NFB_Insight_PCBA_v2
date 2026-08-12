@@ -1,0 +1,90 @@
+# Gate PR17: reconstrucción semántica KiCad + DRC acotado, sin escrituras desde CI.
+name: PR17 placement KiCad
+
+on:
+  push:
+    branches: [agent/pr17-production-placement]
+    paths:
+      - 'tools/probe_placement_footprints.py'
+      - 'tools/probe_pcbnew_api.py'
+      - 'tools/compute_placement_plan.py'
+      - 'tools/generate_pr17_placement_manifest.py'
+      - 'tools/materialize_pr17_pcb.py'
+      - 'tools/validate_pr17_placement.py'
+      - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_z1_production.py'
+      - 'hardware/placement_readiness_contract.json'
+      - 'hardware/placement_manifest.json'
+      - 'hardware/placement_plan_probe.json'
+      - 'hardware/placement_drc_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'bom/insight_z1_production_bom.csv'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'bom/insight_power_production_bom.csv'
+      - 'bom/insight_z4_production_bom.csv'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'kicad/fp-lib-table'
+      - 'kicad/lib/nfb_footprints.pretty/Honeywell_MPR_LongPort_12Pad.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/TI_RDN0011A_TPSM33625.kicad_mod'
+      - '.github/workflows/pr17-pcbnew-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  placement:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preparar git y librerías KiCad dentro del contenedor
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Compilar herramientas PR17
+        run: |
+          python3 -m py_compile tools/probe_pcbnew_api.py
+          python3 -m py_compile tools/compute_placement_plan.py
+          python3 -m py_compile tools/generate_pr17_placement_manifest.py
+          python3 -m py_compile tools/materialize_pr17_pcb.py
+          python3 -m py_compile tools/validate_pr17_placement.py
+          python3 -m py_compile tools/validate_pr17_drc.py
+          python3 -m py_compile tools/validate_z1_production.py
+      - name: Inventariar footprints/courtyards
+        run: python3 tools/probe_placement_footprints.py
+      - name: Validar Z1 y MPR contra contrato primario
+        run: python3 tools/validate_z1_production.py
+      - name: Probar API pcbnew, placement y nets in-memory
+        run: python3 tools/probe_pcbnew_api.py
+      - name: Calcular ancho mínimo por courtyards
+        run: python3 tools/compute_placement_plan.py
+      - name: Generar manifest XY funcional
+        run: python3 tools/generate_pr17_placement_manifest.py
+      - name: Verificar JSON reproducibles
+        run: git diff --exit-code -- hardware/placement_manifest.json hardware/placement_plan_probe.json
+      - name: Materializar PCB temporalmente desde PR16 + manifest
+        run: python3 tools/materialize_pr17_pcb.py
+      - name: Validar placement semántico
+        run: python3 tools/validate_pr17_placement.py
+      - name: Ejecutar DRC JSON de placement sin routing
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --format json \
+            --output /tmp/pr17_drc.json \
+            --severity-all
+          python3 tools/validate_pr17_drc.py /tmp/pr17_drc.json
+      - name: Resumen de salida
+        run: |
+          python3 -c "import json; p=json.load(open('hardware/placement_manifest.json',encoding='utf-8')); print('BOARD',p['board']); print('ZONES',p['zone_bounds_mm']); print('REFS',len(p['placements']))"
+          echo "KiCad pcbnew puede regenerar UUIDs; la equivalencia PR17 se valida por XY/rot/LIB_ID/nets/DRC, no por bytes del .kicad_pcb."

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Gate de producción Z2 con potencia PR #9 y contrato UNO Q schema v6 PR #12."""
+"""Gate de producción Z2 con potencia PR #9, contrato UNO Q schema v6 y placement PR17."""
 from __future__ import annotations
-import csv, json
+import csv, json, re
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-CONTRACT=ROOT/"hardware"/"z2_digital_contract.json"; NETLIST=ROOT/"hardware"/"z2_production_netlist.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; POWER=ROOT/"hardware"/"power_architecture_contract.json"; BOM=ROOT/"bom"/"insight_z2_production_bom.csv"; SCH=ROOT/"kicad"/"z2_digital_contract.kicad_sch"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"
+CONTRACT=ROOT/"hardware"/"z2_digital_contract.json"; NETLIST=ROOT/"hardware"/"z2_production_netlist.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; POWER=ROOT/"hardware"/"power_architecture_contract.json"; BOM=ROOT/"bom"/"insight_z2_production_bom.csv"; SCH=ROOT/"kicad"/"z2_digital_contract.kicad_sch"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"
 def fail(m): raise SystemExit("ERROR: "+m)
 def main():
     for path in (CONTRACT,NETLIST,PIN,Z1,POWER,BOM,SCH,PCB):
@@ -59,7 +59,14 @@ def main():
     for ref in comps:
         if ref not in sch: fail(f"schematic Z2 no indexa {ref}")
     pcb=PCB.read_text(encoding="utf-8"); placed=[ref for ref in comps if f'"{ref}"' in pcb]
-    if placed: fail(f"Z2 no debe colocarse todavía: {placed[:5]}")
-    print("OK: Z2 PR #7 preservado bajo pin contract schema v6 PR12")
+    if placed:
+        if not PLACEMENT.exists(): fail(f"Z2 colocado sin manifest PR17: {placed[:5]}")
+        pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
+        if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False: fail("Z2 colocado sin gate PR17 válido")
+        pmap={x["ref"]:x for x in pm.get("placements",[])}
+        bad=[ref for ref in placed if ref not in pmap or pmap[ref].get("zone")!="Z2"]
+        if bad: fail(f"Z2 placement no trazado en manifest: {bad[:5]}")
+        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17: Z2 contiene routing/cobre prematuro")
+    print(f"OK: Z2 PR #7 preservado; placement PR17={len(placed)} refs, routing=0")
     return 0
 if __name__=="__main__": raise SystemExit(main())

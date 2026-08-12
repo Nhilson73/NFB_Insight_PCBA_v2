@@ -9,6 +9,7 @@ on:
       - 'docs/FASE4_PR16_PREPLACEMENT_READINESS.md'
       - 'docs/ROADMAP.md'
       - 'hardware/placement_readiness_contract.json'
+      - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
@@ -16,9 +17,11 @@ on:
       - 'bom/insight_z2_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
       - 'kicad/z2_interface.kicad_sch'
       - 'tools/migrate_pr16_loadcell_connector.py'
       - 'tools/validate_placement_readiness.py'
+      - 'tools/validate_pr17_drc.py'
       - '.github/workflows/placement-readiness.yml'
   push:
     branches: [main]
@@ -28,6 +31,7 @@ on:
       - 'docs/FASE4_PR16_PREPLACEMENT_READINESS.md'
       - 'docs/ROADMAP.md'
       - 'hardware/placement_readiness_contract.json'
+      - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
@@ -35,9 +39,11 @@ on:
       - 'bom/insight_z2_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
       - 'kicad/z2_interface.kicad_sch'
       - 'tools/migrate_pr16_loadcell_connector.py'
       - 'tools/validate_placement_readiness.py'
+      - 'tools/validate_pr17_drc.py'
       - '.github/workflows/placement-readiness.yml'
 
 jobs:
@@ -53,7 +59,7 @@ jobs:
         run: python3 tools/migrate_pr16_loadcell_connector.py --check
       - name: Verificar hierarchy determinista PR15
         run: python3 tools/normalize_pr15_schematics.py --check
-      - name: Validar contrato pre-placement
+      - name: Validar contrato pre-placement y transición PR17
         run: python3 tools/validate_placement_readiness.py
       - name: Inicializar librerías KiCad
         run: |
@@ -62,10 +68,22 @@ jobs:
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Exigir ERC hierarchy 0/0
         run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_pr16.rpt --severity-all --exit-code-violations
-      - name: Exigir DRC PCB limpio
-        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --output /tmp/drc_pr16.rpt --severity-all --exit-code-violations
+      - name: Exigir DRC físico 0 y deuda unconnected acotada PR17
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --format json \
+            --output /tmp/drc_pr17.json \
+            --severity-all
+          python3 tools/validate_pr17_drc.py /tmp/drc_pr17.json
       - name: Mostrar reportes
         if: always()
         run: |
           test ! -f /tmp/erc_pr16.rpt || cat /tmp/erc_pr16.rpt
-          test ! -f /tmp/drc_pr16.rpt || cat /tmp/drc_pr16.rpt
+          if [ -f /tmp/drc_pr17.json ]; then
+            python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/drc_pr17.json',encoding='utf-8'))
+          print('violations=',len(p.get('violations',[])))
+          print('unconnected_items=',len(p.get('unconnected_items',[])))
+          PY
+          fi

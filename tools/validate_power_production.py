@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Valida potencia PR10 preservada y footprints críticos cerrados en PR13."""
+"""Valida potencia PR10 + footprints PR13 y placement únicamente bajo gate PR17."""
 from __future__ import annotations
-import csv,json,math
+import csv,json,math,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-NET=ROOT/"hardware"/"power_production_netlist.json"; ARCH=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; CLASSES=ROOT/"hardware"/"power_netclasses.json"; BOM=ROOT/"bom"/"insight_power_production_bom.csv"; SCH=ROOT/"kicad"/"power.kicad_sch"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; AUDIT=ROOT/"hardware"/"footprint_audit.json"
+NET=ROOT/"hardware"/"power_production_netlist.json"; ARCH=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; CLASSES=ROOT/"hardware"/"power_netclasses.json"; BOM=ROOT/"bom"/"insight_power_production_bom.csv"; SCH=ROOT/"kicad"/"power.kicad_sch"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; AUDIT=ROOT/"hardware"/"footprint_audit.json"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"
 def fail(m): raise SystemExit("ERROR: "+m)
 def close(a,b,t=1e-6): return math.isclose(float(a),float(b),rel_tol=t,abs_tol=t)
 def main():
@@ -50,13 +50,20 @@ def main():
     if "12V_ACT" not in n4 or "U_PUMP_DRV.6" not in n4["12V_ACT"] or "U_CO2_DRV.8" not in n4["12V_ACT"]: fail("Z4 no usa rama 12V_ACT")
     if "U_CHILLER.3" in n4["12V_ACT"] or "U_CHILLER.4" in n4["12V_ACT"]: fail("chiller no debe consumir 12V_ACT")
     pcb=PCB.read_text(encoding="utf-8"); placed=[r for r in list(comps)+["U_PUMP_DRV","U_CO2_DRV","U_CHILLER"] if f'"{r}"' in pcb]
-    if placed: fail(f"PR13/14 no debe hacer placement: {placed[:5]}")
+    if placed:
+        if not PLACEMENT.exists(): fail(f"potencia/actuadores colocados sin manifest PR17: {placed[:5]}")
+        pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
+        if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False: fail("placement potencia sin gate PR17 válido")
+        pmap={x["ref"]:x for x in pm.get("placements",[])}
+        bad=[r for r in placed if r not in pmap or pmap[r].get("zone") not in {"Z3","Z4"}]
+        if bad: fail(f"placement potencia/Z4 no trazado correctamente: {bad[:5]}")
+        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17: potencia contiene routing/cobre prematuro")
     blockers=n.get("placement_blockers",[])
     if any("footprint" in x.lower() or "audit/create" in x.lower() for x in blockers): fail("quedó blocker de footprint en potencia")
     if len(blockers)!=2: fail("se esperaban solo dos blockers no físicos de potencia")
     readme=README.read_text(encoding="utf-8"); road=ROADMAP.read_text(encoding="utf-8")
     if "Z3 potencia" not in readme or "power_production_netlist.json" not in readme or "TPSM33625RDNR" not in readme: fail("README perdió baseline de producción PR10")
     if "PR #10" not in road or "potencia de producción" not in road: fail("ROADMAP perdió baseline PR10")
-    print("OK: power production PR10 preservado + RPW/RDN cerrados PR13; placement=0")
+    print(f"OK: power production PR10 + RPW/RDN PR13; placement PR17={len(placed)} refs, routing=0")
     return 0
 if __name__=="__main__": raise SystemExit(main())
