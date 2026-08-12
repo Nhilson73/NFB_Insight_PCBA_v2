@@ -40,7 +40,7 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 - TEMP/A2-D16: DS18B20 `TEMP_1WIRE`, pull-up 4.7 kΩ.
 - CO₂ pressure: Honeywell `MPRLS0030PA00002A`, I²C `0x28`; **CO2_ADC permanece retirado**.
 - PR #11 cerró el footprint MPR contra Honeywell `32332628 Issue L / Fig.10`.
-- **PR #12 reutiliza A4/pad13 como `PUMP_CURRENT_ADC`** desde IPROPI del driver de bomba; A4 ya no es reserva ni sensor CO₂.
+- PR #12 reutiliza A4/pad13 como `PUMP_CURRENT_ADC` desde IPROPI del driver de bomba.
 
 ## Z2 digital / bajo ruido — PR #7 / #9
 
@@ -50,9 +50,7 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 - Watchdog `TPS3823-30DBVR`, WDI=D4.
 - GPS/RTC legacy separados y RS485 Signature quedan fuera del baseline Insight.
 
-## Z3 potencia — PR #9 / #10
-
-**Arquitectura de potencia — PR #9**; esquemático/netlist de producción — PR #10.
+## Z3 potencia — PR #9 / #10 / #13
 
 Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, `bom/insight_power_production_bom.csv`, `hardware/power_netclasses.json`, `kicad/power.kicad_sch`.
 
@@ -65,26 +63,27 @@ Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production
 - 5 V: `TPSM33625RDNR`, 1 MHz, feedback `40.2 kΩ / 10 kΩ`.
 - 3.3 V: `TLV75533PDBVR`.
 - Chiller no toma potencia de la PCBA.
+- PR #13 sustituye los placeholders físicos de `U_EFUSE` y `U_5V` por footprints auditados contra drawings TI.
 
-## Auditoría física — PR #11 / extensión PR #12
+## Cierre de footprints críticos — PR #13
 
-Fuente: `hardware/footprint_audit.json`.
+Fuente machine-readable: `hardware/footprint_audit.json`. Detalle: `docs/FASE3_PR13_FOOTPRINT_CLOSURE.md`.
 
-- MPR Honeywell: **CLOSED**.
-- TPS259470A/RPW0010A: bloqueado hasta land pattern exacto TI.
-- TPSM33625/RDN-11: bloqueado hasta CAD autorizado/verificado TI.
-- PR #12 añade gates para DRV8242/RHL20, TPS1HC120/DYC8 y AQY212EHAX DIP4 SMD.
-- Ningún componente crítico con audit abierto puede entrar al placement.
+Se materializaron y congelaron cinco land patterns críticos:
 
-## Z4 actuadores — PR #12
+- `U_EFUSE` → `NFB:TI_RPW0010A_TPS259470A` — HotRod VQFN-HR `RPW0010A`, TI `MPQF568 / 4225183/A`.
+- `U_5V` → `NFB:TI_RDN0011A_TPSM33625` — QFN-FCMOD `RDN0011A`, TI `qfnd871 / 4226623/F`.
+- `U_PUMP_DRV` → `NFB:TI_RHL0020B_DRV8242` — VQFN `RHL0020B`, TI `4226154/B`, con thermal pad 21.
+- `U_CO2_DRV` → `NFB:TI_DYC0008A_TPS1HC120` — `DYC0008A`, TI `MPSS142A / 4226548/B`, exactamente 8 pads y **sin PowerPAD**.
+- `U_CHILLER` → `NFB:Panasonic_AQY212EHAX_DIP4_SMD` — Panasonic GE DIP4 surface-mount del MPN exacto `AQY212EHAX`.
 
-Fuentes:
+Gemini Spark se utilizó como **auditor independiente/cross-check**. Sus resultados no son fuente de verdad. La revisión NFB contra TI/Panasonic corrigió geometrías simplificadas del RPW/RDN, la revisión de package del DRV8242 y un PowerPAD inexistente reportado para DYC-8.
 
-- `hardware/z4_actuator_contract.json`
-- `hardware/z4_production_netlist.json`
-- `bom/insight_z4_production_bom.csv`
-- `kicad/z4_actuators.kicad_sch`
-- `docs/Z4_ACTUATORS.md`
+El gate PR #13 exige fuentes primarias, prohíbe placeholders críticos y bloquea cambios silenciosos de geometría.
+
+## Z4 actuadores — PR #12 / footprints PR #13
+
+Fuentes: `hardware/z4_actuator_contract.json`, `hardware/z4_production_netlist.json`, `bom/insight_z4_production_bom.csv`, `kicad/z4_actuators.kicad_sch`, `docs/Z4_ACTUATORS.md`.
 
 ### Bomba
 
@@ -93,6 +92,7 @@ Fuentes:
 - SR=22 kΩ para limitar slew/EMI; 100 nF + 22 µF local en `12V_ACT`.
 - IPROPI + `1.5 kΩ / 100 nF` → **A4=`PUMP_CURRENT_ADC`**.
 - ~0.842 V esperados a 0.8 A típico; margen ADC hasta ~2.75 A usando el factor mínimo contractual.
+- PR #13 usa el package actual `RHL0020B`; thermal pad 21 se conecta a GND por decisión de ingeniería NFB para desempeño térmico/EMI, sin sustituir los pines GND eléctricos 9–12.
 
 ### Solenoide CO₂
 
@@ -117,6 +117,6 @@ Fuentes:
 
 ## Estado
 
-Z0 mecánico, Z1, Z2, Z3, Z4 y EU Compliance están contractualmente definidos y protegidos por CI/ERC. **Placement y routing siguen bloqueados** porque permanecen footprints críticos abiertos y falta el root EDA final integrado.
+Z0 mecánico, Z1, Z2, Z3, Z4, EU Compliance y los **cinco footprints críticos del PR #13** están contractualmente definidos. El `.kicad_pcb` todavía no recibe placement de estos bloques: PR #13 cierra geometría física, no coordenadas XY.
 
-El siguiente frente es cerrar los footprints críticos restantes contra CAD/drawings primarios y después materializar la jerarquía EDA completa antes de habilitar placement.
+El siguiente frente es **PR #14 — integración EDA raíz Z1 + Z2 + Z3 + Z4 con ERC = 0**. Después de esa jerarquía integrada se habilitará el placement por zonas, la revisión 3D y el congelamiento del ancho final del PCB.

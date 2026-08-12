@@ -35,7 +35,8 @@ def main():
     impl=p.get("z2_implementation",{})
     if impl.get("hmi_uart",{}).get("translator")!="TXU0202DCUR" or impl.get("watchdog",{}).get("supervisor")!="TPS3823-30DBVR" or impl.get("i2c",{}).get("global_pullup_ohm")!=4700: fail("baseline Z2 cambió")
     z4c=json.loads(Z4C.read_text(encoding="utf-8")); z4=json.loads(Z4.read_text(encoding="utf-8"))
-    if z4c.get("status")!="Z4_PRODUCTION_BASELINE_PR12" or z4.get("status")!="FROZEN_Z4_NETLIST_PR12": fail("Z4 no es PR12")
+    if z4c.get("status")!="Z4_PRODUCTION_BASELINE_PR12": fail("contrato Z4 no es PR12")
+    if z4.get("schema_version")!=2 or z4.get("status")!="FROZEN_Z4_NETLIST_PR12_FOOTPRINTS_CLOSED_PR13": fail("netlist Z4 no preserva PR12 + cierre físico PR13")
     if z4c["pump"]["driver"]["mpn"]!="DRV8242HQRHLRQ1" or z4c["co2_solenoid"]["driver"]["mpn"]!="TPS1HC120CQDYCRQ1" or z4c["chiller"]["photomos"]["mpn"]!="AQY212EHAX": fail("drivers Z4 finales cambiaron")
     z4i=p.get("z4_implementation",{})
     if z4i.get("fault",{}).get("net")!="ACT_FAULT_N" or z4i.get("pump",{}).get("current_adc_pad")!=13: fail("diagnóstico Z4 no congelado")
@@ -53,8 +54,7 @@ def main():
     z2sch=Z2SCH.read_text(encoding="utf-8")
     for marker in ("PR #7","DFR1103","0x66","HX711","TXU0202DCUR","TPS3823-30DBVR"):
         if marker not in z2sch: fail(f"Z2 schematic sin {marker}")
-    print("OK: contrato UNO Q + Z1 + Z2 + Z4 + potencia verificado")
-    print("- A4=PUMP_CURRENT_ADC; D10=ACT_FAULT_N")
-    print("- CO2 pressure sigue MPR 0x28; no CO2_ADC")
+    print("OK: contrato UNO Q + Z1 + Z2 + Z4(PR12/footprints PR13) + potencia verificado")
+    print("- A4=PUMP_CURRENT_ADC; D10=ACT_FAULT_N; CO2 pressure=MPR I2C 0x28")
     return 0
 if __name__=="__main__": raise SystemExit(main())

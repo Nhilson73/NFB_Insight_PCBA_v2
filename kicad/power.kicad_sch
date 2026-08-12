@@ -1,21 +1,21 @@
 (kicad_sch
   (version 20250114)
   (generator "nfb_pr10_power_contract")
-  (generator_version "1.0")
+  (generator_version "1.1")
   (uuid "af41267d-b924-4a69-9a14-e053b87cd5bd")
   (paper "A3")
   (title_block
     (title "NFB Insight PCBA v2 — Power Production Contract")
-    (date "2026-08-11")
-    (rev "0.10.0")
+    (date "2026-08-12")
+    (rev "0.13.0")
     (company "Cafelium SRL / Nebula Ecosystem")
-    (comment 1 "PR #10 — fuente eléctrica: hardware/power_production_netlist.json")
+    (comment 1 "PR #10 electrical baseline; footprints físicos cerrados por PR #13")
     (comment 2 "Arquitectura: hardware/power_architecture_contract.json")
-    (comment 3 "Sin placement ni routing; footprints RPW/RDN requieren auditoría")
+    (comment 3 "Sin placement ni routing; U_EFUSE/U_5V usan footprints NFB auditados")
     (comment 4 "UNO Q: fuentes primarias oficiales arduino/* según docs/SOURCE_OF_TRUTH.md")
   )
   (lib_symbols)
-  (text "PR #10 — POWER PRODUCTION BASELINE\nFuente de verdad eléctrica: hardware/power_production_netlist.json\nBOM: bom/insight_power_production_bom.csv\nNetclasses: hardware/power_netclasses.json\nLa hoja es contractual/parseable; la integración jerárquica completa se realizará posteriormente."
+  (text "PR #10 — POWER PRODUCTION BASELINE / FOOTPRINT CLOSURE PR #13\nFuente de verdad eléctrica: hardware/power_production_netlist.json\nBOM: bom/insight_power_production_bom.csv\nNetclasses: hardware/power_netclasses.json\nLa hoja sigue contractual; la integración jerárquica completa será PR #14."
     (exclude_from_sim no)
     (at 30.48 30.48 0)
     (effects (font (size 1.8 1.8)) (justify left bottom))
@@ -27,7 +27,7 @@
     (effects (font (size 1.4 1.4)) (justify left bottom))
     (uuid "bb7db600-17f9-4851-8966-68ec0c61f022")
   )
-  (text "ENTRADA / EFUSE\nJ_PWR_IN 1757242 → D_IN_TVS SMBJ15A-TR + C_IN_HF 100nF → U_EFUSE TPS259470ARPWR.\nUV/OV ladder: 12V_IN_RAW → R_UVOV_R1 470k → EN/UVLO → R_UVOV_R2 11k → OVLO → R_UVOV_R3 47k → GND.\nR_EFUSE_ILIM=750R; C_EFUSE_DVDT=3.3nF; C_EFUSE_ITIMER=2.2nF. AUXOFF/FLT NC.\nC_IN_BULK=100uF/25V en 12V_PROTECTED."
+  (text "ENTRADA / EFUSE\nJ_PWR_IN 1757242 → D_IN_TVS SMBJ15A-TR + C_IN_HF 100nF → U_EFUSE TPS259470ARPWR.\nUV/OV ladder: 12V_IN_RAW → R_UVOV_R1 470k → EN/UVLO → R_UVOV_R2 11k → OVLO → R_UVOV_R3 47k → GND.\nR_EFUSE_ILIM=750R; C_EFUSE_DVDT=3.3nF; C_EFUSE_ITIMER=2.2nF. AUXOFF/FLT NC.\nC_IN_BULK=100uF/25V en 12V_PROTECTED.\nFootprint PR13: NFB:TI_RPW0010A_TPS259470A."
     (exclude_from_sim no)
     (at 30.48 104.14 0)
     (effects (font (size 1.35 1.35)) (justify left bottom))
@@ -39,7 +39,7 @@
     (effects (font (size 1.35 1.35)) (justify left bottom))
     (uuid "e7a3f1a0-29ef-41fd-b021-0f9ebc88ed41")
   )
-  (text "BUCK 5V — TPSM33625RDNR\nU_5V.1=5V_PGOOD | .2=UNO_IOREF_3V3/EN | .3=12V_LOGIC/VIN | .4=5V_RAIL/VOUT | .5/.6=SW NC external | .7=BOOT NC external | .8=5V_VCC | .9=5V_FB | .10=GND | .11=5V_VCC (RT→VCC = 1MHz).\nR_5V_EN_PD=100k; C_5V_IN_4U7=4.7uF/50V + C_5V_IN_100N; R_5V_FBT=40.2k, R_5V_FBB=10k; C_5V_VCC=1uF.\nC_5V_OUT1+C_5V_OUT2=2×22uF nominal; efectivo combinado >=25uF. C_5V_HF=100nF. R_5V_PG_PU=47k a 5V_RAIL."
+  (text "BUCK 5V — TPSM33625RDNR\nU_5V.1=5V_PGOOD | .2=UNO_IOREF_3V3/EN | .3=12V_LOGIC/VIN | .4=5V_RAIL/VOUT | .5/.6=SW NC external | .7=BOOT NC external | .8=5V_VCC | .9=5V_FB | .10=GND | .11=5V_VCC (RT→VCC = 1MHz).\nR_5V_EN_PD=100k; C_5V_IN_4U7=4.7uF/50V + C_5V_IN_100N; R_5V_FBT=40.2k, R_5V_FBB=10k; C_5V_VCC=1uF.\nC_5V_OUT1+C_5V_OUT2=2×22uF nominal; efectivo combinado >=25uF. C_5V_HF=100nF. R_5V_PG_PU=47k a 5V_RAIL.\nFootprint PR13: NFB:TI_RDN0011A_TPSM33625."
     (exclude_from_sim no)
     (at 30.48 193.04 0)
     (effects (font (size 1.25 1.25)) (justify left bottom))
@@ -51,7 +51,7 @@
     (effects (font (size 1.35 1.35)) (justify left bottom))
     (uuid "bd51f3ed-6153-4e6b-bca9-478128794ed0")
   )
-  (text "EMC / PLACEMENT GATE\nTVS+eFuse junto a J_PWR_IN; isla SW del TPSM confinada a Z3; retornos 12V_ACT a estrella; no cruzar Z1/Z2/RF UNO Q.\nNo se congela LC serie sin medición: 100nF entrada + 100uF protegido + DRSS TPSM forman baseline; red adicional se define por pre-scan.\nFootprints U_EFUSE RPW-10 y U_5V RDN-11: PENDING_DATASHEET_AUDIT_BEFORE_PLACEMENT."
+  (text "EMC / PLACEMENT GATE\nTVS+eFuse junto a J_PWR_IN; isla SW del TPSM confinada a Z3; retornos 12V_ACT a estrella; no cruzar Z1/Z2/RF UNO Q.\nNo se congela LC serie sin medición: 100nF entrada + 100uF protegido + DRSS TPSM forman baseline; red adicional se define por pre-scan.\nPR13: RPW0010A y RDN0011A CLOSED. Placement continúa fuera de alcance hasta root EDA integrado PR14."
     (exclude_from_sim no)
     (at 30.48 281.94 0)
     (effects (font (size 1.2 1.2)) (justify left bottom))

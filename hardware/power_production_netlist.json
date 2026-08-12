@@ -1,8 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "FROZEN_POWER_NETLIST_PR10",
+  "status": "FROZEN_POWER_NETLIST_PR10_FOOTPRINTS_CLOSED_PR13",
   "source_architecture": "hardware/power_architecture_contract.json",
+  "footprint_audit_source": "hardware/footprint_audit.json",
   "uno_q_source_policy": "docs/SOURCE_OF_TRUTH.md",
   "mechanical_constraints": {
     "zone": "Z3_POWER",
@@ -91,7 +92,7 @@
     {"ref":"J_PWR_IN","kind":"connector","value":"MSTBA 2,5/2-G-5,08","mpn":"1757242","footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled","population":"POPULATE","pins":{"1":"12V_IN_RAW","2":"GND"}},
     {"ref":"D_IN_TVS","kind":"tvs","value":"SMBJ15A 600W 15V uni","mpn":"SMBJ15A-TR","footprint":"Diode_SMD:D_SMB","population":"POPULATE","pins":{"1":"12V_IN_RAW","2":"GND"}},
     {"ref":"C_IN_HF","kind":"capacitor","value":"100nF 50V X7R","mpn":"C1608X7R1H104K080AA","footprint":"Capacitor_SMD:C_0603_1608Metric","population":"POPULATE","pins":{"1":"12V_IN_RAW","2":"GND"}},
-    {"ref":"U_EFUSE","kind":"efuse","value":"TPS259470A","mpn":"TPS259470ARPWR","footprint":"PENDING_DATASHEET_AUDIT_BEFORE_PLACEMENT","population":"POPULATE","pins":{"1":"EFUSE_EN_UVLO","2":"EFUSE_OVLO","3":"NC","4":"NC","5":"12V_IN_RAW","6":"12V_PROTECTED","7":"EFUSE_DVDT","8":"GND","9":"EFUSE_ILM","10":"EFUSE_ITIMER"}},
+    {"ref":"U_EFUSE","kind":"efuse","value":"TPS259470A","mpn":"TPS259470ARPWR","footprint":"NFB:TI_RPW0010A_TPS259470A","population":"POPULATE","pins":{"1":"EFUSE_EN_UVLO","2":"EFUSE_OVLO","3":"NC","4":"NC","5":"12V_IN_RAW","6":"12V_PROTECTED","7":"EFUSE_DVDT","8":"GND","9":"EFUSE_ILM","10":"EFUSE_ITIMER"}},
     {"ref":"R_UVOV_R1","kind":"resistor","value":"470k 1%","mpn":"Vishay CRCW0402 / 470k / 1%","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"12V_IN_RAW","2":"EFUSE_EN_UVLO"}},
     {"ref":"R_UVOV_R2","kind":"resistor","value":"11k 1%","mpn":"Vishay CRCW0402 / 11k / 1%","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"EFUSE_EN_UVLO","2":"EFUSE_OVLO"}},
     {"ref":"R_UVOV_R3","kind":"resistor","value":"47k 1%","mpn":"Vishay CRCW0402 / 47k / 1%","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"EFUSE_OVLO","2":"GND"}},
@@ -102,7 +103,7 @@
     {"ref":"NT_HOST","kind":"net_tie","value":"NET_TIE_2","mpn":"PCB_FEATURE","footprint":"NetTie:NetTie-2_SMD_Pad0.5mm","population":"PCB_FEATURE","pins":{"1":"12V_PROTECTED","2":"12V_HOST_VIN"}},
     {"ref":"NT_LOGIC","kind":"net_tie","value":"NET_TIE_2","mpn":"PCB_FEATURE","footprint":"NetTie:NetTie-2_SMD_Pad0.5mm","population":"PCB_FEATURE","pins":{"1":"12V_PROTECTED","2":"12V_LOGIC"}},
     {"ref":"F_ACT","kind":"fuse","value":"1.5A 125V Slo-Blo Nano2","mpn":"045401.5MR","footprint":"Fuse:Fuse_2410_6125Metric","population":"POPULATE","pins":{"1":"12V_PROTECTED","2":"12V_ACT"}},
-    {"ref":"U_5V","kind":"buck_module","value":"TPSM33625 5V/2.5A","mpn":"TPSM33625RDNR","footprint":"PENDING_DATASHEET_AUDIT_BEFORE_PLACEMENT","population":"POPULATE","pins":{"1":"5V_PGOOD","2":"UNO_IOREF_3V3","3":"12V_LOGIC","4":"5V_RAIL","5":"NC","6":"NC","7":"NC","8":"5V_VCC","9":"5V_FB","10":"GND","11":"5V_VCC"}},
+    {"ref":"U_5V","kind":"buck_module","value":"TPSM33625 5V/2.5A","mpn":"TPSM33625RDNR","footprint":"NFB:TI_RDN0011A_TPSM33625","population":"POPULATE","pins":{"1":"5V_PGOOD","2":"UNO_IOREF_3V3","3":"12V_LOGIC","4":"5V_RAIL","5":"NC","6":"NC","7":"NC","8":"5V_VCC","9":"5V_FB","10":"GND","11":"5V_VCC"}},
     {"ref":"R_5V_EN_PD","kind":"resistor","value":"100k 1%","mpn":"Vishay CRCW0402 / 100k / 1%","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"UNO_IOREF_3V3","2":"GND"}},
     {"ref":"C_5V_IN_4U7","kind":"capacitor","value":"4.7uF 50V X7R","mpn":"C3225X7R1H475K250AB","footprint":"Capacitor_SMD:C_1210_3225Metric","population":"POPULATE","pins":{"1":"12V_LOGIC","2":"GND"}},
     {"ref":"C_5V_IN_100N","kind":"capacitor","value":"100nF 50V X7R","mpn":"C1608X7R1H104K080AA","footprint":"Capacitor_SMD:C_0603_1608Metric","population":"POPULATE","pins":{"1":"12V_LOGIC","2":"GND"}},
@@ -144,8 +145,6 @@
   ],
   "testpoints": ["TP_12V_RAW","TP_12V_PROT","TP_12V_LOGIC","TP_12V_ACT","TP_5V_PGOOD"],
   "placement_blockers": [
-    "Audit/create TPS259470A RPW-10 footprint from TI package drawing.",
-    "Audit/create TPSM33625 RDN-11 footprint from TI package drawing.",
     "Confirm DC-bias effective capacitance of the selected 22uF output capacitors at 5V; total effective must remain >=25uF.",
     "Confirm exact 3.3nF dV/dt capacitor orderable MPN during BOM release."
   ]

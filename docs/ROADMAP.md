@@ -85,26 +85,33 @@
 - [x] D10=`ACT_FAULT_N` wired-OR bomba + solenoide; deja reserva RS485.
 - [x] Fail-safe pull-downs en PWM/DIR/solenoide/chiller.
 - [x] Netlist/BOM/hoja Z4 + gate numérico/CI.
-- [x] Integración global extendida a Z4 y audit extendido a RHL20/DYC8/AQY.
-- [ ] Cerrar footprints RHL20, DYC8 y AQY antes de placement.
+- [x] Integración global extendida a Z4.
+- [x] PR #13 cierra footprints RHL/DYC/AQY.
 - [ ] Migrar firmware para A4 current diagnostic y D10 fault.
 
 ### PR #13 — cierre de footprints críticos
-- [ ] Cerrar RPW0010A exacto contra TI.
-- [ ] Cerrar RDN-11 exacto contra CAD autorizado TI.
-- [ ] Cerrar RHL20 DRV8242 contra TI.
-- [ ] Cerrar DYC8 TPS1HC120 contra TI.
-- [ ] Cerrar AQY212EHAX DIP4 SMD contra Panasonic.
-- [ ] Auditar conectores/footprints restantes de alto riesgo.
+- [x] Gemini Spark utilizado como auditor independiente/cross-check, no fuente de verdad.
+- [x] `TPS259470ARPWR`: cerrar RPW0010A HotRod contra TI `MPQF568 / 4225183/A`.
+- [x] `TPSM33625RDNR`: cerrar RDN0011A contra TI `qfnd871 / 4226623/F`.
+- [x] `DRV8242HQRHLRQ1`: corregir a package vigente `RHL0020B / 4226154/B` y cerrar EP21/paste.
+- [x] `TPS1HC120CQDYCRQ1`: cerrar DYC0008A contra `MPSS142A / 4226548/B`, 8 pads sin PowerPAD.
+- [x] `AQY212EHAX`: cerrar GE DIP4 surface-mount contra Panasonic del MPN exacto.
+- [x] Sustituir placeholders de BOM/netlists por footprints `NFB:*` auditados.
+- [x] Gate CI impide regresiones geométricas y placeholders críticos.
+- [x] Mantener `.kicad_pcb` sin placement: PR #13 cierra geometría, no XY.
 
-### Integración EDA final
-- [ ] Root real Z1+Z2+Z3+Z4 con símbolos/netlist de producción.
-- [ ] ERC = 0 y contratos JSON↔EDA coherentes.
+### PR #14 — integración EDA raíz
+- [ ] Materializar root real Z1 + Z2 + Z3 + Z4 con símbolos/netlist de producción.
+- [ ] Coherencia JSON/BOM ↔ EDA.
+- [ ] ERC = 0 errores / 0 warnings.
+- [ ] Mantener placement/routing fuera del alcance de este PR.
+- [ ] Preparar gate que habilite Fase 4 solamente con jerarquía completa y footprints cerrados.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado + keepout RF confirmado.
-- [ ] Todos los footprints requeridos `CLOSED`.
+- [x] Cinco footprints críticos PR #13 `CLOSED`; MPR ya cerrado.
+- [ ] Auditar footprints restantes que entren al placement contra librería oficial/drawing cuando el riesgo lo requiera.
 - [ ] Z1/Z2 conectores hacia `Y=0/-Y`.
 - [ ] Z3 loops potencia mínimos.
 - [ ] Z4 drivers/conectores/retornos sucios junto al borde de campo.
@@ -124,7 +131,7 @@
 ## Fase 6 — Fabricación / compliance
 
 - [ ] Lifecycle y fuentes calificadas.
-- [ ] Todos los footprints auditados.
+- [ ] Todos los footprints auditados en release BOM/CPL.
 - [ ] RoHS3/REACH de BOM, PCB y ensamblaje.
 - [ ] Evidencia UNO Q archivada.
 - [ ] Pre-compliance EMC/ESD/inmunidad.
