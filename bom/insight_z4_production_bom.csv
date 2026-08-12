@@ -1,0 +1,32 @@
+bloque,ref,qty,funcion,valor,mpn_o_familia,footprint,poblacion,nota
+PUMP,U_PUMP_DRV,1,hbridge,DRV8242H-Q1,DRV8242HQRHLRQ1,PENDING_VENDOR_CAD_AUDIT_RHL20,POPULATE,Automotive H-bridge HW; PH/EN; footprint RHL20 bloqueado hasta audit CAD TI.
+PUMP,R_PUMP_SR,1,resistor,22k 1%,CRCW040222K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,SR LVL3 ~15-17 V/us para compromiso EMC.
+PUMP,C_PUMP_VM,1,capacitor,100nF 50V X7R,C1608X7R1H104K080AA,Capacitor_SMD:C_0603_1608Metric,POPULATE,Bypass VM local obligatorio TI.
+PUMP,C_PUMP_BULK,1,capacitor,22uF 25V X7R,GRM32ER71E226KE15L,Capacitor_SMD:C_1210_3225Metric,POPULATE,Bulk local >=10uF efectivo cerca VM; validar DC bias.
+PUMP,R_PUMP_PWM_SER,1,resistor,100R 1%,CRCW0402100RFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Serie D5->EN para limitar edge/ringing.
+PUMP,R_PUMP_PWM_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Fail-safe PWM bajo durante arranque.
+PUMP,R_PUMP_DIR_SER,1,resistor,100R 1%,CRCW0402100RFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Serie D6->PH.
+PUMP,R_PUMP_DIR_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Dirección definida durante arranque.
+PUMP,R_PUMP_IPROPI,1,resistor,1.5k 1%,CRCW04021K50FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Convierte IPROPI a PUMP_CURRENT_ADC A4; margen ADC >2.7A worst-scale.
+PUMP,C_PUMP_IPROPI,1,capacitor,100nF,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,Filtrado de telemetría corriente.
+PUMP,J_PUMP,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Salida bomba OUT1/OUT2; orientar -Y.
+PUMP,TP_PUMP_CURRENT,1,testpoint,PUMP_CURRENT_ADC,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up corriente bomba.
+PUMP,TP_PUMP_OUT1,1,testpoint,PUMP_OUT1,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up potencia.
+PUMP,TP_PUMP_OUT2,1,testpoint,PUMP_OUT2,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up potencia.
+CO2_SOL,U_CO2_DRV,1,smart_high_side,TPS1HC120C-Q1,TPS1HC120CQDYCRQ1,PENDING_VENDOR_CAD_AUDIT_DYC8,POPULATE,Automotive smart high-side; clamp inductivo integrado; footprint DYC8 pendiente audit TI.
+CO2_SOL,R_CO2_ILIM,1,resistor,27k 1%,CRCW040227K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,TI formula 13.5/Rk -> ~0.5A limit.
+CO2_SOL,C_CO2_DRV,1,capacitor,100nF 50V X7R,C1608X7R1H104K080AA,Capacitor_SMD:C_0603_1608Metric,POPULATE,Bypass VBB local.
+CO2_SOL,R_CO2_EN_SER,1,resistor,100R 1%,CRCW0402100RFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Serie D7->EN.
+CO2_SOL,R_CO2_EN_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Fail-safe válvula cerrada en arranque.
+CO2_SOL,R_CO2_OPENLOAD_PU,1,resistor,10k 1%,CRCW040210K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up FLT2/open-load local.
+CO2_SOL,TP_CO2_OPENLOAD,1,testpoint,CO2_OPENLOAD_N,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Diagnóstico bring-up.
+CO2_SOL,J_CO2_SOL,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Salida +12V conmutada y GND; orientar -Y.
+CO2_SOL,TP_CO2_SOL_POS,1,testpoint,CO2_SOL_POS,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up salida solenoide.
+CHILLER,U_CHILLER,1,photomos,GE DIP4 1 Form A,AQY212EHAX,PENDING_PANASONIC_CAD_AUDIT_DIP4_SMD,POPULATE,Contacto seco aislado SELV <=48V; no mains; 5kVrms aislamiento componente.
+CHILLER,Q_CHILLER,1,nmos,2N7002,"2N7002,215",Package_TO_SOT_SMD:SOT-23,POPULATE,Nexperia production; driver LED PhotoMOS sin cargar GPIO.
+CHILLER,R_CH_LED,1,resistor,360R 1%,CRCW0402360RFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,5.0mA mínimo con Vf=1.5V y 3.3V rail.
+CHILLER,R_CH_GATE,1,resistor,1k 1%,CRCW04021K00FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Serie D8->gate NMOS.
+CHILLER,R_CH_GATE_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Fail-safe chiller contact open durante arranque.
+CHILLER,J_CHILLER_CTL,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Contacto seco flotante; no conectar a GND shield; orientar -Y.
+DIAGNOSTIC,R_ACT_FAULT_PU,1,resistor,10k 1%,CRCW040210K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up único para wired-OR nFAULT+FLT1 hacia D10.
+DIAGNOSTIC,TP_ACT_FAULT,1,testpoint,ACT_FAULT_N,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up fault común.
