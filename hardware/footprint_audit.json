@@ -1,14 +1,28 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "product": "NFB Insight PCBA v2",
-  "status": "FOOTPRINT_AUDIT_EXTENDED_PR12",
+  "status": "FOOTPRINT_AUDIT_CLOSED_PR13",
   "decision_date": "2026-08-12",
   "policy": {
     "primary_source_required": true,
     "placement_requires_closed_audit": true,
     "routing_requires_closed_audit": true,
     "vendor_cad_may_be_used_when_linked_or_published_by_original_manufacturer": true,
-    "do_not_invent_land_patterns": true
+    "do_not_invent_land_patterns": true,
+    "secondary_ai_audit_is_crosscheck_only": true
+  },
+  "independent_crosscheck": {
+    "auditor": "Gemini Spark",
+    "artifacts": ["NFB_PR13_FOOTPRINT_AUDIT_SPARK.json", "NFB_PR13_PAD_COORDINATES_SPARK.csv"],
+    "result_reported": "5/5 CLOSED_PRIMARY_SOURCE",
+    "authority": "SECONDARY_CROSSCHECK_ONLY",
+    "corrections_by_nfb": [
+      "RPW0010A: las diez cajas rectangulares de Spark no representan los cuatro lands HotRod en L; se implementa la geometría TI 4225183/A.",
+      "RDN0011A: se rechaza la tabla simplificada de Spark y se usa TI 4226623/F con stencil 0.125 mm y 72% en pads 4/5.",
+      "DRV8242HQRHLRQ1: Spark usó RHL0020A/4219071/A; el MPN seleccionado usa el drawing vigente RHL0020B/4226154/B, stencil 0.125 mm y 79% de paste sobre EP.",
+      "DYC0008A: Spark inventó pad 9 PowerPAD; TI 4226548/B define exactamente ocho pads y ningún exposed pad.",
+      "AQY212EHAX: geometría Spark aceptada como cross-check después de confirmar el MPN/sufijo X y terminal SMD en Panasonic oficial."
+    ]
   },
   "audits": [
     {
@@ -19,7 +33,7 @@
       "status": "FROZEN_MECHANICAL_PR2",
       "placement_allowed": true,
       "source_class": "ARDUINO_OFFICIAL_GITHUB",
-      "source": "arduino/docs-content + geometría oficial congelada en docs/MECHANICAL_CONVENTION.md"
+      "source": "arduino/docs-content + docs/MECHANICAL_CONVENTION.md"
     },
     {
       "id": "MPR_LONG_PORT_12PAD",
@@ -29,74 +43,71 @@
       "status": "CLOSED_PRIMARY_DATASHEET",
       "placement_allowed": true,
       "source_class": "HONEYWELL_OFFICIAL_DATASHEET",
-      "source": "Honeywell 32332628 Issue L, Figure 10 Long Port and Recommended PCB Pad Layout Dimensions",
+      "source": "Honeywell 32332628 Issue L, Figure 10",
       "source_url": "https://prod-edam.honeywell.com/content/dam/honeywell-edam/sps/siot/en-us/products/sensors/pressure-sensors/board-mount-pressure-sensors/micropressure-mpr-series/documents/sps-siot-mpr-series-datasheet-32332628-ciid-172626.pdf",
-      "verified_geometry": {"body_mm":[5.0,5.0],"pad_count":12,"pitch_mm":1.27,"recommended_layout_outer_span_mm":4.20,"top_bottom_pad_mm":[0.70,0.65],"side_pad_mm":[0.65,0.70],"long_port_od_mm":2.50}
+      "verified_geometry": {"body_mm":[5.0,5.0],"pad_count":12,"pitch_mm":1.27,"recommended_layout_outer_span_mm":4.20}
     },
     {
       "id": "TPS25947_RPW0010A",
       "reference": "U_EFUSE",
       "mpn": "TPS259470ARPWR",
-      "footprint": null,
-      "status": "PRIMARY_DRAWING_REVIEWED_CAD_IMPORT_PENDING",
-      "placement_allowed": false,
+      "footprint": "NFB:TI_RPW0010A_TPS259470A",
+      "status": "CLOSED_PRIMARY_SOURCE_PR13",
+      "placement_allowed": true,
       "source_class": "TI_OFFICIAL_PACKAGE_DRAWING",
-      "source": "TI MPQF568 / RPW0010A / drawing 4225183/A",
+      "source": "TI MPQF568 / RPW0010A / 4225183/A 08/2019",
       "source_url": "https://www.ti.com/lit/pdf/MPQF568",
-      "verified_geometry": {"package":"VQFN-HR RPW0010A","pin_count":10,"body_nominal_mm":[2.0,2.0],"max_height_mm":1.0,"pitch_mm":0.45,"land_pattern_source_present":true,"solder_mask_policy":"NSMD preferred per TI"},
-      "closure_gate": "Importar o recrear exactamente el land pattern RPW0010A y comparar pads/paste contra MPQF568 antes de autorizar placement."
+      "verified_geometry": {"package":"VQFN-HR RPW0010A","logical_pin_count":10,"body_nominal_mm":[2.0,2.0],"max_height_mm":1.0,"hotrod_l_lands":[1,4,7,10],"long_lands":[5,6],"stencil_mm":0.100,"paste_area_pct":{"1_4_7_10":93,"5_6":82},"solder_mask_policy":"NSMD preferred"}
     },
     {
       "id": "TPSM33625_RDN11",
       "reference": "U_5V",
       "mpn": "TPSM33625RDNR",
-      "footprint": null,
-      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
-      "placement_allowed": false,
-      "source_class": "TI_OFFICIAL_PRODUCT_AND_DATASHEET",
-      "source": "TI TPSM33625 Rev D + RDN package resources",
-      "source_url": "https://www.ti.com/product/TPSM33625/part-details/TPSM33625RDNR",
-      "verified_geometry": {"package":"QFN-FCMOD RDN","pin_count":11,"body_mm":[4.5,3.5],"pitch_mm":0.5,"height_mm":2.0,"cad_link_provided_by_ti":"Ultra Librarian"},
-      "closure_gate": "Importar/verificar footprint/CAD autorizado por TI o fuente primaria reproducible antes de placement."
+      "footprint": "NFB:TI_RDN0011A_TPSM33625",
+      "status": "CLOSED_PRIMARY_SOURCE_PR13",
+      "placement_allowed": true,
+      "source_class": "TI_OFFICIAL_PACKAGE_DRAWING_AND_VENDOR_LINKED_CAD",
+      "source": "TI qfnd871 / RDN0011A / 4226623/F 09/2025",
+      "source_url": "https://www.ti.com/lit/pdf/qfnd871",
+      "verified_geometry": {"package":"QFN-FCMOD RDN0011A","pin_count":11,"body_mm":[4.5,3.5],"height_max_mm":2.1,"stencil_mm":0.125,"pads_4_5_paste_area_pct":72,"thermal_vias":"OPTIONAL_PER_TI","solder_mask_policy":"SMD preferred"}
     },
     {
       "id": "DRV8242_RHL20",
       "reference": "U_PUMP_DRV",
       "mpn": "DRV8242HQRHLRQ1",
-      "footprint": null,
-      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
-      "placement_allowed": false,
-      "source_class": "TI_OFFICIAL_DATASHEET_AND_PACKAGE",
-      "source": "TI DRV8242-Q1 datasheet / RHL-20 VQFN package resources",
-      "source_url": "https://www.ti.com/product/DRV8242-Q1/part-details/DRV8242HQRHLRQ1",
-      "verified_geometry": {"package":"RHL VQFN","pin_count":20,"body_mm":[4.5,3.5],"logic_domain":"3.3/5 V compatible","cad_source":"TI product package/CAD resources"},
-      "closure_gate": "Importar/verificar RHL20 land pattern y thermal pad contra drawing/CAD TI antes de placement."
+      "footprint": "NFB:TI_RHL0020B_DRV8242",
+      "status": "CLOSED_PRIMARY_SOURCE_PR13",
+      "placement_allowed": true,
+      "source_class": "TI_OFFICIAL_DEVICE_DATASHEET_PACKAGE_DRAWING",
+      "source": "DRV8242-Q1 Rev A / RHL0020B / 4226154/B 06/2021",
+      "source_url": "https://www.ti.com/lit/ds/symlink/drv8242-q1.pdf",
+      "verified_geometry": {"package":"VQFN RHL0020B","signal_pin_count":20,"thermal_pad_number":21,"body_mm":[3.5,4.5],"signal_pad_mm":[0.25,0.60],"thermal_pad_mm":[2.05,3.05],"stencil_mm":0.125,"thermal_pad_paste_area_pct":79,"thermal_vias":"OPTIONAL_PER_TI"},
+      "electrical_implementation_note": "Thermal pad 21 is tied to GND for thermal/EMI performance; this is an NFB engineering decision supported by TI guidance for the same DRV824x family and does not replace pins 9-12 as the electrical ground path."
     },
     {
       "id": "TPS1HC120_DYC8",
       "reference": "U_CO2_DRV",
       "mpn": "TPS1HC120CQDYCRQ1",
-      "footprint": null,
-      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
-      "placement_allowed": false,
-      "source_class": "TI_OFFICIAL_DATASHEET_AND_PACKAGE",
-      "source": "TI TPS1HC120-Q1 C version / DYC SOT-5X3 8 package resources",
-      "source_url": "https://www.ti.com/product/TPS1HC120-Q1/part-details/TPS1HC120CQDYCRQ1",
-      "verified_geometry": {"package":"DYC SOT-5X3","pin_count":8,"cad_source":"TI product package/CAD resources"},
-      "closure_gate": "Importar/verificar DYC8 land pattern y pin-1 orientation contra drawing/CAD TI antes de placement."
+      "footprint": "NFB:TI_DYC0008A_TPS1HC120",
+      "status": "CLOSED_PRIMARY_SOURCE_PR13",
+      "placement_allowed": true,
+      "source_class": "TI_OFFICIAL_PACKAGE_DRAWING",
+      "source": "TI MPSS142A / DYC0008A / 4226548/B 12/2021",
+      "source_url": "https://www.ti.com/lit/pdf/mpss142a",
+      "verified_geometry": {"package":"DYC0008A SOT-5X3","pin_count":8,"body_mm":[2.1,1.2],"height_max_mm":0.6,"pitch_mm":0.5,"pad_mm":[0.85,0.22],"row_center_spacing_mm":1.15,"exposed_pad":false,"stencil_mm":0.100}
     },
     {
       "id": "AQY212EHAX_DIP4_SMD",
       "reference": "U_CHILLER",
       "mpn": "AQY212EHAX",
-      "footprint": null,
-      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
-      "placement_allowed": false,
-      "source_class": "PANASONIC_OFFICIAL_PRODUCT_AND_CAD",
-      "source": "Panasonic PhotoMOS AQY212EHAX GE 1 Form A, DIP4 SMD package/CAD resources",
-      "source_url": "https://industry.panasonic.com/global/en/products/control/relay/photomos/number/aqy212ehax",
-      "verified_geometry": {"package":"GE DIP4 SMD","pin_count":4,"load_voltage_rating_v":60,"recommended_system_use_v_max":48,"io_isolation_vrms":5000},
-      "closure_gate": "Importar/verificar terminal layout, gull-wing geometry, courtyard y 3D/CAD Panasonic antes de placement."
+      "footprint": "NFB:Panasonic_AQY212EHAX_DIP4_SMD",
+      "status": "CLOSED_PRIMARY_SOURCE_PR13",
+      "placement_allowed": true,
+      "source_class": "PANASONIC_OFFICIAL_PRODUCT_CAD_AND_DATASHEET",
+      "source": "Panasonic AQY212EHAX PhotoMOS GE DIP4 1 Form A; surface-mount terminal; packing style X",
+      "source_url": "https://industry.panasonic.com/ap/en/products/control/relay/photomos/number/aqy212ehax",
+      "verified_geometry": {"package":"GE DIP4 surface mount","pin_count":4,"pin_pitch_mm":2.54,"row_spacing_mm":8.30,"recommended_pad_mm":[1.50,1.50],"load_voltage_rating_v":60,"nfb_system_use_v_max":48,"io_isolation_vrms":5000},
+      "system_constraint": "NFB uses the dry contact only for SELV <=48 V; NO MAINS."
     }
   ]
 }
