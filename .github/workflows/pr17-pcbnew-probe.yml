@@ -1,4 +1,4 @@
-# Gate PR17: la corrida final debe reproducir también los artefactos ya persistidos.
+# Gate PR17: la corrida final reproduce artefactos persistidos y exige DRC físico 0.
 name: PR17 placement KiCad
 
 on:
@@ -11,6 +11,8 @@ on:
       - 'tools/generate_pr17_placement_manifest.py'
       - 'tools/materialize_pr17_pcb.py'
       - 'tools/validate_pr17_placement.py'
+      - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_z1_production.py'
       - 'hardware/placement_readiness_contract.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/placement_plan_probe.json'
@@ -24,6 +26,9 @@ on:
       - 'bom/insight_power_production_bom.csv'
       - 'bom/insight_z4_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'kicad/lib/nfb_footprints.pretty/Honeywell_MPR_LongPort_12Pad.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/TI_RDN0011A_TPSM33625.kicad_mod'
       - '.github/workflows/pr17-pcbnew-probe.yml'
 
 permissions:
@@ -52,8 +57,12 @@ jobs:
           python3 -m py_compile tools/generate_pr17_placement_manifest.py
           python3 -m py_compile tools/materialize_pr17_pcb.py
           python3 -m py_compile tools/validate_pr17_placement.py
+          python3 -m py_compile tools/validate_pr17_drc.py
+          python3 -m py_compile tools/validate_z1_production.py
       - name: Inventariar footprints/courtyards
         run: python3 tools/probe_placement_footprints.py
+      - name: Validar Z1 y MPR contra contrato primario
+        run: python3 tools/validate_z1_production.py
       - name: Probar API pcbnew, placement y nets in-memory
         run: python3 tools/probe_pcbnew_api.py
       - name: Calcular ancho mínimo por courtyards
@@ -64,12 +73,13 @@ jobs:
         run: python3 tools/materialize_pr17_pcb.py
       - name: Validar placement semántico
         run: python3 tools/validate_pr17_placement.py
-      - name: Ejecutar DRC de placement sin routing
+      - name: Ejecutar DRC JSON de placement sin routing
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
-            --output /tmp/pr17_drc.rpt \
+            --format json \
+            --output /tmp/pr17_drc.json \
             --severity-all
-          cat /tmp/pr17_drc.rpt
+          python3 tools/validate_pr17_drc.py /tmp/pr17_drc.json
       - name: Resumen de salida
         run: |
           python3 - <<'PY'
