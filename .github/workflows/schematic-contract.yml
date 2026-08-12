@@ -8,7 +8,7 @@ on:
 
 jobs:
   contract:
-    name: Contrato UNO Q + Z1/Z2/Z4 + root ERC
+    name: Contrato UNO Q + Z1/Z2/Z4 + root PR15
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -18,15 +18,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Validar contrato Insight
         run: python3 tools/validate_schematic_contract.py
+      - name: Exigir reproducción PR15
+        run: |
+          python3 tools/migrate_pr15_verified_footprints.py --check
+          python3 tools/normalize_pr15_schematics.py --check
       - name: Inicializar librerías globales KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Generar ERC root PR14
-        run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_contract_root.rpt --severity-all
-      - name: Validar deuda ERC root PR14
-        run: python3 tools/validate_pr14_erc_report.py /tmp/erc_contract_root.rpt
+      - name: Exigir ERC root PR15 igual a cero
+        run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_contract_root.rpt --severity-all --exit-code-violations
       - name: Ejecutar ERC contrato Z1
         run: kicad-cli sch erc kicad/z1_sensor_contract.kicad_sch --output /tmp/erc_contract_z1.rpt --severity-all --exit-code-violations
       - name: Ejecutar ERC contrato Z2

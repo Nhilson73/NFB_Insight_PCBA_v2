@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name "NFB")(type "KiCad")(uri "${KIPRJMOD}/lib/nfb_symbols.kicad_sym")(options "")(descr "Símbolos propios NFB Insight"))
+  (lib (name "NFB_GEN")(type "KiCad")(uri "${KIPRJMOD}/lib/nfb_generated.kicad_sym")(options "")(descr "Símbolos neutrales generados desde contratos PR15"))
 )

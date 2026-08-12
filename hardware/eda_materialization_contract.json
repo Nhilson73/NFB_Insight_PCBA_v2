@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "PRODUCTION_EDA_MATERIALIZED_PR15",
+  "decision_date": "2026-08-12",
+  "authority": {
+    "electrical_sources": {
+      "Z0": "hardware/insight_pin_contract.json",
+      "Z1": "hardware/z1_production_netlist.json",
+      "Z2": "hardware/z2_production_netlist.json",
+      "Z3": "hardware/power_production_netlist.json",
+      "Z4": "hardware/z4_production_netlist.json"
+    },
+    "bom_sources": {
+      "Z1": "bom/insight_z1_production_bom.csv",
+      "Z2": "bom/insight_z2_production_bom.csv",
+      "Z3": "bom/insight_power_production_bom.csv",
+      "Z4": "bom/insight_z4_production_bom.csv"
+    },
+    "rule": "JSON/BOM remain authoritative; generated KiCad sheets are deterministic representations and must not be hand-edited."
+  },
+  "toolchain": {
+    "generator": "tools/generate_production_schematics.py",
+    "normalizer": "tools/normalize_pr15_schematics.py",
+    "verified_footprint_migrator": "tools/migrate_pr15_verified_footprints.py",
+    "kicad_ci_version": "10.0.5",
+    "deterministic_uuid_namespace": "5d997f1b-94fd-49b9-82aa-1f151dea0015"
+  },
+  "outputs": [
+    "kicad/uno_q_interface.kicad_sch",
+    "kicad/z1_interface.kicad_sch",
+    "kicad/z2_interface.kicad_sch",
+    "kicad/z3_interface.kicad_sch",
+    "kicad/z4_interface.kicad_sch",
+    "kicad/lib/nfb_generated.kicad_sym"
+  ],
+  "policies": {
+    "deterministic_generation_required": true,
+    "bom_json_footprint_parity_required": true,
+    "manual_edit_generated_sheets_forbidden": true,
+    "generated_internal_pin_type": "passive",
+    "hierarchical_label_directions_are_contractual": true,
+    "placement_in_scope": false,
+    "routing_in_scope": false,
+    "pcb_geometry_change_in_scope": false
+  },
+  "erc_gate": {
+    "root": "kicad/NFB_Insight_PCBA_v2.kicad_sch",
+    "required_errors": 0,
+    "required_warnings": 0,
+    "severity_all": true,
+    "exit_code_violations": true,
+    "pr14_debt_eliminated": true
+  },
+  "footprint_link_closures": [
+    {
+      "reference": "U_HMI_LVL",
+      "mpn": "TXU0202DCUR",
+      "footprint": "NFB:TI_DCU0008A_TXU0202",
+      "source_class": "TI_OFFICIAL_PACKAGE_DRAWING",
+      "source": "TI DCU0008A / MPDS050E / 4225266/A"
+    },
+    {
+      "references": ["J_PWR_IN", "J_PUMP", "J_CO2_SOL", "J_CHILLER_CTL"],
+      "mpn": "1757242",
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "source_class": "PHOENIX_OFFICIAL_PRODUCT_DIMENSIONS_PLUS_KICAD10_LIBRARY",
+      "source": "Phoenix Contact 1757242; 2 positions; 5.08 mm pitch; 1.4 mm PCB hole"
+    },
+    {
+      "reference": "F_ACT",
+      "mpn": "045401.5MR",
+      "footprint": "NFB:Littelfuse_0454_NANO2",
+      "source_class": "LITTELFUSE_OFFICIAL_452_454_DATASHEET",
+      "source": "Littelfuse 452/454 Series NANO2 recommended land pattern",
+      "verified_land_pattern_mm": {
+        "outer_span": 6.86,
+        "inner_gap": 2.95,
+        "land_width": 3.15,
+        "derived_land_length": 1.955,
+        "pad_center_x_abs": 2.4525
+      }
+    }
+  ],
+  "release_gate": "Full hierarchy ERC 0/0 and deterministic JSON/BOM-to-KiCad parity are mandatory before any production placement."
+}
