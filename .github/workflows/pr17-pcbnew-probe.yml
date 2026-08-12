@@ -9,6 +9,7 @@ on:
       - 'tools/compute_placement_plan.py'
       - 'tools/generate_pr17_placement_manifest.py'
       - 'tools/materialize_pr17_pcb.py'
+      - 'tools/validate_pr17_placement.py'
       - 'hardware/placement_readiness_contract.json'
       - 'bom/insight_z1_production_bom.csv'
       - 'bom/insight_z2_production_bom.csv'
@@ -47,6 +48,7 @@ jobs:
           python3 -m py_compile tools/compute_placement_plan.py
           python3 -m py_compile tools/generate_pr17_placement_manifest.py
           python3 -m py_compile tools/materialize_pr17_pcb.py
+          python3 -m py_compile tools/validate_pr17_placement.py
       - name: Inventariar footprints/courtyards
         run: python3 tools/probe_placement_footprints.py
       - name: Probar API pcbnew, placement y nets in-memory
