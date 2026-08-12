@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate Z1: preserva sensores PR6, potencia PR9, cierre físico PR13 y reasignación A4 PR12."""
+"""Gate Z1: preserva sensores PR6, potencia PR9, cierre físico y corrección DRC MPR PR17."""
 from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
@@ -49,13 +49,24 @@ def main():
         if any(x in token for x in ("BNC","MPX5700AP","SN6501","AMC1301","750315371")): fail(f"legacy en Z1 {c['ref']}")
     with BOM.open(newline="",encoding="utf-8") as fh: rows=list(csv.DictReader(fh))
     if {r["ref"] for r in rows}!=set(comps): fail("BOM Z1 != netlist")
-    fp=MPR_FP.read_text(encoding="utf-8"); pads={int(x) for x in re.findall(r'\(pad "(\d+)" smd',fp)}
-    if pads!=set(range(1,13)): fail("footprint MPR incompleto")
-    for marker in ('(at 1.27 1.775)','(at -1.775 -1.27)','HONEYWELL 32332628 ISSUE L FIG.10'):
-        if marker not in fp: fail(f"MPR sin {marker}")
+    fp=MPR_FP.read_text(encoding="utf-8")
+    pad_matches=re.findall(r'\(pad "(\d+)" smd rect \(at (-?[0-9.]+) (-?[0-9.]+)\) \(size ([0-9.]+) ([0-9.]+)\)',fp)
+    pads={int(n):(float(x),float(y),float(w),float(h)) for n,x,y,w,h in pad_matches}
+    expected={
+        1:(1.27,-2.10,0.70,0.65),2:(0.0,-2.10,0.70,0.65),3:(-1.27,-2.10,0.70,0.65),
+        4:(-2.10,-1.27,0.65,0.70),5:(-2.10,0.0,0.65,0.70),6:(-2.10,1.27,0.65,0.70),
+        7:(-1.27,2.10,0.70,0.65),8:(0.0,2.10,0.70,0.65),9:(1.27,2.10,0.70,0.65),
+        10:(2.10,1.27,0.65,0.70),11:(2.10,0.0,0.65,0.70),12:(2.10,-1.27,0.65,0.70),
+    }
+    if set(pads)!=set(range(1,13)): fail("footprint MPR incompleto")
+    for num,e in expected.items():
+        if any(not close(a,b) for a,b in zip(pads[num],e)): fail(f"MPR pad {num} no coincide con Honeywell Fig.10: {pads[num]} != {e}")
+    if "HONEYWELL 32332628 ISSUE L FIG.10 / 4.20 CENTER SPAN" not in fp: fail("MPR no documenta corrección Fig.10")
+    # Pinout Honeywell: I2C SDA=2, SCL=3, VSS=10, VDD=12.
+    if comps["U_CO2"]["pins"]!={"1":"NC","2":"I2C_SDA","3":"I2C_SCL","4":"NC","5":"NC","6":"NC","7":"NC","8":"NC","9":"NC","10":"GND","11":"NC","12":"3V3_RAIL"}: fail("pinout eléctrico MPR no coincide con Honeywell")
     sch=SCH.read_text(encoding="utf-8")
     for marker in ("Z1 SENSOR CONTRACT","MPRLS0030PA00002A","PH_ADC","ORP_ADC","TEMP_1WIRE","DO_ADC","NO CO2_ADC"):
         if marker not in sch: fail(f"contrato Z1 separado sin {marker}")
-    print("OK: Z1 preservado bajo root PR14; ERC Z1 usa hoja separada z1_sensor_contract.kicad_sch")
+    print("OK: Z1 preservado; MPR corregido contra Honeywell Fig.10 y pinout I2C validado")
     return 0
 if __name__=="__main__": raise SystemExit(main())
