@@ -3,193 +3,156 @@
 ## Regla transversal — fuentes de verdad
 
 - [x] Para cualquier decisión del **Arduino UNO Q**, revisar primero repositorios oficiales `arduino/*` en GitHub.
-- [x] Documentar la jerarquía en `docs/SOURCE_OF_TRUTH.md`.
+- [x] Jerarquía documentada en `docs/SOURCE_OF_TRUTH.md`.
 - [x] Resolver contradicciones por revisión/commit/especificidad antes de congelar producción.
 
-## Fase 0 — Congelar arquitectura
+## Fase 0 — Arquitectura
 
 - [x] Repositorio limpio y herencia selectiva desde Q-Shield.
 - [x] Sistema global de coordenadas.
-- [x] UNO Q con USB-C hacia `-Y`.
-- [x] Altura de board `68.58 mm`; crecimiento solo `+X`.
+- [x] UNO Q USB-C hacia `-Y`.
+- [x] Altura PCB `68.58 mm`; crecimiento solo `+X`.
 - [x] `Y=0` como FIELD I/O EDGE.
-- [x] Zonas Z0–Z4 y clasificación BOM donante.
+- [x] Zonas Z0–Z4.
 
 ## Fase 1 — Mecánica UNO Q
 
-- [x] Footprint inmutable del UNO Q rotado.
-- [x] Cuatro agujeros de montaje transformados.
-- [x] Referencias mecánicas USB-C/PMIC/JCTL/SPI/Qwiic.
-- [x] Contorno inicial `68.58 mm` alto × `220 mm` ancho provisional.
+- [x] Footprint mecánico inmutable del UNO Q rotado.
+- [x] Cuatro agujeros transformados y referencias mecánicas.
+- [x] Contorno inicial `68.58 mm × 220 mm` provisional.
 - [x] Validación automática mecánica/DRC.
-- [ ] Convertir keepouts definitivos después de contrastar CAD/STEP y enclosure.
-- [ ] Confirmar específicamente keepout RF/antena del UNO Q contra fuentes oficiales Arduino antes de placement.
-- [ ] Verificar UNO Q + carrier en KiCad 3D Viewer.
-- [ ] Congelar ancho final solo después del placement.
+- [ ] Convertir keepouts definitivos tras contrastar CAD/STEP/enclosure.
+- [ ] Confirmar keepout RF/antena contra fuentes oficiales Arduino antes de placement.
+- [ ] Verificar UNO Q + carrier en 3D Viewer.
+- [ ] Congelar ancho final después del placement.
 
 ## Fase 2 — Arquitectura eléctrica Insight
 
 ### PR #3 — Contrato UNO Q
-- [x] Root schematic limpio.
-- [x] Contrato machine-readable de 32 pads.
-- [x] D0–D21 funcionalmente clasificados.
-- [x] A3 y D9 DNP/Reserva; D10 reserva Signature.
-- [x] Snapshot de firmware congelado.
-- [x] ERC automatizado.
+- [x] Contrato machine-readable de 32 pads + ERC.
+- [x] A3/D9 DNP; D10 reserva.
+- [x] Snapshot de firmware.
 
-### PR #4 — Trazabilidad analógica donante
-- [x] Manifiesto de herencia por canal.
-- [x] BOM donor `INHERIT/REVIEW`.
-- [x] Historial pH/ORP/TEMP/CO2/DO.
+### PR #4 — Trazabilidad analógica
+- [x] Manifiesto/BOM donante `INHERIT/REVIEW`.
 - [x] Humedad descartada.
-- [x] Hoja KiCad histórica + gate de trazabilidad.
 
 ### PR #5 — Interfaces reales de sensores
-- [x] pH y DO como señales acondicionadas 0–3 V.
-- [x] ORP acondicionado con escalamiento a 3.0 V.
-- [x] Temperatura corregida a DS18B20 / `TEMP_1WIRE`.
-- [x] BNC y aislamiento de electrodo crudo fuera de PCBA base.
-- [x] `MPX5700AP` bloqueado para reemplazo.
-- [x] Gates de dominio ADC y coherencia.
+- [x] pH/ORP/DO acondicionados.
+- [x] TEMP corregida a DS18B20/1-Wire.
+- [x] BNC/front-end de electrodo crudo fuera del shield base.
 
-### PR #6 — Z1 netlist de producción
-- [x] Honeywell `MPRLS0030PA00002A` para presión CO₂.
-- [x] Presión CO₂ por I²C `0x28`; A4/CO2_ADC DNP/Reserva.
-- [x] JST XH side-entry para pH/ORP/TEMP/DO.
-- [x] ESD `PESD3V3U1UL,315`.
-- [x] Filtros pH/DO `1 kΩ + 100 nF`.
-- [x] ORP `10 kΩ / 20 kΩ + 100 nF`.
-- [x] Pull-up `4.7 kΩ` de `TEMP_1WIRE`.
-- [x] Footprint MPR propio.
-- [x] Netlist/BOM/gates automáticos.
-- [x] PR #9 corrige `3V3_RAIL`/`5V_RAIL` para que sean rails locales del shield, sin J_UNOQ.4/.5.
-- [ ] Verificar filtros frente a ruido real durante bring-up/HIL.
-- [ ] Validar footprint MPR contra STEP/3D antes del placement definitivo.
+### PR #6 — Z1 producción
+- [x] MPR `0x28`; A4/CO2_ADC DNP.
+- [x] ESD/filtros/JST/pull-up TEMP congelados.
+- [x] Netlist/BOM/gates Z1.
+- [x] PR #9 corrige 5V/3V3 a rails locales del shield.
+- [ ] Validar filtros y MPR footprint contra hardware real antes de placement final.
 
 ### PR #7 — Z2 digital / bajo ruido
-- [x] HX711 onboard a 3.3 V, DOUT/SCK en D2/D3 y 10 SPS.
-- [x] Conector de celda de carga y test points diferenciales.
-- [x] DFR1103 GNSS+RTC I²C `0x66` reemplaza GPS/RTC legacy separados.
-- [x] I²C global con pull-ups de `4.7 kΩ`.
-- [x] HMI D0/D1 con `TXU0202DCUR` 3.3 V↔5 V.
-- [x] ESD individual de UART de campo.
-- [x] Watchdog `TPS3823-30DBVR`, WDI=D4, reset por `MCU_NRST`.
-- [x] Test points de bring-up Z2.
-- [x] Netlist/BOM/hoja contractual/gates Z2.
-- [x] PR #9 corrige `3V3_RAIL`/`5V_RAIL` para que sean rails locales del shield, sin J_UNOQ.4/.5.
-- [ ] Calificar fuente/lifecycle del HX711 antes de fabricación.
-- [ ] Medir consumo real de HMI y DFR1103 durante bring-up.
-- [ ] Validar HX711 con celda real durante bring-up/HIL.
+- [x] HX711 D2/D3, 10 SPS.
+- [x] DFR1103 GNSS+RTC `0x66`.
+- [x] I²C pull-ups 4.7 kΩ.
+- [x] HMI TXU0202 y watchdog TPS3823-30.
+- [x] Netlist/BOM/gates Z2.
+- [x] PR #9 corrige 5V/3V3 a rails locales del shield.
+- [ ] Calificar fuente/lifecycle HX711 y medir cargas reales en HIL.
 
-### PR #8 — EU Compliance Design Gate del shield
-- [x] Definir NFB Insight PCBA v2 como shield/carrier del Arduino UNO Q.
-- [x] Shield base sin transmisor/antena/matching/amplificación RF añadidos.
-- [x] Exigir preservación de keepout/condiciones RF del UNO Q.
+### PR #8 — EU Compliance Design Gate
+- [x] Frontera shield/carrier UNO Q.
+- [x] Sin RF añadido por el shield base.
 - [x] Matriz EMC / RoHS 3 / WEEE / RED / REACH / CE.
-- [x] Reglas EMC de plano GND, retornos, ruido, ESD e interfaces externas.
-- [x] Evidencia RoHS/REACH de BOM, PCB y ensamblaje antes de producción.
-- [x] Workflow `EU Compliance Gate`.
-- [x] README actualizado.
-- [ ] Archivar certificados/DoC oficiales específicos del SKU UNO Q utilizado antes de release RC.
-- [ ] Confirmar con laboratorio edición exacta de normas armonizadas y plan final de ensayo.
+- [x] Gate CI y reglas EMC/ESD/retornos.
+- [ ] Archivar certificados/DoC del SKU UNO Q final.
+- [ ] Confirmar con laboratorio normas armonizadas y plan final de ensayos.
 
-## Fase 3 — Arquitectura de potencia
+## Fase 3 — Arquitectura y producción de potencia
 
 ### PR #9 — Power tree y frontera UNO Q
-- [x] Revisar repos oficiales Arduino/GitHub como fuente primaria del power tree UNO Q.
-- [x] Confirmar métodos oficiales UNO Q: USB-C 5 V, VIN 7–24 V y 5 V regulados por JANALOG.
-- [x] Elegir **12 V protegido → VIN** como método NFB preferido.
-- [x] Separar `5V_RAIL` y `3V3_RAIL` locales del shield de J_UNOQ.5/J_UNOQ.4.
-- [x] Usar `IOREF` solo como salida/referencia de alta impedancia; prohibir back-feed.
-- [x] Congelar entrada nominal 12 V y fuente recomendada 12 V / 5 A / 60 W.
-- [x] Congelar eFuse `TPS259470ARPWR` y familia TVS `SMBJ15A`.
-- [x] Congelar split estrella `12V_HOST_VIN` / `12V_LOGIC` / `12V_ACT`.
-- [x] Congelar chiller con potencia externa y solo señal de control por PCBA.
-- [x] Congelar buck local `TPSM33625RDNR` para `5V_RAIL`.
-- [x] Congelar LDO `TLV75533PDBVR` para `3V3_RAIL`.
-- [x] Congelar envelope de diseño de 43.5 W sobre fuente de 60 W.
-- [x] Crear `hardware/power_architecture_contract.json`.
-- [x] Crear `docs/POWER_ARCHITECTURE.md` y `docs/SOURCE_OF_TRUTH.md`.
-- [x] Elevar contrato UNO Q a schema v5 y corregir netlists Z1/Z2.
-- [x] Crear `Validación arquitectura de potencia Insight` en CI.
-- [x] Actualizar README.
+- [x] Revisar repos oficiales Arduino/GitHub como fuente primaria.
+- [x] Confirmar USB-C 5 V, VIN 7–24 V y 5 V regulados por JANALOG.
+- [x] Elegir **12 V protegido → VIN** como método NFB.
+- [x] Separar `5V_RAIL`/`3V3_RAIL` del host.
+- [x] `IOREF` solo referencia/salida; no back-feed.
+- [x] Entrada 12 V; fuente recomendada 12 V / 5 A / 60 W.
+- [x] `TPS259470ARPWR` + `SMBJ15A`.
+- [x] Split `12V_HOST_VIN` / `12V_LOGIC` / `12V_ACT`.
+- [x] Chiller con potencia externa.
+- [x] `TPSM33625RDNR` y `TLV75533PDBVR`.
+- [x] Power gate + README.
 
 ### PR #10 — Esquemático de potencia de producción
-- [ ] Revisar nuevamente schematic/power docs oficiales Arduino antes de materializar conexiones UNO Q.
-- [ ] Calcular y congelar `R_ILIM`, OVLO, dV/dt/soft-start del TPS25947.
-- [ ] Seleccionar MPN exacto del conector de entrada y `F_ACT`.
-- [ ] Calcular feedback, frecuencia, capacitores y filtro EMI del TPSM33625 para 5.0 V.
-- [ ] Congelar capacitores/enable del TLV75533.
-- [ ] Materializar `power.kicad_sch` con ERC = 0.
-- [ ] Crear BOM/netlist machine-readable de potencia.
-- [ ] Definir netclasses de `12V_HOST_VIN`, `12V_ACT`, `5V_RAIL`, `3V3_RAIL`.
-- [ ] Revisión térmica a 60 °C ambiente objetivo.
-- [ ] Pasar EU Compliance Gate + power gate + gates Z1/Z2.
+- [x] Revalidar frontera UNO Q contra `arduino/docs-content` antes de congelar conexiones.
+- [x] Congelar conector `J_PWR_IN = Phoenix 1757242`.
+- [x] Congelar `D_IN_TVS = SMBJ15A-TR` y `C_IN_BULK = EEEFK1E101P`.
+- [x] TPS259470A: ladder UV/OV `470k / 11k / 47k`.
+- [x] TPS259470A: `R_ILIM = 750 Ω`, `C_DVDT = 3.3 nF`, `C_ITIMER = 2.2 nF`.
+- [x] Congelar `F_ACT = Littelfuse 045401.5MR`, 1.5 A Slo-Blo; HIL requerido.
+- [x] TPSM33625: 1 MHz, RT→VCC, feedback `40.2k / 10k`.
+- [x] TPSM33625: 4.7 µF + 100 nF entrada; 1 µF VCC; 2×22 µF + 100 nF salida; PGOOD 47 kΩ.
+- [x] TLV75533: 1 µF entrada, 1 µF + 100 nF salida, `EN=5V_PGOOD`.
+- [x] Crear `hardware/power_production_netlist.json`.
+- [x] Crear `bom/insight_power_production_bom.csv`.
+- [x] Crear `hardware/power_netclasses.json`.
+- [x] Materializar `kicad/power.kicad_sch` contractual y gate ERC.
+- [x] Screening térmico analítico a 60 °C documentado.
+- [x] Mantener filtro LC serie abierto hasta pre-scan EMC, evitando dimensionamiento a ciegas.
+- [x] Actualizar README.
+- [ ] Crear/auditar footprint `TPS259470A RPW-10` desde drawing TI.
+- [ ] Crear/auditar footprint `TPSM33625 RDN-11` desde drawing TI.
+- [ ] Validar DC-bias de 2×22 µF para garantizar ≥25 µF efectivos.
+- [ ] Cerrar MPN exacto del capacitor dV/dt de 3.3 nF durante BOM release.
+- [ ] Termografía/HIL a 60 °C y cargas reales antes de RC.
 
 ### Integración eléctrica posterior
-- [ ] Integrar jerarquía Z1 + Z2 + potencia preservando contratos machine-readable.
+- [ ] Integrar jerarquía Z1 + Z2 + potencia conservando contratos machine-readable.
 - [ ] Construir hoja de actuadores Insight.
-- [ ] Integrar jerarquía completa y mantener ERC = 0.
+- [ ] Integrar jerarquía completa con ERC = 0.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado.
-- [ ] Keepout RF/antena UNO Q confirmado contra GitHub/CAD oficial y bloqueado.
+- [ ] Keepout RF/antena confirmado y bloqueado.
 - [ ] Z1 sensores con conectores sobre `Y=0`, salida `-Y`.
-- [ ] U_CO2 accesible al tubing desde borde de servicio.
-- [ ] Z2 digital/bajo ruido con J_LOADCELL, J_GNSS_RTC y J_HMI hacia borde de servicio.
-- [ ] TVS próximos a entradas de cable.
-- [ ] Z3: entrada/eFuse/buck/LDO con loops mínimos y lejos de Z1/RF.
-- [ ] Z4: actuadores/retornos sucios.
+- [ ] U_CO2 accesible al tubing.
+- [ ] Z2 digital/bajo ruido hacia borde de servicio.
+- [ ] Z3 entrada/eFuse/buck/LDO con loops mínimos y footprints auditados.
+- [ ] Z4 actuadores/retornos sucios.
+- [ ] TVS junto a entradas de cable.
 - [ ] Revisión 3D completa.
 - [ ] Congelar ancho final.
 
 ## Fase 5 — Routing
 
-- [ ] Plano de referencia continuo.
-- [ ] Prioridad: sensores → I²C/HX711 → potencia → actuadores.
-- [ ] No usar In1.Cu como señales si se congela como GND.
-- [ ] No atravesar keepout RF del UNO Q con cobre/señales/componentes del shield.
-- [ ] Confinar nodo SW del buck a Z3.
-- [ ] Retornos `12V_ACT` a región de entrada/estrella sin cruzar Z1/Z2.
-- [ ] Stitching vias y test points deliberados.
-- [ ] Revisar retornos EMC de cada interfaz externa.
-- [ ] 0 desconectados inesperados.
-- [ ] DRC = 0.
+- [ ] Aplicar físicamente `hardware/power_netclasses.json` en KiCad.
+- [ ] Plano de referencia continuo; In1.Cu sin señales si se congela como GND.
+- [ ] Sensores → I²C/HX711 → potencia → actuadores.
+- [ ] SW del buck confinado a Z3.
+- [ ] No atravesar keepout RF UNO Q.
+- [ ] `12V_ACT` y retorno sin cruzar Z1/Z2.
+- [ ] Stitching vias/test points deliberados.
+- [ ] 0 desconectados inesperados; DRC = 0.
 
 ## Fase 6 — Fabricación
 
-- [ ] Lifecycle/disponibilidad BOM.
-- [ ] Calificar fabricante/fuente de HX711.
-- [ ] Auditoría footprint vs datasheet/CAD primario.
-- [ ] Conectores y alivio de tensión.
-- [ ] Evidencia RoHS 3 de todos los MPN/materiales poblados.
-- [ ] Evidencia REACH/SVHC de proveedores relevantes.
-- [ ] Declaración del fabricante PCB: laminado, máscara, serigrafía y ENIG.
-- [ ] Declaración del ensamblador/proceso SAC305 o alternativa aprobada.
-- [ ] Archivar evidencia de conformidad/certificación del UNO Q utilizado.
-- [ ] Plan de pre-compliance EMC/ESD/inmunidad.
-- [ ] Gerbers/drill.
-- [ ] BOM + CPL.
-- [ ] Variante Insight.
-- [ ] Stackup/notas de fabricación.
+- [ ] Lifecycle/disponibilidad BOM y fuentes calificadas.
+- [ ] Auditoría de todos los footprints contra datasheet/CAD primario.
+- [ ] Evidencia RoHS 3 / REACH de MPN, PCB y ensamblaje.
+- [ ] Declaración PCB: laminado, máscara, serigrafía, ENIG.
+- [ ] Declaración ensamblaje SAC305 o alternativa aprobada.
+- [ ] Evidencia conformidad UNO Q archivada.
+- [ ] Pre-compliance EMC/ESD/inmunidad.
+- [ ] Gerbers/drill + BOM + CPL + stackup.
 - [ ] Tag `v2.0-RC1` después de todos los gates.
 
-## Fase 7 — Bring-up y HIL
+## Fase 7 — Bring-up / HIL
 
-- [ ] Rails antes de instalar UNO Q.
-- [ ] Encendido limitado en corriente.
-- [ ] Medir secuencia `12V_PROTECTED → UNO Q → IOREF → 5V_RAIL → 3V3_RAIL`.
-- [ ] Verificar ausencia de back-feed con UNO Q apagado/USB conectado/desconectado.
-- [ ] Medir consumo real ABX00173 bajo Wi‑Fi/App Lab/carga representativa.
-- [ ] Inyección de pH/ORP/DO.
-- [ ] DS18B20/1-Wire.
-- [ ] MPR I²C `0x28` y prueba de presión.
-- [ ] Ruido/interferencia de sensores y decisión final sobre aislamiento inline.
-- [ ] DFR1103 I²C `0x66`: GNSS + RTC.
-- [ ] HX711/celda real: cero, span, ruido y estabilidad.
-- [ ] HMI UART con TXU0202 3.3 V↔5 V.
-- [ ] Bomba/solenoide/chiller control.
-- [ ] Watchdog/failsafe.
-- [ ] Fixture HIL y prueba repetible de producción.
-- [ ] Pre-scan EMC del conjunto con UNO Q, cables y actuadores representativos.
+- [ ] Rails sin UNO Q y encendido limitado en corriente.
+- [ ] Secuencia `12V_PROTECTED → UNO Q → IOREF → 5V_RAIL → 3V3_RAIL`.
+- [ ] Ausencia de back-feed con combinaciones USB/fuente principal.
+- [ ] Termografía de eFuse/buck/LDO a 60 °C objetivo.
+- [ ] Medir consumo ABX00173 bajo Wi‑Fi/App Lab.
+- [ ] Medir inrush pump/solenoide y validar `F_ACT`.
+- [ ] pH/ORP/DO, DS18B20, MPR `0x28`, DFR1103 `0x66`, HX711, HMI y watchdog.
+- [ ] Pre-scan EMC con cables/actuadores representativos.
+- [ ] Fixture HIL repetible de producción.

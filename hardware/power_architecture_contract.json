@@ -2,6 +2,9 @@
   "schema_version": 2,
   "product": "NFB Insight PCBA v2",
   "status": "POWER_ARCHITECTURE_BASELINE_PR9",
+  "production_status": "POWER_PRODUCTION_BASELINE_PR10",
+  "production_netlist_source_of_truth": "hardware/power_production_netlist.json",
+  "power_netclasses_source_of_truth": "hardware/power_netclasses.json",
   "design_object": "SHIELD_CARRIER_FOR_ARDUINO_UNO_Q",
   "source_hierarchy": {
     "uno_q_primary": [
@@ -26,7 +29,8 @@
     "nominal_v": 12.0,
     "allowed_v": [10.8, 13.2],
     "recommended_external_supply": "12 V / 5 A certified external PSU",
-    "connector_family": "Phoenix Contact 2-pos 5.08 mm pluggable terminal block",
+    "connector_mpn": "1757242",
+    "connector_family": "Phoenix Contact MSTBA 2,5/2-G-5,08",
     "input_net": "12V_IN_RAW"
   },
   "host_power": {
@@ -42,8 +46,8 @@
     "source_note": "Official Arduino GitHub docs-content confirms VIN is buck-converted to 5 V and diode-OR'd with USB-C into 5V_SYS. The regulated JANALOG 5 V pin is also a supported host power input.",
     "nfb_architecture_decisions": [
       "Use protected 12 V into VIN as the baseline host-power method.",
-      "Do not tie the shield-local 5V_RAIL to the UNO Q 5 V pin in the baseline, although Arduino officially supports that pin as a regulated 5 V input; separation is intentional to avoid shared-load transients and back-feed paths.",
-      "Do not tie shield-local 3V3_RAIL to UNO Q PWR_3P3V; use it only if a future PR deliberately proves current budget and sequencing.",
+      "Do not tie shield-local 5V_RAIL to UNO Q 5 V in the baseline.",
+      "Do not tie shield-local 3V3_RAIL to UNO Q PWR_3P3V in the baseline.",
       "Never drive IOREF; use it only as a high-impedance host-ready/reference signal."
     ]
   },
@@ -54,17 +58,24 @@
       "vin_range_v": [2.7, 23.0],
       "current_capability_a": 5.5,
       "target_current_limit_a": 4.5,
+      "production_rilm_ohm": 750,
+      "production_ilim_typ_a": 4.452,
+      "uvov_ladder_ohm": [470000, 11000, 47000],
+      "production_dvdt_cap_f": 3.3e-9,
+      "production_itimer_cap_f": 2.2e-9,
       "features": ["reverse_polarity", "true_reverse_current_blocking", "overcurrent", "overvoltage", "soft_start", "thermal_shutdown"]
     },
     "tvs": {
       "ref": "D_IN_TVS",
       "family": "SMBJ15A",
+      "mpn": "SMBJ15A-TR",
       "vrwm_v": 15.0,
       "placement": "at input connector before eFuse"
     },
     "bulk_cap": {
       "ref": "C_IN_BULK",
-      "value": "100 uF / 25 V low-ESR",
+      "mpn": "EEEFK1E101P",
+      "value": "100 uF / 25 V",
       "placement": "after eFuse at star split"
     }
   },
@@ -73,7 +84,7 @@
     "branches": [
       {"net": "12V_HOST_VIN", "purpose": "Arduino UNO Q VIN", "continuous_budget_a": 1.5},
       {"net": "12V_LOGIC", "purpose": "shield low-voltage regulators", "continuous_budget_a": 1.0},
-      {"net": "12V_ACT", "purpose": "pump + CO2 solenoid only", "continuous_budget_a": 1.5, "local_fuse_required": true}
+      {"net": "12V_ACT", "purpose": "pump + CO2 solenoid only", "continuous_budget_a": 1.5, "local_fuse_required": true, "fuse_mpn": "045401.5MR"}
     ],
     "chiller_power_on_pcba": false,
     "chiller_interface": "control signal only"
@@ -89,15 +100,17 @@
       "vout_v": 5.0,
       "rated_current_a": 2.5,
       "design_continuous_limit_a": 1.5,
+      "switching_frequency_hz": 1000000,
+      "feedback_ohm": [40200, 10000],
       "spread_spectrum": true,
-      "emi_note": "TI specifies CISPR 11 Class B compliant-capable with appropriate layout/filtering."
+      "emi_note": "CISPR 11 Class B compliant-capable with appropriate layout/filtering; final integrated product requires pre-compliance."
     },
     "enable": {
       "source": "UNO_IOREF_3V3",
       "uno_q_pad": 2,
       "pulldown_ref": "R_5V_EN_PD",
       "pulldown_ohm": 100000,
-      "purpose": "keep shield 5V off until UNO Q 3.3V/IOREF is alive"
+      "purpose": "keep shield 5V off until UNO Q IOREF is alive"
     },
     "power_good_net": "5V_PGOOD",
     "loads": ["pH module", "ORP module", "DO module", "HMI", "3.3V LDO input"]
@@ -113,10 +126,12 @@
       "vout_v": 3.3,
       "rated_current_a": 0.5,
       "design_continuous_limit_a": 0.25,
-      "enable_source": "5V_PGOOD"
+      "enable_source": "5V_PGOOD",
+      "input_cap_f": 1e-6,
+      "output_cap_f": 1e-6
     },
     "loads": ["MPR pressure", "DS18B20", "HX711", "DFR1103", "I2C pullups", "TXU0202 VCCA", "watchdog", "ESD/support logic"],
-    "reason": "preserve independent shield power domain and avoid accidental back-feed; not because UNO Q lacks a 3.3V output"
+    "reason": "preserve independent sequenced shield power domain and avoid accidental back-feed"
   },
   "power_sequence": [
     "12V_IN_RAW -> TVS/eFuse -> 12V_PROTECTED",
@@ -131,7 +146,7 @@
     "actuator_12v_w_design": 18.0,
     "total_w_design": 43.5,
     "recommended_supply_w": 60.0,
-    "note": "The 60 W adapter provides margin for UNO Q transient load, HMI/sensors and pump+solenoid. Chiller power is external."
+    "note": "60 W adapter leaves margin; chiller power is external."
   },
   "actuator_policy": {
     "pump_peak_a_assumption": 0.8,
@@ -140,20 +155,39 @@
     "chiller": "external power; control only",
     "dirty_return_rule": "12V_ACT returns must join GND at power-entry/star region and must not cross Z1/Z2 return paths"
   },
+  "production_freeze_pr10": {
+    "bom": "bom/insight_power_production_bom.csv",
+    "schematic": "kicad/power.kicad_sch",
+    "netclasses": "hardware/power_netclasses.json",
+    "input_connector_mpn": "1757242",
+    "actuator_fuse_mpn": "045401.5MR",
+    "efuse_rilm_ohm": 750,
+    "efuse_uvov_ladder_ohm": [470000, 11000, 47000],
+    "efuse_dvdt_cap_f": 3.3e-9,
+    "efuse_itimer_cap_f": 2.2e-9,
+    "buck_frequency_hz": 1000000,
+    "buck_feedback_ohm": [40200,10000],
+    "buck_output_nominal_cap_f": 4.4e-5,
+    "ldo_input_output_cap_f": 1e-6,
+    "footprint_audit_blockers": ["TPS259470A_RPW10", "TPSM33625_RDN11"],
+    "placement_in_scope": false,
+    "routing_in_scope": false
+  },
   "compliance_rules": [
     "Keep switching regulator and 12V_ACT physically in Z3/Z4, away from Z1 analog and UNO Q RF keepout.",
     "Use continuous reference plane; do not route switching-node copper on internal reference plane.",
     "TVS and eFuse must be adjacent to the power-entry connector.",
-    "Do not connect shield-local 5V_RAIL to UNO Q 5V pin or shield-local 3V3_RAIL to UNO Q 3V3 pin unless a future reviewed PR changes the architecture.",
+    "Do not connect shield-local 5V_RAIL to UNO Q 5V or shield-local 3V3_RAIL to UNO Q 3V3 unless a future reviewed PR changes the architecture.",
     "Use IOREF only as a high-impedance enable/reference signal; never back-feed it.",
-    "Final input filter and IEC 61000-4-5 pre-compliance values require bench/lab validation."
+    "Final series input EMI network and IEC 61000-4-5 values require bench/lab pre-compliance."
   ],
   "sources": [
     {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md","kind":"official_github_primary"},
     {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md","kind":"official_github_primary"},
-    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/carriers/uno-breakout-carrier/datasheet/datasheet.md","kind":"official_github_primary"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TPS259470ARPWR","url":"https://www.ti.com/product/TPS25947/part-details/TPS259470ARPWR"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625RDNR","url":"https://www.ti.com/product/TPSM33625/part-details/TPSM33625RDNR"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TLV75533PDBVR","url":"https://www.ti.com/product/TLV755P/part-details/TLV75533PDBVR"}
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TPS259470ARPWR"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625RDNR"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TLV75533PDBVR"},
+    {"priority":2,"manufacturer":"Phoenix Contact","part":"1757242"},
+    {"priority":2,"manufacturer":"Littelfuse","part":"045401.5MR"}
   ]
 }

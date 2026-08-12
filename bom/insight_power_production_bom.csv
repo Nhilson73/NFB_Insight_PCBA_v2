@@ -1,0 +1,35 @@
+bloque,ref,qty,funcion,valor,mpn_o_familia,footprint,poblacion,nota
+ENTRADA_PROTECCION,J_PWR_IN,1,connector,"MSTBA 2,5/2-G-5,08",1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Phoenix Contact 5.08 mm; 12 A nominal; orientar hacia -Y en placement.
+ENTRADA_PROTECCION,D_IN_TVS,1,tvs,SMBJ15A 600W 15V uni,SMBJ15A-TR,Diode_SMD:D_SMB,POPULATE,TVS unidireccional baseline para 12 VDC; validar surge en pre-compliance.
+ENTRADA_PROTECCION,C_IN_HF,1,capacitor,100nF 50V X7R,C1608X7R1H104K080AA,Capacitor_SMD:C_0603_1608Metric,POPULATE,Bypass HF adyacente al conector/eFuse.
+ENTRADA_PROTECCION,U_EFUSE,1,efuse,TPS259470A,TPS259470ARPWR,PENDING_DATASHEET_AUDIT_BEFORE_PLACEMENT,POPULATE,RPW-10; footprint obligatorio a auditar contra drawing TI antes de placement.
+ENTRADA_PROTECCION,R_UVOV_R1,1,resistor,470k 1%,Vishay CRCW0402 / 470k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Ladder TI: VIN→R1→EN/UVLO.
+ENTRADA_PROTECCION,R_UVOV_R2,1,resistor,11k 1%,Vishay CRCW0402 / 11k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Ladder TI: EN/UVLO→R2→OVLO.
+ENTRADA_PROTECCION,R_UVOV_R3,1,resistor,47k 1%,Vishay CRCW0402 / 47k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Ladder TI: OVLO→R3→GND.
+ENTRADA_PROTECCION,R_EFUSE_ILIM,1,resistor,750R 1%,Vishay CRCW0402 / 750R / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,750R conserva condición UL2367 publicada por TI y fija ~4.45 A typ.
+ENTRADA_PROTECCION,C_EFUSE_DVDT,1,capacitor,3.3nF 50V X7R,GRM155R71H332KA01D / qualified equivalent,Capacitor_SMD:C_0402_1005Metric,POPULATE,3.3 nF baseline de slew/inrush; MPN exacto a confirmar en liberación BOM.
+ENTRADA_PROTECCION,C_EFUSE_ITIMER,1,capacitor,2.2nF 50V X7R,GRM155R71H222KA01D,Capacitor_SMD:C_0402_1005Metric,POPULATE,2.2 nF baseline de transient blanking.
+ENTRADA_PROTECCION,C_IN_BULK,1,capacitor,100uF 25V,EEEFK1E101P,Capacitor_SMD:CP_Elec_8x6.2,POPULATE,"Bulk después del eFuse, antes del split estrella."
+SPLIT_ESTRELLA,NT_HOST,1,net_tie,NET_TIE_2,PCB_FEATURE,NetTie:NetTie-2_SMD_Pad0.5mm,PCB_FEATURE,Net-tie físico para estrella 12V_PROTECTED→12V_HOST_VIN.
+SPLIT_ESTRELLA,NT_LOGIC,1,net_tie,NET_TIE_2,PCB_FEATURE,NetTie:NetTie-2_SMD_Pad0.5mm,PCB_FEATURE,Net-tie físico para estrella 12V_PROTECTED→12V_LOGIC.
+SPLIT_ESTRELLA,F_ACT,1,fuse,1.5A 125V Slo-Blo Nano2,045401.5MR,Fuse:Fuse_2410_6125Metric,POPULATE,1.5 A Slo-Blo; validar inrush real pump+solenoide en HIL.
+BUCK_5V,U_5V,1,buck_module,TPSM33625 5V/2.5A,TPSM33625RDNR,PENDING_DATASHEET_AUDIT_BEFORE_PLACEMENT,POPULATE,RDN-11; footprint obligatorio a auditar contra drawing TI antes de placement.
+BUCK_5V,R_5V_EN_PD,1,resistor,100k 1%,Vishay CRCW0402 / 100k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Mantiene EN bajo con UNO Q/IOREF ausente.
+BUCK_5V,C_5V_IN_4U7,1,capacitor,4.7uF 50V X7R,C3225X7R1H475K250AB,Capacitor_SMD:C_1210_3225Metric,POPULATE,Capacitor de entrada principal del TPSM.
+BUCK_5V,C_5V_IN_100N,1,capacitor,100nF 50V X7R,C1608X7R1H104K080AA,Capacitor_SMD:C_0603_1608Metric,POPULATE,Bypass HF del TPSM.
+BUCK_5V,R_5V_FBT,1,resistor,40.2k 1%,Vishay CRCW0402 / 40.2k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Feedback superior para 5.0 V.
+BUCK_5V,R_5V_FBB,1,resistor,10k 1%,Vishay CRCW0402 / 10k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Feedback inferior 10 kΩ.
+BUCK_5V,C_5V_VCC,1,capacitor,1uF 25V X7R,GRM188R71E105KA12D,Capacitor_SMD:C_0603_1608Metric,POPULATE,Capacitor obligatorio VCC del TPSM.
+BUCK_5V,C_5V_OUT1,1,capacitor,22uF 16V X7R,GCM32ER71C226ME19L,Capacitor_SMD:C_1210_3225Metric,POPULATE,22uF nominal; validar DC-bias; total efectivo de salida >=25uF.
+BUCK_5V,C_5V_OUT2,1,capacitor,22uF 16V X7R,GCM32ER71C226ME19L,Capacitor_SMD:C_1210_3225Metric,POPULATE,22uF nominal; validar DC-bias; total efectivo de salida >=25uF.
+BUCK_5V,C_5V_HF,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,Bypass HF del rail 5V.
+BUCK_5V,R_5V_PG_PU,1,resistor,47k 1%,Vishay CRCW0402 / 47k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up PGOOD a 5V_RAIL; habilita LDO 3V3.
+LDO_3V3,U_3V3,1,ldo,TLV75533 3.3V/500mA,TLV75533PDBVR,Package_TO_SOT_SMD:SOT-23-5,POPULATE,SOT-23-5; EN=5V_PGOOD.
+LDO_3V3,C_3V3_IN,1,capacitor,1uF 25V X7R,GRM188R71E105KA12D,Capacitor_SMD:C_0603_1608Metric,POPULATE,Entrada LDO >=1uF nominal.
+LDO_3V3,C_3V3_OUT,1,capacitor,1uF 25V X7R,GRM188R71E105KA12D,Capacitor_SMD:C_0603_1608Metric,POPULATE,Salida LDO >=1uF nominal.
+LDO_3V3,C_3V3_HF,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,Bypass HF local 3V3.
+TESTPOINT,TP_12V_RAW,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up antes de protección.
+TESTPOINT,TP_12V_PROT,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up después de eFuse.
+TESTPOINT,TP_12V_LOGIC,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up rama limpia.
+TESTPOINT,TP_12V_ACT,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up rama actuadores.
+TESTPOINT,TP_5V_PGOOD,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Verificar secuencia host→5V→3V3.

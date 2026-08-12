@@ -54,7 +54,7 @@ def main():
         nets={x["name"]:set(x["nodes"]) for x in nz["nets"]}
         if "J_UNOQ.4" in nets.get("3V3_RAIL",set()) or "J_UNOQ.5" in nets.get("5V_RAIL",set()): fail(f"{name} conserva back-feed host")
     pcb=PCB.read_text(encoding="utf-8"); premature=[r for r in ("U_EFUSE","U_5V","U_3V3","D_IN_TVS","C_IN_BULK") if f'"{r}"' in pcb]
-    if premature: fail(f"PR9 arquitectura no debe hacer placement: {premature}")
+    if premature: fail(f"arquitectura/PR10 no debe hacer placement: {premature}")
     src=SOURCES.read_text(encoding="utf-8")
     for marker in ("https://github.com/Arduino","arduino/docs-content","Regla de conflicto"):
         if marker not in src: fail(f"SOURCE_OF_TRUTH sin {marker}")
@@ -62,8 +62,11 @@ def main():
     for marker in ("PR #9","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR","12V_HOST_VIN"):
         if marker not in readme and marker not in pd: fail(f"docs sin {marker}")
     if "Fuente primaria UNO Q" not in readme: fail("README no declara fuente primaria")
-    if "PR #9" not in road or "arquitectura de potencia" not in road.lower(): fail("ROADMAP no refleja PR9")
-    print("OK: arquitectura de potencia PR #9 coherente")
+    # PR #10 amplía la Fase 3, por lo que el gate PR9 debe aceptar el roadmap
+    # evolucionado sin exigir un título textual antiguo.
+    if "PR #9" not in road or "Fase 3" not in road or "Power tree y frontera UNO Q" not in road: fail("ROADMAP no conserva arquitectura PR9")
+    if "PR #10" not in road or "Esquemático de potencia de producción" not in road: fail("ROADMAP no refleja continuación PR10")
+    print("OK: arquitectura de potencia PR #9 preservada bajo baseline PR #10")
     print(f"- Arduino docs-content snapshot {ARDUINO_SNAPSHOT[:12]}…")
     print("- 12V protegido -> VIN; 5V/3V3 locales sin back-feed")
     print("- TPS259470A + TPSM33625 + TLV75533; chiller externo")
