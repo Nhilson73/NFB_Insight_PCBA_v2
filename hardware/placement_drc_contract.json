@@ -4,6 +4,7 @@
   "product": "NFB Insight PCBA v2",
   "kicad_version": "10.0.5",
   "scope": "PLACEMENT_ONLY_NO_ROUTING",
+  "ci_revalidation_requires_zero_artifact_diff": true,
   "expected_error_count": 0,
   "allowed_warning_types_exact": {
     "silk_edge_clearance": 13,
