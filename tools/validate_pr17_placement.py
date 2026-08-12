@@ -42,6 +42,14 @@ def near(a: float, b: float, tol: float = TOL) -> bool:
     return abs(a - b) <= tol
 
 
+def fpid_text(fp) -> str:
+    """Serializa LIB_ID sin depender del overload SWIG de Format() en KiCad 10."""
+    fid = fp.GetFPID()
+    lib = str(fid.GetLibNickname())
+    item = str(fid.GetLibItemName())
+    return f"{lib}:{item}" if lib else item
+
+
 def component_map() -> dict[str, dict]:
     out = {}
     for path in ZONE_FILES:
@@ -71,7 +79,6 @@ def edge_bbox(text: str) -> tuple[float, float, float, float]:
 
 
 def overlaps(a, b, eps=1e-6) -> bool:
-    # Courtyards que solo tocan borde no se consideran solape de área.
     return min(a[2], b[2]) - max(a[0], b[0]) > eps and min(a[3], b[3]) - max(a[1], b[1]) > eps
 
 
@@ -106,7 +113,6 @@ def main() -> int:
     if len(fps) != 120:
         fail(f"PCB debe tener 120 footprints incluido J_UNOQ; actual={len(fps)}")
 
-    # Board conserva origin y altura; el ancho se congela por manifest.
     text = PCB.read_text(encoding="utf-8")
     x0, y0, x1, y1 = edge_bbox(text)
     target_w = float(manifest["board"]["width_mm"])
@@ -118,7 +124,6 @@ def main() -> int:
     if not (near(mm(hp.x), 0.0) and near(mm(hp.y), 0.0) and near(host.GetOrientationDegrees(), 0.0)):
         fail("J_UNOQ se movió/rotó; Z0 es inmutable")
 
-    # Placement exacto, footprint exacto, zone confinement y nets exactas.
     zone_bounds = manifest["zone_bounds_mm"]
     for ref, comp in comps.items():
         fp = fps[ref]
@@ -128,8 +133,9 @@ def main() -> int:
         expected = (float(p["x_mm"]), float(p["y_mm"]), float(p["rotation_deg"]))
         if not all(near(a, e) for a, e in zip(actual, expected)):
             fail(f"{ref}: XY/rot difiere actual={actual} expected={expected}")
-        if fp.GetFPID().Format() != comp["footprint"]:
-            fail(f"{ref}: footprint PCB={fp.GetFPID().Format()} JSON={comp['footprint']}")
+        actual_fpid = fpid_text(fp)
+        if actual_fpid != comp["footprint"]:
+            fail(f"{ref}: footprint PCB={actual_fpid} JSON={comp['footprint']}")
 
         zl = float(zone_bounds[p["zone"]]["x_min"])
         zr = float(zone_bounds[p["zone"]]["x_max"])
@@ -154,7 +160,6 @@ def main() -> int:
             elif got != wanted:
                 fail(f"{ref}.{num}: net PCB={got!r}, JSON={wanted!r}")
 
-    # Host pads neteados según pin contract, salidas de potencia host siguen NC cuando corresponde.
     hostmap = {str(p["pad"]): p.get("net") for p in pins["pins"]}
     for pad in host.Pads():
         num = str(pad.GetNumber())
@@ -166,7 +171,6 @@ def main() -> int:
         elif got:
             fail(f"J_UNOQ.{num}: debía quedar sin net, tiene {got}")
 
-    # Fila de campo: orden global, margen inferior y orientación física -Y para side-entry.
     frozen = [x["ref"] for x in readiness["field_io_sequence_left_to_right"]]
     if manifest["field_io_sequence_left_to_right"] != frozen:
         fail("secuencia FIELD I/O cambió respecto PR16")
@@ -183,7 +187,6 @@ def main() -> int:
         if ref in FIELD_CONNECTORS and not near(float(p["rotation_deg"]), 0.0):
             fail(f"{ref}: side-entry debe mantener orientación 0° hacia -Y")
 
-    # Courtyards de producción no pueden superponerse.
     items = sorted(placements.items())
     collisions = []
     for i, (ra, pa) in enumerate(items):
@@ -197,7 +200,6 @@ def main() -> int:
     if collisions:
         fail(f"courtyard overlaps PR17: {collisions}")
 
-    # PR17 sigue siendo placement-only.
     if len(list(board.GetTracks())) != 0:
         fail("PR17 contiene tracks/vías: routing sigue prohibido")
     if re.search(r'^\s*\(zone\b', text, re.M):
