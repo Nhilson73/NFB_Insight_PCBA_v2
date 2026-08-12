@@ -1106,7 +1106,7 @@
     (uuid "5c374398-f698-5c11-8b79-02b7ead77820")
     (property "Reference" "U_HMI_LVL" (at 347.98 78.74 0) (effects (font (size 1 1))))
     (property "Value" "TXU0202" (at 347.98 81.28 0) (effects (font (size 0.9 0.9))))
-    (property "Footprint" "Package_MSOP:VSSOP-8_2x3.1mm_P0.65mm" (at 347.98 83.82 0) (effects (font (size 0.8 0.8)) (hide yes)))
+    (property "Footprint" "NFB:TI_DCU0008A_TXU0202" (at 347.98 83.82 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (property "Datasheet" "~" (at 347.98 81.28 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (property "MPN" "TXU0202DCUR" (at 347.98 86.36 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (pin "1" (uuid "5cb3d3b5-5bf2-5fdc-9b80-697d09de9254"))

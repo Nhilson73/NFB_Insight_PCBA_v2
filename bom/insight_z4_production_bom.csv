@@ -9,7 +9,7 @@ PUMP,R_PUMP_DIR_SER,1,resistor,100R 1%,CRCW0402100RFKED,Resistor_SMD:R_0402_1005
 PUMP,R_PUMP_DIR_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Dirección definida durante arranque.
 PUMP,R_PUMP_IPROPI,1,resistor,1.5k 1%,CRCW04021K50FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Convierte IPROPI a PUMP_CURRENT_ADC A4; margen ADC >2.7A worst-scale.
 PUMP,C_PUMP_IPROPI,1,capacitor,100nF,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,Filtrado de telemetría corriente.
-PUMP,J_PUMP,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Salida bomba OUT1/OUT2; orientar -Y.
+PUMP,J_PUMP,1,connector,MSTBA 2.5/2-G-5.08,1757242,"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",POPULATE,Salida bomba OUT1/OUT2; orientar -Y.
 PUMP,TP_PUMP_CURRENT,1,testpoint,PUMP_CURRENT_ADC,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up corriente bomba.
 PUMP,TP_PUMP_OUT1,1,testpoint,PUMP_OUT1,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up potencia.
 PUMP,TP_PUMP_OUT2,1,testpoint,PUMP_OUT2,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up potencia.
@@ -20,13 +20,13 @@ CO2_SOL,R_CO2_EN_SER,1,resistor,100R 1%,CRCW0402100RFKED,Resistor_SMD:R_0402_100
 CO2_SOL,R_CO2_EN_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Fail-safe válvula cerrada en arranque.
 CO2_SOL,R_CO2_OPENLOAD_PU,1,resistor,10k 1%,CRCW040210K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up FLT2/open-load local.
 CO2_SOL,TP_CO2_OPENLOAD,1,testpoint,CO2_OPENLOAD_N,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Diagnóstico bring-up.
-CO2_SOL,J_CO2_SOL,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Salida +12V conmutada y GND; orientar -Y.
+CO2_SOL,J_CO2_SOL,1,connector,MSTBA 2.5/2-G-5.08,1757242,"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",POPULATE,Salida +12V conmutada y GND; orientar -Y.
 CO2_SOL,TP_CO2_SOL_POS,1,testpoint,CO2_SOL_POS,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.5mm,PCB_FEATURE,Bring-up salida solenoide.
 CHILLER,U_CHILLER,1,photomos,GE DIP4 1 Form A,AQY212EHAX,NFB:Panasonic_AQY212EHAX_DIP4_SMD,POPULATE,Footprint exacto EHAX SMD cerrado PR13; contacto seco aislado SELV <=48V; NO MAINS.
 CHILLER,Q_CHILLER,1,nmos,2N7002,"2N7002,215",Package_TO_SOT_SMD:SOT-23,POPULATE,Nexperia production; driver LED PhotoMOS sin cargar GPIO.
 CHILLER,R_CH_LED,1,resistor,360R 1%,CRCW0402360RFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,5.0mA mínimo con Vf=1.5V y 3.3V rail.
 CHILLER,R_CH_GATE,1,resistor,1k 1%,CRCW04021K00FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Serie D8->gate NMOS.
 CHILLER,R_CH_GATE_PD,1,resistor,100k 1%,CRCW0402100KFKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Fail-safe chiller contact open durante arranque.
-CHILLER,J_CHILLER_CTL,1,connector,MSTBA 2.5/2-G-5.08,1757242,TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled,POPULATE,Contacto seco flotante; no conectar a GND shield; orientar -Y.
+CHILLER,J_CHILLER_CTL,1,connector,MSTBA 2.5/2-G-5.08,1757242,"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",POPULATE,Contacto seco flotante; no conectar a GND shield; orientar -Y.
 DIAGNOSTIC,R_ACT_FAULT_PU,1,resistor,10k 1%,CRCW040210K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up único para wired-OR nFAULT+FLT1 hacia D10.
 DIAGNOSTIC,TP_ACT_FAULT,1,testpoint,ACT_FAULT_N,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Bring-up fault común.
