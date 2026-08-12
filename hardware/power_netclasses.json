@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "POWER_NETCLASS_BASELINE_PR10",
+  "scope": "Routing constraints to be applied when placement/routing starts; no copper is added by PR10.",
+  "classes": [
+    {
+      "name": "PWR_INPUT_5A",
+      "nets": ["12V_IN_RAW", "12V_PROTECTED"],
+      "track_width_mm_min": 2.0,
+      "clearance_mm_min": 0.5,
+      "via_diameter_mm_min": 1.2,
+      "via_drill_mm_min": 0.6,
+      "note": "Troncal de entrada/eFuse; validar capacidad térmica con stackup y cobre reales antes de routing release."
+    },
+    {
+      "name": "PWR_12V_BRANCH",
+      "nets": ["12V_HOST_VIN", "12V_LOGIC", "12V_ACT"],
+      "track_width_mm_min": 1.0,
+      "clearance_mm_min": 0.4,
+      "via_diameter_mm_min": 0.9,
+      "via_drill_mm_min": 0.45,
+      "note": "Ramas host/lógica/actuadores; 12V_ACT debe conservar retorno sucio hacia estrella."
+    },
+    {
+      "name": "PWR_5V",
+      "nets": ["5V_RAIL"],
+      "track_width_mm_min": 0.75,
+      "clearance_mm_min": 0.3,
+      "via_diameter_mm_min": 0.8,
+      "via_drill_mm_min": 0.4
+    },
+    {
+      "name": "PWR_3V3",
+      "nets": ["3V3_RAIL"],
+      "track_width_mm_min": 0.4,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.7,
+      "via_drill_mm_min": 0.35
+    },
+    {
+      "name": "PWR_CONTROL",
+      "nets": ["UNO_IOREF_3V3", "5V_PGOOD", "5V_FB", "5V_VCC", "EFUSE_EN_UVLO", "EFUSE_OVLO", "EFUSE_DVDT", "EFUSE_ILM", "EFUSE_ITIMER"],
+      "track_width_mm_min": 0.25,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.65,
+      "via_drill_mm_min": 0.3,
+      "note": "FB/UVLO/OVLO/ILM/dVdt/ITIMER deben ser cortos y alejados de SW/12V_ACT."
+    }
+  ],
+  "layout_rules": [
+    "No routear SW de U_5V fuera de su isla Z3 ni sobre/baixo de Z1, HX711 o RF UNO Q.",
+    "12V_ACT y su retorno no atraviesan Z1/Z2.",
+    "Mantener In1.Cu como referencia GND continua si se congela como plano GND.",
+    "Asignar estas clases físicamente en KiCad antes de iniciar routing; PR10 solo congela el contrato."
+  ]
+}
