@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate de producción Z1 con corrección de potencia PR #9."""
+"""Gate de producción Z1 con corrección de potencia PR #9 y audit físico PR #11."""
 from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
@@ -9,6 +9,7 @@ SENSOR = ROOT / "hardware" / "sensor_interface_contract.json"
 NETLIST = ROOT / "hardware" / "z1_production_netlist.json"
 PIN = ROOT / "hardware" / "insight_pin_contract.json"
 POWER = ROOT / "hardware" / "power_architecture_contract.json"
+AUDIT = ROOT / "hardware" / "footprint_audit.json"
 BOM = ROOT / "bom" / "insight_z1_production_bom.csv"
 SCH = ROOT / "kicad" / "NFB_Insight_PCBA_v2.kicad_sch"
 MPR_FP = ROOT / "kicad" / "lib" / "nfb_footprints.pretty" / "Honeywell_MPR_LongPort_12Pad.kicad_mod"
@@ -20,15 +21,20 @@ def close(a,b,tol=1e-6):
     return math.isclose(float(a),float(b),rel_tol=tol,abs_tol=tol)
 
 def main() -> int:
-    for p in (SENSOR,NETLIST,PIN,POWER,BOM,SCH,MPR_FP):
+    for p in (SENSOR,NETLIST,PIN,POWER,AUDIT,BOM,SCH,MPR_FP):
         if not p.exists(): fail(f"falta {p.relative_to(ROOT)}")
-    s=json.loads(SENSOR.read_text(encoding="utf-8")); n=json.loads(NETLIST.read_text(encoding="utf-8")); p=json.loads(PIN.read_text(encoding="utf-8")); power=json.loads(POWER.read_text(encoding="utf-8"))
+    s=json.loads(SENSOR.read_text(encoding="utf-8")); n=json.loads(NETLIST.read_text(encoding="utf-8")); p=json.loads(PIN.read_text(encoding="utf-8")); power=json.loads(POWER.read_text(encoding="utf-8")); audit=json.loads(AUDIT.read_text(encoding="utf-8"))
     if s.get("status")!="Z1_PRODUCTION_BASELINE_PR6": fail("sensor contract no es PR6")
     if n.get("status")!="FROZEN_Z1_NETLIST_PR6_POWER_CORRECTED_PR9": fail("netlist Z1 no refleja corrección PR9")
     if n.get("schema_version")!=2: fail("netlist Z1 no es schema v2")
     if n.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("Z1 no declara contrato de potencia")
     if p.get("schema_version")!=5: fail("pin contract no es schema v5")
     if power.get("status")!="POWER_ARCHITECTURE_BASELINE_PR9": fail("contrato potencia no es PR9")
+    if audit.get("status")!="FOOTPRINT_AUDIT_BASELINE_PR11": fail("audit de footprints no es PR11")
+    aud={x["id"]:x for x in audit["audits"]}
+    mpr_a=aud.get("MPR_LONG_PORT_12PAD",{})
+    if mpr_a.get("status")!="CLOSED_PRIMARY_DATASHEET" or mpr_a.get("placement_allowed") is not True: fail("MPR no está cerrado por auditoría PR11")
+    if mpr_a.get("verified_geometry",{}).get("recommended_layout_outer_span_mm")!=4.20: fail("audit MPR no congela span 4.20 mm")
     ch={x["id"]:x for x in s["channels"]}
     if set(ch)!={"PH","ORP","TEMP","CO2","DO"}: fail("canales Z1 incorrectos")
     co2=ch["CO2"]
@@ -81,15 +87,16 @@ def main() -> int:
     if not any(r["ref"]=="U_CO2" and r["mpn_o_familia"]=="MPRLS0030PA00002A" for r in rows): fail("BOM sin U_CO2 final")
     fp=MPR_FP.read_text(encoding="utf-8"); pads={int(x) for x in re.findall(r'\(pad "(\d+)" smd',fp)}
     if pads != set(range(1,13)): fail("footprint MPR no tiene pads 1..12")
-    for marker in ('(at 1.27 1.75)','(at -1.75 -1.27)','(at -1.75 1.27)'):
-        if marker not in fp: fail(f"footprint MPR sin geometría esperada {marker}")
+    for marker in ('(at 1.27 1.775)','(at -1.775 -1.27)','(at -1.775 1.27)','HONEYWELL 32332628 ISSUE L FIG.10'):
+        if marker not in fp: fail(f"footprint MPR sin geometría/trazabilidad PR11 esperada {marker}")
     sch=SCH.read_text(encoding="utf-8")
     for ref in comps:
         if f'"{ref}"' not in sch: fail(f"schematic no contiene {ref}")
     for marker in ("MPRLS0030PA00002A","I2C_SDA","I2C_SCL","TEMP_1WIRE","A4/CO2_ADC DNP"):
         if marker not in sch: fail(f"schematic sin marcador {marker}")
-    print("OK: Z1 PR #6 preservado + power correction PR #9")
+    print("OK: Z1 PR #6 + power PR #9 + footprint audit PR #11")
     print(f"- CO2: MPRLS0030PA00002A I2C 0x28, 0-30 psi abs = {expected_kpa:.3f} kPa")
+    print("- MPR footprint cerrado contra Honeywell Issue L Fig.10, span 4.20 mm")
     print("- 3V3_RAIL/5V_RAIL son locales al shield; no J_UNOQ.4/.5")
     print(f"- {len(comps)} placements Z1; BOM y netlist coinciden")
     return 0

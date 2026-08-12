@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "FOOTPRINT_AUDIT_BASELINE_PR11",
+  "decision_date": "2026-08-12",
+  "policy": {
+    "primary_source_required": true,
+    "placement_requires_closed_audit": true,
+    "routing_requires_closed_audit": true,
+    "vendor_cad_may_be_used_when_linked_or_published_by_original_manufacturer": true,
+    "do_not_invent_land_patterns": true
+  },
+  "audits": [
+    {
+      "id": "UNO_Q_CARRIER_ROTATED",
+      "reference": "J_UNOQ",
+      "mpn": "Arduino UNO Q",
+      "footprint": "NFB:Arduino_UNO_Q_Carrier_Rotated",
+      "status": "FROZEN_MECHANICAL_PR2",
+      "placement_allowed": true,
+      "source_class": "ARDUINO_OFFICIAL_GITHUB",
+      "source": "arduino/docs-content + geometría oficial congelada en docs/MECHANICAL_CONVENTION.md"
+    },
+    {
+      "id": "MPR_LONG_PORT_12PAD",
+      "reference": "U_CO2",
+      "mpn": "MPRLS0030PA00002A",
+      "footprint": "NFB:Honeywell_MPR_LongPort_12Pad",
+      "status": "CLOSED_PRIMARY_DATASHEET",
+      "placement_allowed": true,
+      "source_class": "HONEYWELL_OFFICIAL_DATASHEET",
+      "source": "Honeywell 32332628 Issue L, Figure 10 Long Port and Recommended PCB Pad Layout Dimensions",
+      "source_url": "https://prod-edam.honeywell.com/content/dam/honeywell-edam/sps/siot/en-us/products/sensors/pressure-sensors/board-mount-pressure-sensors/micropressure-mpr-series/documents/sps-siot-mpr-series-datasheet-32332628-ciid-172626.pdf",
+      "verified_geometry": {
+        "body_mm": [5.0, 5.0],
+        "pad_count": 12,
+        "pitch_mm": 1.27,
+        "recommended_layout_outer_span_mm": 4.20,
+        "top_bottom_pad_mm": [0.70, 0.65],
+        "side_pad_mm": [0.65, 0.70],
+        "long_port_od_mm": 2.50,
+        "note": "La geometría PCB se corrige en PR11 para que el span metálico exterior sea 4.20 mm. El orificio de referencia de gage no aplica al MPR absolute seleccionado y no se perfora."
+      }
+    },
+    {
+      "id": "TPS25947_RPW0010A",
+      "reference": "U_EFUSE",
+      "mpn": "TPS259470ARPWR",
+      "footprint": null,
+      "status": "PRIMARY_DRAWING_REVIEWED_CAD_IMPORT_PENDING",
+      "placement_allowed": false,
+      "source_class": "TI_OFFICIAL_PACKAGE_DRAWING",
+      "source": "TI MPQF568 / RPW0010A / drawing 4225183/A",
+      "source_url": "https://www.ti.com/lit/pdf/MPQF568",
+      "verified_geometry": {
+        "package": "VQFN-HR RPW0010A",
+        "pin_count": 10,
+        "body_nominal_mm": [2.0, 2.0],
+        "max_height_mm": 1.0,
+        "pitch_mm": 0.45,
+        "land_pattern_source_present": true,
+        "solder_mask_policy": "NSMD preferred per TI"
+      },
+      "closure_gate": "Importar o recrear exactamente el land pattern RPW0010A y comparar pads/paste contra MPQF568 antes de autorizar placement."
+    },
+    {
+      "id": "TPSM33625_RDN11",
+      "reference": "U_5V",
+      "mpn": "TPSM33625RDNR",
+      "footprint": null,
+      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
+      "placement_allowed": false,
+      "source_class": "TI_OFFICIAL_PRODUCT_AND_DATASHEET",
+      "source": "TI TPSM33625 Rev D + RDN package resources",
+      "source_url": "https://www.ti.com/product/TPSM33625/part-details/TPSM33625RDNR",
+      "verified_geometry": {
+        "package": "QFN-FCMOD RDN",
+        "pin_count": 11,
+        "body_mm": [4.5, 3.5],
+        "pitch_mm": 0.5,
+        "height_mm": 2.0,
+        "cad_link_provided_by_ti": "Ultra Librarian"
+      },
+      "closure_gate": "No congelar geometría de pads a partir del body/pitch. Importar/verificar footprint/CAD autorizado por TI o una fuente primaria reproducible antes de placement."
+    }
+  ]
+}

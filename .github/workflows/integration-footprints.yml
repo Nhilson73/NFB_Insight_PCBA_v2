@@ -1,0 +1,72 @@
+name: Validación footprints e integración PR11
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/FOOTPRINT_AUDIT.md'
+      - 'docs/PR11_TECHNICAL_NOTES.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/footprint_audit.json'
+      - 'hardware/electrical_integration_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'kicad/integration_contract.kicad_sch'
+      - 'kicad/lib/nfb_footprints.pretty/**'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_footprint_audit.py'
+      - 'tools/validate_electrical_integration.py'
+      - '.github/workflows/integration-footprints.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/FOOTPRINT_AUDIT.md'
+      - 'docs/PR11_TECHNICAL_NOTES.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/footprint_audit.json'
+      - 'hardware/electrical_integration_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'kicad/integration_contract.kicad_sch'
+      - 'kicad/lib/nfb_footprints.pretty/**'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_footprint_audit.py'
+      - 'tools/validate_electrical_integration.py'
+      - '.github/workflows/integration-footprints.yml'
+
+jobs:
+  audit-integration:
+    name: Footprints críticos + coherencia Z1/Z2/Z3
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Validar auditoría de footprints
+        run: python3 tools/validate_footprint_audit.py
+      - name: Validar integración eléctrica
+        run: python3 tools/validate_electrical_integration.py
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Ejecutar ERC de hoja de integración
+        run: kicad-cli sch erc kicad/integration_contract.kicad_sch --output /tmp/erc_integration_pr11.rpt --severity-all --exit-code-violations
+      - name: Mostrar ERC integración
+        if: always()
+        run: test ! -f /tmp/erc_integration_pr11.rpt || cat /tmp/erc_integration_pr11.rpt
+      - name: Guardar ERC integración
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-integration-pr11
+          path: /tmp/erc_integration_pr11.rpt
