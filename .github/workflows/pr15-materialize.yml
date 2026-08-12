@@ -24,6 +24,7 @@ on:
       - 'kicad/z4_interface.kicad_sch'
       - 'kicad/lib/nfb_generated.kicad_sym'
       - 'kicad/sym-lib-table'
+      - 'kicad/fp-lib-table'
       - '.github/workflows/pr15-materialize.yml'
 
 permissions:
@@ -61,6 +62,15 @@ jobs:
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
 
+      - name: Diagnosticar footprints estándar KiCad 10.0.5
+        run: |
+          echo '=== Phoenix MSTBA / 5.08 ==='
+          find /usr/share/kicad/footprints/TerminalBlock_Phoenix.pretty -maxdepth 1 -type f -printf '%f\n' | grep -Ei 'MSTBA|5\.08' | head -100 || true
+          echo '=== Fuse 2410 / 6125 / Nano ==='
+          find /usr/share/kicad/footprints/Fuse.pretty -maxdepth 1 -type f -printf '%f\n' | grep -Ei '2410|6125|Nano' | head -100 || true
+          echo '=== MSOP/VSSOP/DGS 10-pin ==='
+          find /usr/share/kicad/footprints -maxdepth 2 -type f -printf '%p\n' | grep -Ei '(MSOP|VSSOP|DGS).*10|10.*(MSOP|VSSOP|DGS)' | head -100 || true
+
       - name: ERC hierarchy completo
         run: |
           kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch \
@@ -70,18 +80,19 @@ jobs:
 
       - name: Versionar outputs normalizados
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" config user.name "github-actions[bot]"
+          git -C "$GITHUB_WORKSPACE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$GITHUB_WORKSPACE" add \
             kicad/uno_q_interface.kicad_sch \
             kicad/z1_interface.kicad_sch \
             kicad/z2_interface.kicad_sch \
             kicad/z3_interface.kicad_sch \
             kicad/z4_interface.kicad_sch \
             kicad/lib/nfb_generated.kicad_sym
-          if git diff --cached --quiet; then
+          if git -C "$GITHUB_WORKSPACE" diff --cached --quiet; then
             echo "Outputs normalizados ya estaban versionados."
           else
-            git commit -m "eda: normalizar hierarchy PR15 y registrar NFB_GEN"
-            git push origin "HEAD:agent/pr15-production-symbol-materialization"
+            git -C "$GITHUB_WORKSPACE" commit -m "eda: normalizar hierarchy PR15 y registrar NFB_GEN"
+            git -C "$GITHUB_WORKSPACE" push origin "HEAD:agent/pr15-production-symbol-materialization"
           fi
