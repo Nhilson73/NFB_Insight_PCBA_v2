@@ -4,8 +4,9 @@
 
 - [x] UNO Q: repos oficiales `arduino/*` en GitHub = fuente primaria.
 - [x] Jerarquía en `docs/SOURCE_OF_TRUTH.md`.
-- [x] No inventar land patterns; footprint crítico requiere drawing/CAD primario reproducible.
+- [x] No inventar land patterns ni keepouts RF no publicados.
 - [x] README se actualiza cuando cambia arquitectura, BOM, compliance o estado.
+- [x] JSON/BOM permanecen como autoridad eléctrica; KiCad generado es reproducible.
 
 ## Fase 0 — Arquitectura
 
@@ -18,9 +19,10 @@
 - [x] Footprint mecánico, agujeros y referencias UNO Q.
 - [x] Contorno inicial `68.58 × 220 mm` provisional.
 - [x] DRC/validación mecánica automática.
-- [ ] Keepouts definitivos CAD/STEP/enclosure.
-- [ ] Keepout RF/antena confirmado contra Arduino oficial.
-- [ ] Revisión 3D y ancho final después del placement.
+- [x] PR #16: Z0 completo congelado como host envelope sin footprints NFB.
+- [x] PR #16: fuente Arduino revalidada; no se inventa antenna keepout numérico ausente de fuente primaria.
+- [ ] Revisión 3D/enclosure y región RF del host después del placement.
+- [ ] Ancho final después de courtyards/3D.
 
 ## Fase 2 — Arquitectura eléctrica Insight
 
@@ -29,13 +31,13 @@
 - [x] Interfaces reales pH/ORP/DO, TEMP DS18B20, MPR `0x28`.
 - [x] Z1 netlist/BOM/gates.
 - [x] Z2 HX711, DFR1103 `0x66`, HMI TXU0202, watchdog.
-- [x] A4 reutilizado en PR #12 como `PUMP_CURRENT_ADC`; `CO2_ADC` continúa prohibido.
+- [x] A4=`PUMP_CURRENT_ADC`; `CO2_ADC` continúa prohibido.
 
 ### PR #8 — EU Compliance Design Gate
 - [x] Frontera shield/carrier y RF UNO Q preservada.
 - [x] EMC / RoHS 3 / WEEE / RED / REACH / CE.
-- [x] CI para GND, ESD, ruido, RF keepout y evidencia.
-- [ ] Archivar certificados/DoC del SKU UNO Q final.
+- [x] CI para GND, ESD, ruido, RF y evidencia.
+- [ ] Archivar certificados/DoC del SKU UNO Q final en expediente release.
 - [ ] Confirmar normas/plan de laboratorio final.
 
 ## Fase 3 — Potencia, actuadores e integración EDA
@@ -50,80 +52,73 @@
 - [ ] DC-bias efectivo 2×22 µF ≥25 µF.
 - [ ] HIL/termografía 60 °C e inrush `F_ACT`.
 
-### PR #11 — auditoría/integración inicial
-- [x] `hardware/footprint_audit.json`.
-- [x] MPR cerrado contra Honeywell.
-- [x] Contrato de integración Z1/Z2/Z3 y CI.
-
-### PR #12 — Z4 actuadores
+### PR #11 / #12 — integración + Z4
+- [x] Audit machine-readable de footprints.
 - [x] Bomba `DRV8242HQRHLRQ1`, D5/D6, IPROPI→A4.
 - [x] Solenoide `TPS1HC120CQDYCRQ1`, D7, ILIM ~0.5 A.
 - [x] Chiller `AQY212EHAX`, dry contact SELV ≤48 V / NO MAINS.
-- [x] D10=`ACT_FAULT_N` wired-OR.
-- [x] Netlist/BOM/contrato/gates Z4.
+- [x] D10=`ACT_FAULT_N`.
 - [ ] Migrar firmware A4/D10.
 
 ### PR #13 — cierre de footprints críticos
 - [x] Spark como cross-check independiente, no autoridad.
-- [x] RPW0010A HotRod — TI `4225183/A`.
+- [x] RPW0010A — TI `4225183/A`.
 - [x] RDN0011A — TI `4226623/F`.
-- [x] DRV8242 package vigente RHL0020B — TI `4226154/B`.
+- [x] RHL0020B — TI `4226154/B`.
 - [x] DYC0008A — TI `4226548/B`, 8 pads sin PowerPAD.
-- [x] AQY212EHAX surface-mount — Panasonic exacto.
-- [x] BOM/netlists sin placeholders críticos.
+- [x] AQY212EHAX SMD — Panasonic exacto.
 - [x] 9/9 gates verdes; sin placement/routing.
 
 ### PR #14 — root EDA inter-zona
-- [x] Separar el antiguo contrato textual Z1 a `kicad/z1_sensor_contract.kicad_sch`.
-- [x] Crear child interfaces Z0/Z1/Z2/Z3/Z4 con `hierarchical_label`.
-- [x] Convertir `kicad/NFB_Insight_PCBA_v2.kicad_sch` en root jerárquico real.
-- [x] Congelar `hardware/root_eda_contract.json`.
-- [x] GND común Z0–Z4; 3V3/5V locales excluyen Z0.
-- [x] I²C Z0/Z1/Z2; `12V_ACT` Z3/Z4; controles/diagnóstico Z0/Z4.
-- [x] Gate `tools/validate_root_eda.py` + workflow root.
-- [x] Mantener `zone_internal_component_symbols=false` en PR #14 para no duplicar manualmente >100 refs.
-- [x] Congelar deuda ERC transitoria exacta de 125 `label_dangling`, sin relajar severidades.
-- [x] CI PR #14 verde y mergeado en `main`.
+- [x] Root Z0–Z4 real.
+- [x] GND Z0–Z4; 3V3/5V locales excluyen Z0.
+- [x] I²C Z0/Z1/Z2; `12V_ACT` Z3/Z4; controles Z0/Z4.
+- [x] Deuda transitoria controlada 125 `label_dangling`.
+- [x] 11/11 gates verdes y merge.
 
-### PR #15 — materialización interna de símbolos de producción
-- [x] Generar Z0 desde `insight_pin_contract.json`.
-- [x] Generar símbolos y conectividad interna Z1 desde `z1_production_netlist.json` + BOM.
-- [x] Generar símbolos y conectividad interna Z2 desde `z2_production_netlist.json` + BOM.
-- [x] Generar símbolos y conectividad interna Z3 desde `power_production_netlist.json` + BOM.
-- [x] Generar símbolos y conectividad interna Z4 desde `z4_production_netlist.json` + BOM.
-- [x] Paridad refs/pines/nets/footprints JSON↔BOM↔KiCad reproducible.
-- [x] Librería `NFB_GEN` registrada; labels internos con alcance local.
-- [x] Cerrar footprints detectados durante ERC: TXU0202/DCU0008A, Phoenix 1757242 y Littelfuse 045401.5MR.
-- [x] Eliminar completamente la deuda ERC PR #14.
-- [x] KiCad 10.0.5 hierarchy completo: **ERC = 0 errores / 0 warnings**.
-- [x] `root_eda_contract.json` schema 3 exige `ZERO_VIOLATIONS_REQUIRED_PR15`.
-- [x] Placement/routing permanecen bloqueados.
+### PR #15 — hierarchy de producción
+- [x] Z0–Z4 generados desde pin-contract/netlists/BOM.
+- [x] UUIDs deterministas + `NFB_GEN`.
+- [x] Paridad refs/pines/nets/footprints JSON↔BOM↔KiCad.
+- [x] TXU0202/DCU0008A, Phoenix 1757242 y Littelfuse 045401.5MR cerrados.
+- [x] Deuda PR #14 eliminada.
+- [x] KiCad 10.0.5: **ERC 0 Errors / 0 Warnings**.
+- [x] Placement/routing permanecieron en cero.
 
 ## Fase 4 — Placement
 
-### Gate pre-placement
-- [ ] Keepout RF/antena del UNO Q confirmado contra fuente oficial.
-- [ ] Keepouts mecánicos definitivos CAD/STEP/enclosure.
-- [x] MPR + cinco footprints críticos PR #13 cerrados.
-- [x] Símbolos internos de producción materializados y paridad EDA cerrada en PR #15.
-- [ ] Auditar footprints restantes de riesgo antes de colocarlos.
+### PR #16 — pre-placement readiness
+- [x] Revalidar `arduino/docs-content` actual antes del placement.
+- [x] Snapshot PR16: `24445a32e249d410c1e4359bdc99d8c0dcb17bd2`.
+- [x] Confirmar WCBN3536A/WCN3980 + shared PCB antenna.
+- [x] No inventar antenna keepout numérico no publicado.
+- [x] Z0 `0…53.34 × 0…68.58 mm` prohibido para production footprints NFB.
+- [x] Z1 quiet inmediatamente adyacente; Z3/Z4 ruidosos desplazados a +X.
+- [x] Congelar `In1.Cu` como plano GND continuo / no signal routing.
+- [x] Congelar orden FIELD I/O izquierda→derecha.
+- [x] Cerrar `J_LOADCELL` a Phoenix Contact `1757268` / 5.08 mm.
+- [x] Congelar reglas ESD/analog/HX711/HMI/power/actuator proximity.
+- [x] `hardware/placement_readiness_contract.json` + CI.
+- [x] Mantener production placement=0 y routing=0 durante PR16.
+- [ ] Full CI PR #16 + merge.
 
-### Placement físico
-- [ ] Z0 UNO Q bloqueado en `(0,0)`.
-- [ ] Z1/Z2 conectores de campo hacia `Y=0/-Y`.
-- [ ] Front-ends sensibles inmediatamente detrás de conectores de sensor.
-- [ ] Z3 loops de potencia mínimos y nodo SW confinado.
-- [ ] Z4 drivers/conectores/retornos sucios junto al borde de campo.
-- [ ] `PUMP_CURRENT_ADC` alejado de switching.
-- [ ] PhotoMOS SELV deliberado; nunca mains.
-- [ ] Test points accesibles con enclosure.
-- [ ] Revisión 3D y congelación del ancho final.
+### PR #17 — placement físico
+- [ ] Colocar Z1 FIELD I/O y front-ends por courtyards reales.
+- [ ] Colocar Z2 load-cell/GNSS/HMI respetando gradiente quiet→power.
+- [ ] Colocar Z3 power-entry/eFuse/buck/LDO con loops mínimos.
+- [ ] Colocar Z4 drivers/bulk/conectores junto al FIELD I/O EDGE.
+- [ ] Mantener Z0 inmutable y libre de production footprints NFB.
+- [ ] Ajustar ancho exclusivamente hacia +X si lo requieren los courtyards.
+- [ ] Test points accesibles.
+- [ ] DRC placement/courtyard = 0.
+- [ ] Revisión 3D preliminar y congelación del ancho final.
+- [ ] **Routing continúa prohibido.**
 
 ## Fase 5 — Routing
 
 - [ ] Aplicar netclasses reales.
-- [ ] Plano de referencia continuo; In1.Cu GND si se congela así.
-- [ ] No cruzar RF keepout.
+- [x] Intent congelado: `In1.Cu` = GND continuo.
+- [ ] No cruzar región RF protegida del host.
 - [ ] SW buck confinado Z3.
 - [ ] `PUMP_CURRENT_ADC` lejos de switching.
 - [ ] Retornos `12V_ACT` a estrella sin atravesar Z1/Z2.
