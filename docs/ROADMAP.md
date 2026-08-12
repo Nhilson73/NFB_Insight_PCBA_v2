@@ -17,6 +17,7 @@
 - [x] Contorno inicial `68.58 mm` alto × `220 mm` ancho provisional.
 - [x] Validación automática mecánica/DRC.
 - [ ] Convertir keepouts definitivos después de contrastar CAD/STEP y enclosure.
+- [ ] Confirmar específicamente keepout RF/antena del UNO Q antes de placement.
 - [ ] Verificar UNO Q + carrier en KiCad 3D Viewer.
 - [ ] Congelar ancho final solo después del placement.
 
@@ -82,6 +83,21 @@
 - [ ] Revalidar consumo de HMI y DFR1103 al cerrar Fase 3.
 - [ ] Validar HX711 con celda real durante bring-up/HIL.
 
+### PR #8 — EU Compliance Design Gate del shield
+- [x] Definir NFB Insight PCBA v2 como shield/carrier del Arduino UNO Q.
+- [x] Congelar que el shield base no añade transmisor, antena, matching ni amplificación RF.
+- [x] Exigir preservación de keepout/condiciones RF del UNO Q.
+- [x] Registrar la conformidad/certificación del UNO Q como evidencia de proveedor del host, no como sustituto automático de la evaluación integrada.
+- [x] Crear matriz EMC / RoHS 3 / WEEE / RED / REACH / CE.
+- [x] Congelar reglas EMC de plano GND, retornos, zonas de ruido, ESD e interfaces externas.
+- [x] Exigir evidencia RoHS/REACH de BOM, PCB y ensamblaje antes de liberar producción.
+- [x] Crear `docs/EU_COMPLIANCE_GATE.md`.
+- [x] Crear `compliance/eu_compliance_contract.json` y matriz CSV.
+- [x] Crear workflow `EU Compliance Gate`.
+- [x] Actualizar `README.md` con frontera de producto, Z2 y compliance.
+- [ ] Archivar certificados/DoC oficiales específicos del SKU UNO Q utilizado antes de release RC.
+- [ ] Confirmar con laboratorio la edición exacta de normas armonizadas antes del plan final de ensayo.
+
 ### Integración eléctrica posterior
 - [ ] Integrar jerarquía Z1 + Z2 preservando contratos machine-readable.
 - [ ] Construir hoja de potencia después de Fase 3.
@@ -97,13 +113,17 @@
 - [ ] Reseleccionar F1/D2/conector de entrada.
 - [ ] Revalidar buck/LDO.
 - [ ] Definir netclasses.
+- [ ] Revisar filtro de entrada/transitorios desde EMC y no solo corriente nominal.
+- [ ] Pasar `EU Compliance Gate` antes de congelar potencia.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado.
+- [ ] Keepout RF/antena UNO Q confirmado y bloqueado.
 - [ ] Z1 sensores con conectores sobre `Y=0`, salida `-Y`.
 - [ ] U_CO2 accesible al tubing desde borde de servicio.
 - [ ] Z2 digital/bajo ruido con J_LOADCELL, J_GNSS_RTC y J_HMI orientados al borde de servicio.
+- [ ] TVS próximos a entradas de cable.
 - [ ] Z3 potencia.
 - [ ] Z4 actuadores.
 - [ ] Revisión 3D completa.
@@ -114,8 +134,10 @@
 - [ ] Plano de referencia continuo.
 - [ ] Prioridad: sensores → I²C/HX711/clocks → potencia → actuadores.
 - [ ] No usar In1.Cu como capa de señales si se congela como GND.
+- [ ] No atravesar keepout RF del UNO Q con cobre/señales/componentes del shield.
 - [ ] Routing de alta corriente solo después de Fase 3.
 - [ ] Stitching vias y test points deliberados.
+- [ ] Revisar retornos EMC de cada interfaz externa.
 - [ ] 0 desconectados inesperados.
 - [ ] DRC = 0.
 
@@ -125,6 +147,12 @@
 - [ ] Calificar fabricante/fuente de HX711.
 - [ ] Auditoría footprint vs datasheet.
 - [ ] Conectores y alivio de tensión.
+- [ ] Evidencia RoHS 3 de todos los MPN/materiales poblados.
+- [ ] Evidencia REACH/SVHC de proveedores relevantes.
+- [ ] Declaración del fabricante PCB: laminado, máscara, serigrafía y ENIG.
+- [ ] Declaración del ensamblador/proceso SAC305 o alternativa aprobada.
+- [ ] Archivar evidencia de conformidad/certificación del UNO Q utilizado.
+- [ ] Plan de pre-compliance EMC/ESD/inmunidad.
 - [ ] Gerbers/drill.
 - [ ] BOM + CPL.
 - [ ] Variante Insight.
@@ -145,3 +173,4 @@
 - [ ] Bomba/solenoide/chiller.
 - [ ] Watchdog/failsafe.
 - [ ] Fixture HIL y prueba repetible de producción.
+- [ ] Pre-scan EMC del conjunto con UNO Q, cables y actuadores representativos.
