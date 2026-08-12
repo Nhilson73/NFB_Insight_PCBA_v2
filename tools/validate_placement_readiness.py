@@ -70,14 +70,14 @@ def main():
         if not PLACEMENT.exists(): fail(f'producción colocada sin manifest PR17: {footprint_refs[:5]}')
         pm=json.loads(PLACEMENT.read_text(encoding='utf-8'))
         if pm.get('status')!='PRODUCTION_PLACEMENT_PR17' or pm.get('policies',{}).get('routing_allowed') is not False: fail('transición PR16→PR17 inválida')
-        pmap={x['ref']:x for x in pm.get('placements',[])}
-        expected_prod=set(comps)
+        pmap={x['ref']:x for x in pm.get('placements',[])}; expected_prod=set(comps)
         if set(footprint_refs)!={'J_UNOQ'}|expected_prod: fail('refs PCB no coinciden con producción autorizada PR17')
         if set(pmap)!=expected_prod: fail('manifest PR17 no contiene exactamente refs Z1-Z4')
         zb=pm.get('zone_bounds_mm',{})
         if float(zb['Z0']['x_min'])!=0.0 or float(zb['Z0']['x_max'])!=53.34 or pm['board']['growth_only']!='+X' or float(pm['board']['height_mm'])!=68.58: fail('PR17 viola mecánica congelada PR16')
     if re.search(r'^\s*\((segment|via|arc|zone)\b',pcb,re.M): fail('routing/cobre no permitido antes de PR18')
-    if '(2 "In1.Cu" power)' not in pcb: fail('PCB no conserva In1.Cu como capa interna power/reference')
+    # KiCad 10 renumera IDs internos de capas al serializar; validar semántica, no ID literal.
+    if not re.search(r'\(\d+\s+"In1\.Cu"\s+power\)',pcb) or not re.search(r'\(\d+\s+"In2\.Cu"\s+power\)',pcb): fail('PCB no conserva In1/In2 como capas internas power/reference')
     for marker in ('Z0 UNO Q','Z1','Z2','Z3','Z4','FIELD I/O EDGE'):
         if marker not in pcb: fail(f'PCB perdió guía {marker}')
     rules=c['placement_rules']; required_true=['connectors_field_edge_first_row','esd_and_input_protection_immediately_behind_field_connectors','analog_conditioning_stays_in_Z1','loadcell_hx711_cluster_stays_on_Z1_SIDE_OF_Z2','hmi_stays_on_Z3_SIDE_OF_Z2','power_entry_tvs_efuse_cluster_stays_in_Z3','buck_switching_loop_stays_in_Z3','actuator_drivers_and_local_bulk_stay_in_Z4','actuator_connectors_stay_at_field_edge','pump_current_adc_keep_away_from_switch_nodes','high_current_returns_must_not_cross_Z1_Z2']
@@ -87,6 +87,6 @@ def main():
     count=max(0,len(footprint_refs)-1)
     print('OK: PR16 pre-placement readiness preservado y transición PR17 autorizada')
     print('- Arduino snapshot/RF/keepouts/orden FIELD I/O PR16 intactos')
-    print(f'- placement producción={count}; Z0 protegido; routing/cobre=0')
+    print(f'- placement producción={count}; Z0 protegido; routing/cobre=0; In1/In2=power/reference')
     return 0
 if __name__=='__main__': raise SystemExit(main())
