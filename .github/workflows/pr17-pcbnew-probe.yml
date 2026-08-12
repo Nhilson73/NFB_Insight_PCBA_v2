@@ -5,6 +5,8 @@ on:
     branches: [agent/pr17-production-placement]
     paths:
       - 'tools/probe_placement_footprints.py'
+      - 'tools/probe_pcbnew_api.py'
+      - 'tools/compute_placement_plan.py'
       - '.github/workflows/pr17-pcbnew-probe.yml'
 
 jobs:
@@ -17,5 +19,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Inventariar footprints/courtyards
         run: python3 tools/probe_placement_footprints.py
+      - name: Probar API pcbnew y orientación física
+        run: python3 tools/probe_pcbnew_api.py
+      - name: Calcular ancho mínimo por courtyards
+        run: python3 tools/compute_placement_plan.py
       - name: Confirmar DRC CLI disponible
         run: kicad-cli pcb drc --help
