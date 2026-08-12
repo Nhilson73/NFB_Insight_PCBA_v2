@@ -5,7 +5,7 @@ I2C_GNSS_RTC,D_GNSS_SDA,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,
 I2C_GNSS_RTC,D_GNSS_SCL,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD single-line a GND sobre SCL externo.
 I2C_GNSS_RTC,J_GNSS_RTC,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,DFR1103 externo; XH-4 ↔ Gravity; orientar hacia -Y.
 HX711,U_HX,1,adc_loadcell,HX711 24-bit,HX711 / qualified source TBD,Package_SO:SOP-16_4.4x10.4mm_P1.27mm,POPULATE,Topología/footprint congelados; fuente HX711 a calificar en Fase 6.
-HX711,J_LOADCELL,1,connector,Load Cell 4p side-entry,"Phoenix PT-1,5-4-5.0-H","TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-4-5.0-H_1x04_P5.00mm_Horizontal",POPULATE,E+/E-/A+/A-; side-entry hacia -Y.
+HX711,J_LOADCELL,1,connector,"MSTBA 2,5/4-G-5,08",1757268,"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_4-G-5,08_1x04_P5.08mm_Horizontal",POPULATE,"E+/E-/A+/A-; Phoenix 1757268 exacto, 4 posiciones, pitch 5.08 mm; side-entry hacia -Y."
 HX711,C_HX_100N,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
 HX711,C_HX_10U,1,capacitor,10uF 10V X5R,GRM21BR61A106KE19L,Capacitor_SMD:C_0805_2012Metric,POPULATE,
 HX711,C_HX_VBG,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
