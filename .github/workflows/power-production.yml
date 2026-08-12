@@ -1,0 +1,62 @@
+name: Validación potencia producción Insight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/POWER_ARCHITECTURE.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/power_architecture_contract.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/power_netclasses.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'bom/insight_power_production_bom.csv'
+      - 'kicad/power.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_power_production.py'
+      - '.github/workflows/power-production.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/POWER_ARCHITECTURE.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/power_architecture_contract.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/power_netclasses.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'bom/insight_power_production_bom.csv'
+      - 'kicad/power.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_power_production.py'
+      - '.github/workflows/power-production.yml'
+
+jobs:
+  power-production:
+    name: Netlist, BOM, netclasses y ERC potencia
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Validar baseline de producción de potencia
+        run: python3 tools/validate_power_production.py
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Ejecutar ERC power.kicad_sch
+        run: kicad-cli sch erc kicad/power.kicad_sch --output /tmp/erc_power_pr10.rpt --severity-all --exit-code-violations
+      - name: Mostrar ERC potencia
+        if: always()
+        run: test ! -f /tmp/erc_power_pr10.rpt || cat /tmp/erc_power_pr10.rpt
+      - name: Guardar ERC potencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-power-pr10
+          path: /tmp/erc_power_pr10.rpt
