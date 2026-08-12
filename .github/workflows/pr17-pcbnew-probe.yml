@@ -1,4 +1,4 @@
-# Gate PR17: la corrida final reproduce artefactos persistidos y exige DRC físico 0.
+# Gate PR17: reproduce artefactos persistidos y clasifica DRC de placement.
 name: PR17 placement KiCad
 
 on:
@@ -27,6 +27,7 @@ on:
       - 'bom/insight_z4_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'kicad/fp-lib-table'
       - 'kicad/lib/nfb_footprints.pretty/Honeywell_MPR_LongPort_12Pad.kicad_mod'
       - 'kicad/lib/nfb_footprints.pretty/TI_RDN0011A_TPSM33625.kicad_mod'
       - '.github/workflows/pr17-pcbnew-probe.yml'
@@ -45,11 +46,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
-      - name: Preparar git seguro dentro del contenedor
+      - name: Preparar git y librerías KiCad dentro del contenedor
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Compilar herramientas PR17
         run: |
           python3 -m py_compile tools/probe_pcbnew_api.py
@@ -82,13 +86,7 @@ jobs:
           python3 tools/validate_pr17_drc.py /tmp/pr17_drc.json
       - name: Resumen de salida
         run: |
-          python3 - <<'PY'
-          import json
-          p=json.load(open('hardware/placement_manifest.json',encoding='utf-8'))
-          print('BOARD',p['board'])
-          print('ZONES',p['zone_bounds_mm'])
-          print('REFS',len(p['placements']))
-          PY
+          python3 -c "import json; p=json.load(open('hardware/placement_manifest.json',encoding='utf-8')); print('BOARD',p['board']); print('ZONES',p['zone_bounds_mm']); print('REFS',len(p['placements']))"
       - name: Persistir artefactos de placement verificados
         run: |
           git add hardware/placement_manifest.json hardware/placement_plan_probe.json kicad/NFB_Insight_PCBA_v2.kicad_pcb
