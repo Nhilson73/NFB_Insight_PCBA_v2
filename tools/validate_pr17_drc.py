@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,14 +44,18 @@ def main() -> int:
     if not isinstance(unconnected, list):
         fail("reporte KiCad JSON no contiene lista 'unconnected_items'")
 
+    counts = Counter(str(item.get("type", "?")) for item in violations)
+    print("DRC_TYPE_COUNTS", dict(sorted(counts.items())))
+
     if violations:
         sample=[]
-        for item in violations[:8]:
+        for item in violations[:12]:
             sample.append(
                 f"{item.get('type','?')}: {item.get('description','sin descripción')}"
             )
         fail(
             f"DRC PR17 tiene {len(violations)} violaciones físicas inesperadas; "
+            f"tipos={dict(sorted(counts.items()))}; "
             + " | ".join(sample)
         )
 
