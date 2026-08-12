@@ -37,7 +37,7 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 
 ## Z3 potencia — PR #9 / #10 / #13 / #15
 
-Fuente arquitectónica: `hardware/power_architecture_contract.json`.
+Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, `hardware/power_netclasses.json` y `bom/insight_power_production_bom.csv`.
 
 - 12 V protegido → VIN del UNO Q.
 - `5V_RAIL` y `3V3_RAIL` son locales del shield; no se unen a J_UNOQ.5/J_UNOQ.4.
