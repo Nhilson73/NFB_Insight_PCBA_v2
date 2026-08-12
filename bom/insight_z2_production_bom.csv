@@ -1,0 +1,35 @@
+bloque,ref,qty,funcion,valor,mpn_o_familia,footprint,poblacion,nota
+I2C_GNSS_RTC,R_I2C_SDA,1,resistor,4.7k 1%,CRCW04024K70FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up global I2C; reemplaza respaldos 10k DNP de Z1.
+I2C_GNSS_RTC,R_I2C_SCL,1,resistor,4.7k 1%,CRCW04024K70FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,Pull-up global I2C; reemplaza respaldos 10k DNP de Z1.
+I2C_GNSS_RTC,D_GNSS_SDA,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD single-line a GND sobre SDA externo.
+I2C_GNSS_RTC,D_GNSS_SCL,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD single-line a GND sobre SCL externo.
+I2C_GNSS_RTC,J_GNSS_RTC,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,DFR1103 externo; XH-4 ↔ Gravity; orientar hacia -Y.
+HX711,U_HX,1,adc_loadcell,HX711 24-bit,HX711 / qualified source TBD,Package_SO:SOP-16_4.4x10.4mm_P1.27mm,POPULATE,Topología/footprint congelados; fuente HX711 a calificar en Fase 6.
+HX711,J_LOADCELL,1,connector,Load Cell 4p side-entry,"Phoenix PT-1,5-4-5.0-H","TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-4-5.0-H_1x04_P5.00mm_Horizontal",POPULATE,E+/E-/A+/A-; side-entry hacia -Y.
+HX711,C_HX_100N,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+HX711,C_HX_10U,1,capacitor,10uF 10V X5R,GRM21BR61A106KE19L,Capacitor_SMD:C_0805_2012Metric,POPULATE,
+HX711,C_HX_VBG,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+HMI,J_HMI,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,5V/GND/RX/TX; side-entry hacia -Y.
+HMI,U_HMI_LVL,1,level_translator,TXU0202,TXU0202DCUR,Package_MSOP:VSSOP-8_2x3.1mm_P0.65mm,POPULATE,Traductor UART bidireccional por dos canales de dirección fija.
+HMI,C_HMI_A,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+HMI,C_HMI_B,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+HMI,D_HMI_RX,1,esd,PESD5V0U1UL,"PESD5V0U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD 5V single-line a GND en lado de campo.
+HMI,D_HMI_TX,1,esd,PESD5V0U1UL,"PESD5V0U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD 5V single-line a GND en lado de campo.
+WATCHDOG,U_WDT,1,supervisor_watchdog,TPS3823-30 1.6s,TPS3823-30DBVR,Package_TO_SOT_SMD:SOT-23-5,POPULATE,Watchdog 1.6s; firmware alimenta WDI cada 400ms.
+WATCHDOG,R_WDT_MR,1,resistor,10k 1%,CRCW040210K0FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,
+WATCHDOG,C_WDT,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+BRINGUP,TP_3V3,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+BRINGUP,TP_5V,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+BRINGUP,TP_GND,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+BRINGUP,TP_I2C_SDA,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+BRINGUP,TP_I2C_SCL,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HX711,TP_HX_DOUT,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HX711,TP_HX_SCK,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HX711,TP_LOAD_A_POS,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HX711,TP_LOAD_A_NEG,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HMI,TP_HMI_TX,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+HMI,TP_HMI_RX,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+WATCHDOG,TP_WDI,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+WATCHDOG,TP_NRST,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+WATCHDOG,TP_WDT_MR,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
+BRINGUP,TP_LED_STATUS,1,testpoint,PCB test point,PCB_FEATURE,TestPoint:TestPoint_Pad_D1.0mm,PCB_FEATURE,Punto de prueba.
