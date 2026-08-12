@@ -11,7 +11,16 @@
       "other official Arduino UNO Q repositories"
     ],
     "uno_q_secondary": ["https://docs.arduino.cc/hardware/uno-q/"],
-    "shield_components_primary": "manufacturer datasheets/product pages"
+    "shield_components_primary": "manufacturer datasheets/product pages",
+    "arduino_docs_content_snapshot": {
+      "commit": "196feda03787005572a059f030677b8a1de9bcd2",
+      "review_date": "2026-08-11",
+      "files": [
+        "content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+        "content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md",
+        "content/hardware/02.uno/carriers/uno-breakout-carrier/datasheet/datasheet.md"
+      ]
+    }
   },
   "input": {
     "nominal_v": 12.0,
@@ -140,11 +149,11 @@
     "Final input filter and IEC 61000-4-5 pre-compliance values require bench/lab validation."
   ],
   "sources": [
-    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md","kind":"official_github_primary"},
-    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md","kind":"official_github_primary"},
-    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/carriers/uno-breakout-carrier/datasheet/datasheet.md","kind":"official_github_primary"},
+    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md","kind":"official_github_primary"},
+    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md","kind":"official_github_primary"},
+    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/carriers/uno-breakout-carrier/datasheet/datasheet.md","kind":"official_github_primary"},
     {"priority":2,"manufacturer":"Texas Instruments","part":"TPS259470ARPWR","url":"https://www.ti.com/product/TPS25947/part-details/TPS259470ARPWR"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625","url":"https://www.ti.com/product/TPSM33625"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625RDNR","url":"https://www.ti.com/product/TPSM33625/part-details/TPSM33625RDNR"},
     {"priority":2,"manufacturer":"Texas Instruments","part":"TLV75533PDBVR","url":"https://www.ti.com/product/TLV755P/part-details/TLV75533PDBVR"}
   ]
 }
