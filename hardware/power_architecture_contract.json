@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "POWER_ARCHITECTURE_BASELINE_PR9",
+  "design_object": "SHIELD_CARRIER_FOR_ARDUINO_UNO_Q",
+  "input": {
+    "nominal_v": 12.0,
+    "allowed_v": [10.8, 13.2],
+    "recommended_external_supply": "12 V / 5 A certified external PSU",
+    "connector_family": "Phoenix Contact 2-pos 5.08 mm pluggable terminal block",
+    "input_net": "12V_IN_RAW"
+  },
+  "host_power": {
+    "uno_q_method": "VIN_7_TO_24V",
+    "uno_q_pad": 8,
+    "host_net": "12V_HOST_VIN",
+    "usb_c_can_coexist": true,
+    "source_note": "Arduino UNO Q datasheet: VIN accepts 7-24 V; USB-C and VIN are diode-OR combined internally.",
+    "forbidden": [
+      "Do not power shield 5V_RAIL from J_UNOQ pad 5 USB VBUS pass-through.",
+      "Do not back-feed J_UNOQ pad 4 PWR_3P3V or pad 2 IOREF."
+    ]
+  },
+  "input_protection": {
+    "efuse": {
+      "ref": "U_EFUSE",
+      "mpn": "TPS259470ARPWR",
+      "vin_range_v": [2.7, 23.0],
+      "current_capability_a": 5.5,
+      "target_current_limit_a": 4.5,
+      "features": ["reverse_polarity", "true_reverse_current_blocking", "overcurrent", "overvoltage", "soft_start", "thermal_shutdown"]
+    },
+    "tvs": {
+      "ref": "D_IN_TVS",
+      "family": "SMBJ15A",
+      "vrwm_v": 15.0,
+      "placement": "at input connector before eFuse"
+    },
+    "bulk_cap": {
+      "ref": "C_IN_BULK",
+      "value": "100 uF / 25 V low-ESR",
+      "placement": "after eFuse at star split"
+    }
+  },
+  "star_split": {
+    "source": "12V_PROTECTED",
+    "branches": [
+      {"net": "12V_HOST_VIN", "purpose": "Arduino UNO Q VIN", "continuous_budget_a": 1.5},
+      {"net": "12V_LOGIC", "purpose": "shield low-voltage regulators", "continuous_budget_a": 1.0},
+      {"net": "12V_ACT", "purpose": "pump + CO2 solenoid only", "continuous_budget_a": 1.5, "local_fuse_required": true}
+    ],
+    "chiller_power_on_pcba": false,
+    "chiller_interface": "control signal only"
+  },
+  "shield_5v": {
+    "net": "5V_RAIL",
+    "regulator": {
+      "ref": "U_5V",
+      "mpn": "TPSM33625RDNR",
+      "type": "2.5A synchronous buck power module",
+      "vin_range_v": [3.0, 36.0],
+      "vout_v": 5.0,
+      "rated_current_a": 2.5,
+      "design_continuous_limit_a": 1.5,
+      "spread_spectrum": true,
+      "emi_note": "TI specifies CISPR 11 Class B compliant-capable with appropriate layout/filtering."
+    },
+    "enable": {
+      "source": "UNO_IOREF_3V3",
+      "uno_q_pad": 2,
+      "pulldown_ref": "R_5V_EN_PD",
+      "pulldown_ohm": 100000,
+      "purpose": "keep shield 5V off until UNO Q 3.3V/IOREF is alive"
+    },
+    "power_good_net": "5V_PGOOD",
+    "loads": ["pH module", "ORP module", "DO module", "HMI", "3.3V LDO input"]
+  },
+  "shield_3v3": {
+    "net": "3V3_RAIL",
+    "regulator": {
+      "ref": "U_3V3",
+      "mpn": "TLV75533PDBVR",
+      "type": "500mA high-PSRR LDO",
+      "vin_v": 5.0,
+      "vout_v": 3.3,
+      "rated_current_a": 0.5,
+      "design_continuous_limit_a": 0.25,
+      "enable_source": "5V_PGOOD"
+    },
+    "loads": ["MPR pressure", "DS18B20", "HX711", "DFR1103", "I2C pullups", "TXU0202 VCCA", "watchdog", "ESD/support logic"],
+    "host_3v3_connection": false,
+    "reason": "avoid relying on undocumented available current of UNO Q 3.3V output and prevent shield rail back-feed"
+  },
+  "power_sequence": [
+    "12V_IN_RAW -> TVS/eFuse -> 12V_PROTECTED",
+    "12V_PROTECTED -> J_UNOQ VIN; UNO Q boots from its own certified power tree",
+    "UNO Q IOREF rises to 3.3 V -> enable U_5V",
+    "U_5V PGOOD -> enable U_3V3",
+    "Only then are shield field sensors/HMI and 3.3V logic energized"
+  ],
+  "power_budget": {
+    "host_branch_w_design": 18.0,
+    "shield_5v_w_design": 7.5,
+    "actuator_12v_w_design": 18.0,
+    "total_w_design": 43.5,
+    "recommended_supply_w": 60.0,
+    "note": "The 60 W adapter provides margin for UNO Q transient load, HMI/sensors and pump+solenoid. Chiller power is external."
+  },
+  "actuator_policy": {
+    "pump_peak_a_assumption": 0.8,
+    "co2_solenoid_peak_a_assumption": 0.25,
+    "local_branch_design_a": 1.5,
+    "chiller": "external power; control only",
+    "dirty_return_rule": "12V_ACT returns must join GND at power-entry/star region and must not cross Z1/Z2 return paths"
+  },
+  "compliance_rules": [
+    "Keep switching regulator and 12V_ACT physically in Z3/Z4, away from Z1 analog and UNO Q RF keepout.",
+    "Use continuous reference plane; do not route switching-node copper on internal reference plane.",
+    "TVS and eFuse must be adjacent to the power-entry connector.",
+    "Do not connect shield 5V_RAIL to UNO Q pad 5 or shield 3V3_RAIL to UNO Q pad 4.",
+    "Use IOREF only as a high-impedance enable/reference signal; never back-feed it.",
+    "Final input filter and IEC 61000-4-5 pre-compliance values require bench/lab validation."
+  ],
+  "sources": [
+    {"manufacturer":"Arduino","document":"UNO Q datasheet ABX00162-ABX00173","url":"https://docs.arduino.cc/resources/datasheets/ABX00162-ABX00173-datasheet.pdf"},
+    {"manufacturer":"Texas Instruments","part":"TPS25947","url":"https://www.ti.com/product/TPS25947"},
+    {"manufacturer":"Texas Instruments","part":"TPSM33625","url":"https://www.ti.com/product/TPSM33625"},
+    {"manufacturer":"Texas Instruments","part":"TLV755P","url":"https://www.ti.com/product/TLV755P"}
+  ]
+}
