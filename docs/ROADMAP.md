@@ -40,13 +40,13 @@
 
 ## Fase 3 — Potencia, actuadores e integración EDA
 
-### PR #9/#10 — potencia
-- [x] 12 V protegido → VIN UNO Q.
-- [x] Rails locales 5 V / 3.3 V sin back-feed.
-- [x] `TPS259470ARPWR` + `SMBJ15A`.
-- [x] `TPSM33625RDNR` 1 MHz + `TLV75533PDBVR`.
-- [x] `12V_HOST_VIN / 12V_LOGIC / 12V_ACT`; chiller power externa.
-- [x] Netlist/BOM/netclasses/`power.kicad_sch` + ERC.
+### PR #9 / PR #10 — potencia de producción
+- [x] PR #9: 12 V protegido → VIN UNO Q.
+- [x] PR #9: rails locales 5 V / 3.3 V sin back-feed.
+- [x] PR #10: `TPS259470ARPWR` + `SMBJ15A`.
+- [x] PR #10: `TPSM33625RDNR` 1 MHz + `TLV75533PDBVR`.
+- [x] PR #10: `12V_HOST_VIN / 12V_LOGIC / 12V_ACT`; chiller power externa.
+- [x] PR #10: netlist/BOM/netclasses/`power.kicad_sch` + ERC.
 - [ ] DC-bias efectivo 2×22 µF ≥25 µF.
 - [ ] HIL/termografía 60 °C e inrush `F_ACT`.
 
@@ -80,8 +80,9 @@
 - [x] Congelar `hardware/root_eda_contract.json`.
 - [x] GND común Z0–Z4; 3V3/5V locales excluyen Z0.
 - [x] I²C Z0/Z1/Z2; `12V_ACT` Z3/Z4; controles/diagnóstico Z0/Z4.
-- [x] Gate `tools/validate_root_eda.py` + workflow ERC root.
+- [x] Gate `tools/validate_root_eda.py` + workflow root.
 - [x] Mantener `zone_internal_component_symbols=false`: no duplicar manualmente >100 refs.
+- [x] Congelar deuda ERC intencional de interfaz: exactamente 125 `label_dangling`, cero tipos inesperados y sin bajar severidades KiCad.
 - [ ] CI PR #14 totalmente verde y merge.
 
 ### PR #15 — materialización interna de símbolos de producción
@@ -90,6 +91,7 @@
 - [ ] Crear/generar símbolos y conectividad interna Z3 desde `power_production_netlist.json` + BOM.
 - [ ] Crear/generar símbolos y conectividad interna Z4 desde `z4_production_netlist.json` + BOM.
 - [ ] Paridad refs/pines/nets/footprints JSON↔KiCad.
+- [ ] Eliminar completamente la deuda ERC PR #14.
 - [ ] ERC = 0 del hierarchy completo.
 - [ ] Mantener placement/routing fuera de alcance hasta cerrar paridad.
 
