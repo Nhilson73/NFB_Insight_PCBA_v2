@@ -1,0 +1,2084 @@
+{
+  "schema_version": 1,
+  "status": "PRODUCTION_PLACEMENT_PR17",
+  "product": "NFB Insight PCBA v2",
+  "source": "PR16 placement readiness + production JSON/BOM + KiCad 10.0.5 F.CrtYd",
+  "board": {
+    "origin_mm": [
+      0.0,
+      0.0
+    ],
+    "width_mm": 242.34,
+    "height_mm": 68.58,
+    "growth_only": "+X"
+  },
+  "zone_bounds_mm": {
+    "Z0": {
+      "x_min": 0.0,
+      "x_max": 53.34
+    },
+    "Z1": {
+      "x_min": 53.34,
+      "x_max": 108.84
+    },
+    "Z2": {
+      "x_min": 108.84,
+      "x_max": 163.34
+    },
+    "Z3": {
+      "x_min": 163.34,
+      "x_max": 198.34
+    },
+    "Z4": {
+      "x_min": 198.34,
+      "x_max": 242.34
+    }
+  },
+  "field_io_sequence_left_to_right": [
+    "J_PH",
+    "J_ORP",
+    "J_TEMP",
+    "U_CO2",
+    "J_DO",
+    "J_LOADCELL",
+    "J_GNSS_RTC",
+    "J_HMI",
+    "J_PWR_IN",
+    "J_PUMP",
+    "J_CO2_SOL",
+    "J_CHILLER_CTL"
+  ],
+  "policies": {
+    "routing_allowed": false,
+    "all_field_connectors_face": "-Y",
+    "field_courtyard_bottom_margin_mm": 0.8,
+    "z0_production_placement_allowed": false,
+    "in1_cu_signal_routing_allowed": false,
+    "manual_xy_override_allowed": false
+  },
+  "placements": [
+    {
+      "ref": "C_3V3_HF",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 194.845,
+      "y_mm": 30.835,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        193.91,
+        30.35,
+        195.78,
+        31.32
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_3V3_IN",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 182.845,
+      "y_mm": 31.105,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        181.34,
+        30.35,
+        184.35,
+        31.86
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_3V3_OUT",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 191.605,
+      "y_mm": 31.105,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        190.1,
+        30.35,
+        193.11,
+        31.86
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_HF",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 187.725,
+      "y_mm": 26.785,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        186.79,
+        26.3,
+        188.66,
+        27.27
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_IN_100N",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 188.295,
+      "y_mm": 17.255,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        186.79,
+        16.5,
+        189.8,
+        18.01
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_IN_4U7",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 183.665,
+      "y_mm": 18.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        181.34,
+        16.5,
+        185.99,
+        19.75
+      ],
+      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_OUT1",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 192.895,
+      "y_mm": 23.875,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        190.57,
+        22.25,
+        195.22,
+        25.5
+      ],
+      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_OUT2",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 183.665,
+      "y_mm": 27.925,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        181.34,
+        26.3,
+        185.99,
+        29.55
+      ],
+      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_5V_VCC",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 182.845,
+      "y_mm": 23.005,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        181.34,
+        22.25,
+        184.35,
+        23.76
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_CO2",
+      "zone": "Z1",
+      "block": "CO2",
+      "role": "internal",
+      "x_mm": 89.5,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        88.565,
+        16.5,
+        90.435,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_CO2_DRV",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 214.765,
+      "y_mm": 17.255,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        213.26,
+        16.5,
+        216.27,
+        18.01
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_DO",
+      "zone": "Z1",
+      "block": "DO",
+      "role": "internal",
+      "x_mm": 103.96,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        103.025,
+        16.5,
+        104.895,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_EFUSE_DVDT",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 176.115,
+      "y_mm": 22.335,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        175.18,
+        21.85,
+        177.05,
+        22.82
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_EFUSE_ITIMER",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 178.785,
+      "y_mm": 22.335,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        177.85,
+        21.85,
+        179.72,
+        22.82
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_HMI_A",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "internal",
+      "x_mm": 159.445,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        158.51,
+        16.5,
+        160.38,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_HMI_B",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "internal",
+      "x_mm": 149.295,
+      "y_mm": 20.835,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        148.36,
+        20.35,
+        150.23,
+        21.32
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_HX_100N",
+      "zone": "Z2",
+      "block": "HX711",
+      "role": "internal",
+      "x_mm": 120.125,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        119.19,
+        16.5,
+        121.06,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_HX_10U",
+      "zone": "Z2",
+      "block": "HX711",
+      "role": "internal",
+      "x_mm": 123.585,
+      "y_mm": 17.505,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        121.86,
+        16.5,
+        125.31,
+        18.51
+      ],
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_HX_VBG",
+      "zone": "Z2",
+      "block": "HX711",
+      "role": "internal",
+      "x_mm": 127.045,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        126.11,
+        16.5,
+        127.98,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_IN_BULK",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 169.665,
+      "y_mm": 28.065,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        23.64,
+        174.99,
+        32.49
+      ],
+      "footprint": "Capacitor_SMD:CP_Elec_8x6.2",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_IN_HF",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 173.995,
+      "y_mm": 17.255,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        172.49,
+        16.5,
+        175.5,
+        18.01
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_ORP",
+      "zone": "Z1",
+      "block": "ORP",
+      "role": "internal",
+      "x_mm": 74.795,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        73.86,
+        16.5,
+        75.73,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_PH",
+      "zone": "Z1",
+      "block": "PH",
+      "role": "internal",
+      "x_mm": 60.435,
+      "y_mm": 16.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        59.5,
+        16.5,
+        61.37,
+        17.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_PUMP_BULK",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 201.665,
+      "y_mm": 18.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        16.5,
+        203.99,
+        19.75
+      ],
+      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_PUMP_IPROPI",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 202.985,
+      "y_mm": 24.725,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        202.05,
+        24.24,
+        203.92,
+        25.21
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_PUMP_VM",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 206.295,
+      "y_mm": 17.255,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        204.79,
+        16.5,
+        207.8,
+        18.01
+      ],
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "C_WDT",
+      "zone": "Z2",
+      "block": "WATCHDOG",
+      "role": "internal",
+      "x_mm": 118.435,
+      "y_mm": 49.985,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        117.5,
+        49.5,
+        119.37,
+        50.47
+      ],
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_DO",
+      "zone": "Z1",
+      "block": "DO",
+      "role": "internal",
+      "x_mm": 98.69,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        97.865,
+        16.5,
+        99.515,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_GNSS_SCL",
+      "zone": "Z2",
+      "block": "I2C_GNSS_RTC",
+      "role": "internal",
+      "x_mm": 134.705,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        133.88,
+        16.5,
+        135.53,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_GNSS_SDA",
+      "zone": "Z2",
+      "block": "I2C_GNSS_RTC",
+      "role": "internal",
+      "x_mm": 132.255,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        131.43,
+        16.5,
+        133.08,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_HMI_RX",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "internal",
+      "x_mm": 149.185,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        148.36,
+        16.5,
+        150.01,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_HMI_TX",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "internal",
+      "x_mm": 151.635,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        150.81,
+        16.5,
+        152.46,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_IN_TVS",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 168.015,
+      "y_mm": 18.775,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        16.5,
+        171.69,
+        21.05
+      ],
+      "footprint": "Diode_SMD:D_SMB",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_ORP",
+      "zone": "Z1",
+      "block": "ORP",
+      "role": "internal",
+      "x_mm": 72.235,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        71.41,
+        16.5,
+        73.06,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_PH",
+      "zone": "Z1",
+      "block": "PH",
+      "role": "internal",
+      "x_mm": 55.165,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        54.34,
+        16.5,
+        55.99,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "D_TEMP",
+      "zone": "Z1",
+      "block": "TEMP",
+      "role": "internal",
+      "x_mm": 78.765,
+      "y_mm": 17.125,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        77.94,
+        16.5,
+        79.59,
+        17.75
+      ],
+      "footprint": "Diode_SMD:D_SOD-882",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "F_ACT",
+      "zone": "Z3",
+      "block": "SPLIT_ESTRELLA",
+      "role": "internal",
+      "x_mm": 172.665,
+      "y_mm": 53.875,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        168.94,
+        52.0,
+        176.39,
+        55.75
+      ],
+      "footprint": "NFB:Littelfuse_0454_NANO2",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_CHILLER_CTL",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "field_io",
+      "x_mm": 231.845,
+      "y_mm": 3.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        227.78,
+        0.8,
+        241.0,
+        13.85
+      ],
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_CO2_SOL",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "field_io",
+      "x_mm": 217.625,
+      "y_mm": 3.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        213.56,
+        0.8,
+        226.78,
+        13.85
+      ],
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_DO",
+      "zone": "Z1",
+      "block": "DO",
+      "role": "field_io",
+      "x_mm": 99.815,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        96.84,
+        0.8,
+        107.79,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_GNSS_RTC",
+      "zone": "Z2",
+      "block": "I2C_GNSS_RTC",
+      "role": "field_io",
+      "x_mm": 137.185,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        134.21,
+        0.8,
+        147.66,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_HMI",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "field_io",
+      "x_mm": 151.635,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        148.66,
+        0.8,
+        162.11,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_LOADCELL",
+      "zone": "Z2",
+      "block": "HX711",
+      "role": "field_io",
+      "x_mm": 113.905,
+      "y_mm": 3.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        109.84,
+        0.8,
+        133.21,
+        13.85
+      ],
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_4-G-5,08_1x04_P5.08mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_ORP",
+      "zone": "Z1",
+      "block": "ORP",
+      "role": "field_io",
+      "x_mm": 69.265,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        66.29,
+        0.8,
+        77.24,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_PH",
+      "zone": "Z1",
+      "block": "PH",
+      "role": "field_io",
+      "x_mm": 57.315,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        54.34,
+        0.8,
+        65.29,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_PUMP",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "field_io",
+      "x_mm": 203.405,
+      "y_mm": 3.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        0.8,
+        212.56,
+        13.85
+      ],
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_PWR_IN",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "field_io",
+      "x_mm": 168.405,
+      "y_mm": 3.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        0.8,
+        177.56,
+        13.85
+      ],
+      "footprint": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "J_TEMP",
+      "zone": "Z1",
+      "block": "TEMP",
+      "role": "field_io",
+      "x_mm": 81.215,
+      "y_mm": 3.635,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        78.24,
+        0.8,
+        89.19,
+        13.36
+      ],
+      "footprint": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "NT_HOST",
+      "zone": "Z3",
+      "block": "SPLIT_ESTRELLA",
+      "role": "internal",
+      "x_mm": 165.09,
+      "y_mm": 52.25,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        52.0,
+        165.84,
+        52.5
+      ],
+      "footprint": "NetTie:NetTie-2_SMD_Pad0.5mm",
+      "bbox_source": "PAD_FALLBACK"
+    },
+    {
+      "ref": "NT_LOGIC",
+      "zone": "Z3",
+      "block": "SPLIT_ESTRELLA",
+      "role": "internal",
+      "x_mm": 167.39,
+      "y_mm": 52.25,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        166.64,
+        52.0,
+        168.14,
+        52.5
+      ],
+      "footprint": "NetTie:NetTie-2_SMD_Pad0.5mm",
+      "bbox_source": "PAD_FALLBACK"
+    },
+    {
+      "ref": "Q_CHILLER",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "internal",
+      "x_mm": 229.435,
+      "y_mm": 24.675,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        227.48,
+        22.95,
+        231.39,
+        26.4
+      ],
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_5V_EN_PD",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 190.415,
+      "y_mm": 26.795,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        189.46,
+        26.3,
+        191.37,
+        27.29
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_5V_FBB",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 188.815,
+      "y_mm": 22.745,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        187.86,
+        22.25,
+        189.77,
+        23.24
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_5V_FBT",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 186.105,
+      "y_mm": 22.745,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        185.15,
+        22.25,
+        187.06,
+        23.24
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_5V_PG_PU",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 193.125,
+      "y_mm": 26.795,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        192.17,
+        26.3,
+        194.08,
+        27.29
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_ACT_FAULT_PU",
+      "zone": "Z4",
+      "block": "DIAGNOSTIC",
+      "role": "internal",
+      "x_mm": 200.295,
+      "y_mm": 49.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        49.5,
+        201.25,
+        50.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CH_GATE",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "internal",
+      "x_mm": 235.855,
+      "y_mm": 23.445,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        234.9,
+        22.95,
+        236.81,
+        23.94
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CH_GATE_PD",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "internal",
+      "x_mm": 238.565,
+      "y_mm": 23.445,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        237.61,
+        22.95,
+        239.52,
+        23.94
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CH_LED",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "internal",
+      "x_mm": 233.145,
+      "y_mm": 23.445,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        232.19,
+        22.95,
+        234.1,
+        23.94
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_EN_PD",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 214.215,
+      "y_mm": 20.045,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        213.26,
+        19.55,
+        215.17,
+        20.54
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_EN_SER",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 223.885,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        222.93,
+        16.5,
+        224.84,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_ILIM",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 221.175,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        220.22,
+        16.5,
+        222.13,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_OPENLOAD_PU",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 216.925,
+      "y_mm": 20.045,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        215.97,
+        19.55,
+        217.88,
+        20.54
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_SCL_PU",
+      "zone": "Z1",
+      "block": "CO2",
+      "role": "internal",
+      "x_mm": 94.9,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        93.945,
+        16.5,
+        95.855,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_CO2_SDA_PU",
+      "zone": "Z1",
+      "block": "CO2",
+      "role": "internal",
+      "x_mm": 92.19,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        91.235,
+        16.5,
+        93.145,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_DO",
+      "zone": "Z1",
+      "block": "DO",
+      "role": "internal",
+      "x_mm": 101.27,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        100.315,
+        16.5,
+        102.225,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_EFUSE_ILIM",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 173.425,
+      "y_mm": 22.345,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        172.47,
+        21.85,
+        174.38,
+        22.84
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_I2C_SCL",
+      "zone": "Z2",
+      "block": "I2C_GNSS_RTC",
+      "role": "internal",
+      "x_mm": 139.995,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        139.04,
+        16.5,
+        140.95,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_I2C_SDA",
+      "zone": "Z2",
+      "block": "I2C_GNSS_RTC",
+      "role": "internal",
+      "x_mm": 137.285,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        136.33,
+        16.5,
+        138.24,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_ORP_BOT",
+      "zone": "Z1",
+      "block": "ORP",
+      "role": "internal",
+      "x_mm": 69.655,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        68.7,
+        16.5,
+        70.61,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_ORP_TOP",
+      "zone": "Z1",
+      "block": "ORP",
+      "role": "internal",
+      "x_mm": 66.945,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        65.99,
+        16.5,
+        67.9,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PH",
+      "zone": "Z1",
+      "block": "PH",
+      "role": "internal",
+      "x_mm": 57.745,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        56.79,
+        16.5,
+        58.7,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_DIR_PD",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 211.135,
+      "y_mm": 22.945,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        210.18,
+        22.45,
+        212.09,
+        23.44
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_DIR_SER",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 208.425,
+      "y_mm": 22.945,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        207.47,
+        22.45,
+        209.38,
+        23.44
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_IPROPI",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 200.295,
+      "y_mm": 24.735,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        24.24,
+        201.25,
+        25.23
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_PWM_PD",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 205.715,
+      "y_mm": 22.945,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        204.76,
+        22.45,
+        206.67,
+        23.44
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_PWM_SER",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 203.005,
+      "y_mm": 22.945,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        202.05,
+        22.45,
+        203.96,
+        23.44
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_PUMP_SR",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 200.295,
+      "y_mm": 22.945,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        22.45,
+        201.25,
+        23.44
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_TEMP_PU",
+      "zone": "Z1",
+      "block": "TEMP",
+      "role": "internal",
+      "x_mm": 81.345,
+      "y_mm": 16.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        80.39,
+        16.5,
+        82.3,
+        17.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_UVOV_R1",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 165.295,
+      "y_mm": 22.345,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        21.85,
+        166.25,
+        22.84
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_UVOV_R2",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 168.005,
+      "y_mm": 22.345,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        167.05,
+        21.85,
+        168.96,
+        22.84
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_UVOV_R3",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 170.715,
+      "y_mm": 22.345,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        169.76,
+        21.85,
+        171.67,
+        22.84
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "R_WDT_MR",
+      "zone": "Z2",
+      "block": "WATCHDOG",
+      "role": "internal",
+      "x_mm": 115.745,
+      "y_mm": 49.995,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        114.79,
+        49.5,
+        116.7,
+        50.49
+      ],
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_12V_ACT",
+      "zone": "Z3",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 173.915,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        172.89,
+        57.0,
+        174.94,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_12V_LOGIC",
+      "zone": "Z3",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 171.065,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        170.04,
+        57.0,
+        172.09,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_12V_PROT",
+      "zone": "Z3",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 168.215,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        167.19,
+        57.0,
+        169.24,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_12V_RAW",
+      "zone": "Z3",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 165.365,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        164.34,
+        57.0,
+        166.39,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_3V3",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 110.865,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        109.84,
+        57.0,
+        111.89,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_5V",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 113.715,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        112.69,
+        57.0,
+        114.74,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_5V_PGOOD",
+      "zone": "Z3",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 176.765,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        175.74,
+        57.0,
+        177.79,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_ACT_FAULT",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 216.115,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        215.09,
+        57.0,
+        217.14,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_CO2_OPENLOAD",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 209.915,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        208.89,
+        57.0,
+        210.94,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_CO2_SOL_POS",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 213.015,
+      "y_mm": 58.275,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        211.74,
+        57.0,
+        214.29,
+        59.55
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.5mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_GND",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 116.565,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        115.54,
+        57.0,
+        117.59,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_HMI_RX",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 139.365,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        138.34,
+        57.0,
+        140.39,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_HMI_TX",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 136.515,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        135.49,
+        57.0,
+        137.54,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_HX_DOUT",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 125.115,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        124.09,
+        57.0,
+        126.14,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_HX_SCK",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 127.965,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        126.94,
+        57.0,
+        128.99,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_I2C_SCL",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 122.265,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        121.24,
+        57.0,
+        123.29,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_I2C_SDA",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 119.415,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        118.39,
+        57.0,
+        120.44,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_LED_STATUS",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 150.765,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        149.74,
+        57.0,
+        151.79,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_LOAD_A_NEG",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 133.665,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        132.64,
+        57.0,
+        134.69,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_LOAD_A_POS",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 130.815,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        129.79,
+        57.0,
+        131.84,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_NRST",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 145.065,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        144.04,
+        57.0,
+        146.09,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_PUMP_CURRENT",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 200.365,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        199.34,
+        57.0,
+        201.39,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_PUMP_OUT1",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 203.465,
+      "y_mm": 58.275,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        202.19,
+        57.0,
+        204.74,
+        59.55
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.5mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_PUMP_OUT2",
+      "zone": "Z4",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 206.815,
+      "y_mm": 58.275,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        205.54,
+        57.0,
+        208.09,
+        59.55
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.5mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_WDI",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 142.215,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        141.19,
+        57.0,
+        143.24,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "TP_WDT_MR",
+      "zone": "Z2",
+      "block": "TESTPOINTS",
+      "role": "testpoint",
+      "x_mm": 147.915,
+      "y_mm": 58.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        146.89,
+        57.0,
+        148.94,
+        59.05
+      ],
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_3V3",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 187.225,
+      "y_mm": 32.075,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        185.15,
+        30.35,
+        189.3,
+        33.8
+      ],
+      "footprint": "Package_TO_SOT_SMD:SOT-23-5",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_5V",
+      "zone": "Z3",
+      "block": "BUCK_5V+LDO_3V3",
+      "role": "internal",
+      "x_mm": 193.075,
+      "y_mm": 19.075,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        190.6,
+        16.5,
+        195.55,
+        21.45
+      ],
+      "footprint": "NFB:TI_RDN0011A_TPSM33625",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_CHILLER",
+      "zone": "Z4",
+      "block": "CHILLER",
+      "role": "internal",
+      "x_mm": 232.605,
+      "y_mm": 19.325,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        227.48,
+        16.5,
+        237.73,
+        22.15
+      ],
+      "footprint": "NFB:Panasonic_AQY212EHAX_DIP4_SMD",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_CO2",
+      "zone": "Z1",
+      "block": "CO2",
+      "role": "field_io",
+      "x_mm": 93.015,
+      "y_mm": 3.625,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        90.19,
+        0.8,
+        95.84,
+        6.45
+      ],
+      "footprint": "NFB:Honeywell_MPR_LongPort_12Pad",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_CO2_DRV",
+      "zone": "Z4",
+      "block": "CO2_SOL",
+      "role": "internal",
+      "x_mm": 218.245,
+      "y_mm": 17.625,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        217.07,
+        16.5,
+        219.42,
+        18.75
+      ],
+      "footprint": "NFB:TI_DYC0008A_TPS1HC120",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_EFUSE",
+      "zone": "Z3",
+      "block": "ENTRADA_PROTECCION",
+      "role": "internal",
+      "x_mm": 177.775,
+      "y_mm": 17.975,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        176.3,
+        16.5,
+        179.25,
+        19.45
+      ],
+      "footprint": "NFB:TI_RPW0010A_TPS259470A",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_HMI_LVL",
+      "zone": "Z2",
+      "block": "HMI",
+      "role": "internal",
+      "x_mm": 155.485,
+      "y_mm": 18.025,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        153.26,
+        16.5,
+        157.71,
+        19.55
+      ],
+      "footprint": "NFB:TI_DCU0008A_TXU0202",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_HX",
+      "zone": "Z2",
+      "block": "HX711",
+      "role": "internal",
+      "x_mm": 114.115,
+      "y_mm": 21.975,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        109.84,
+        16.5,
+        118.39,
+        27.45
+      ],
+      "footprint": "Package_SO:SOP-16_4.4x10.4mm_P1.27mm",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_PUMP_DRV",
+      "zone": "Z4",
+      "block": "PUMP",
+      "role": "internal",
+      "x_mm": 210.675,
+      "y_mm": 19.075,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        208.6,
+        16.5,
+        212.75,
+        21.65
+      ],
+      "footprint": "NFB:TI_RHL0020B_DRV8242",
+      "bbox_source": "F.CrtYd"
+    },
+    {
+      "ref": "U_WDT",
+      "zone": "Z2",
+      "block": "WATCHDOG",
+      "role": "internal",
+      "x_mm": 111.915,
+      "y_mm": 51.225,
+      "rotation_deg": 0.0,
+      "courtyard_global_mm": [
+        109.84,
+        49.5,
+        113.99,
+        52.95
+      ],
+      "footprint": "Package_TO_SOT_SMD:SOT-23-5",
+      "bbox_source": "F.CrtYd"
+    }
+  ]
+}
