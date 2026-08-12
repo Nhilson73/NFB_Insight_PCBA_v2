@@ -129,6 +129,13 @@ def pin_sort_key(pin: str) -> tuple[int, object]:
         return (1, pin)
 
 
+def sorted_pins(comp: dict) -> list[tuple[str, object]]:
+    return sorted(
+        [(str(k), v) for k, v in (comp.get("pins") or {}).items()],
+        key=lambda item: pin_sort_key(item[0]),
+    )
+
+
 def validate_zone_netlist(data: dict, zone: str) -> list[dict]:
     components = data.get("components", [])
     if not components:
@@ -136,7 +143,6 @@ def validate_zone_netlist(data: dict, zone: str) -> list[dict]:
     refs = [c.get("ref") for c in components]
     if any(not r for r in refs) or len(refs) != len(set(refs)):
         fail(f"{zone}: refs vacías o duplicadas")
-    refset = set(refs)
     node_map: dict[str, str] = {}
     for net in data.get("nets", []):
         name = net.get("name")
@@ -159,11 +165,6 @@ def validate_zone_netlist(data: dict, zone: str) -> list[dict]:
                 actual = node_map.get(node)
                 if actual != declared:
                     fail(f"{zone}: {node} pins={declared} nets={actual}")
-    # Los nodos externos (ej. J_UNOQ) son válidos; todo nodo interno debe existir en components.
-    for node in node_map:
-        ref = node.rsplit(".", 1)[0]
-        if ref in refset:
-            continue
     return components
 
 
@@ -191,7 +192,7 @@ def z0_component() -> dict:
 def library_symbol(comp: dict, zone: str) -> str:
     ref = comp["ref"]
     sid = sanitize(ref)
-    pins = sorted((str(k), v) for k, v in (comp.get("pins") or {}).items(), key=lambda x: pin_sort_key(x[0]))
+    pins = sorted_pins(comp)
     n = len(pins)
     offsets = [((n - 1) / 2 - i) * 2.54 for i in range(n)]
     top = (max(offsets) if offsets else 0) + 1.27
@@ -226,7 +227,6 @@ def library_symbol(comp: dict, zone: str) -> str:
 
 
 def place_components(components: list[dict]) -> dict[str, tuple[float, float]]:
-    # Greedy packing sobre A0 landscape; 4 columnas conservan espacio para etiquetas de nets.
     xs = [140.0, 410.0, 680.0, 950.0]
     heights = [55.0] * len(xs)
     pos: dict[str, tuple[float, float]] = {}
@@ -242,10 +242,16 @@ def place_components(components: list[dict]) -> dict[str, tuple[float, float]]:
     return pos
 
 
-def symbol_instance(comp: dict, zone: str, x: float, y: float, instance_path: str) -> tuple[str, list[str]]:
+def symbol_instance(
+    comp: dict,
+    zone: str,
+    x: float,
+    y: float,
+    instance_path: str,
+) -> tuple[str, list[str]]:
     ref = comp["ref"]
     sid = sanitize(ref)
-    pins = sorted((str(k), v) for k, v in (comp.get("pins") or {}).items(), key=lambda x: pin_sort_key(x[0]))
+    pins = sorted_pins(comp)
     n = len(pins)
     offsets = [((n - 1) / 2 - i) * 2.54 for i in range(n)]
     suid = uid(f"{zone}:{ref}:symbol")
@@ -274,16 +280,22 @@ def symbol_instance(comp: dict, zone: str, x: float, y: float, instance_path: st
     ]
     extras: list[str] = []
     for (pnum, net), off in zip(pins, offsets):
-        out.append(f'    (pin {q(pnum)} (uuid "{uid(f"{zone}:{ref}:pin:{pnum}")}"))')
+        pin_uid = uid(f"{zone}:{ref}:pin:{pnum}")
+        out.append(f'    (pin {q(pnum)} (uuid "{pin_uid}"))')
         px = x - 7.62
         py = y + off
         if net in (None, "NC"):
-            extras.append(f'  (no_connect (at {px:.4f} {py:.4f}) (uuid "{uid(f"{zone}:{ref}:nc:{pnum}")}"))')
+            nc_uid = uid(f"{zone}:{ref}:nc:{pnum}")
+            extras.append(
+                f'  (no_connect (at {px:.4f} {py:.4f}) (uuid "{nc_uid}"))'
+            )
         else:
             lx = px - 5.08
+            wire_uid = uid(f"{zone}:{ref}:wire:{pnum}")
+            label_uid = uid(f"{zone}:{ref}:label:{pnum}")
             extras += [
-                f'  (wire (pts (xy {px:.4f} {py:.4f}) (xy {lx:.4f} {py:.4f})) (stroke (width 0) (type default)) (uuid "{uid(f"{zone}:{ref}:wire:{pnum}")}"))',
-                f'  (label {q(net)} (at {lx:.4f} {py:.4f} 180) (effects (font (size 0.8 0.8))) (uuid "{uid(f"{zone}:{ref}:label:{pnum}")}"))',
+                f'  (wire (pts (xy {px:.4f} {py:.4f}) (xy {lx:.4f} {py:.4f})) (stroke (width 0) (type default)) (uuid "{wire_uid}"))',
+                f'  (label {q(net)} (at {lx:.4f} {py:.4f} 180) (effects (font (size 0.8 0.8))) (uuid "{label_uid}"))',
             ]
     out += [
         "    (instances",
@@ -296,21 +308,34 @@ def symbol_instance(comp: dict, zone: str, x: float, y: float, instance_path: st
     return "\n".join(out), extras
 
 
-def hierarchical_ports(zone: str, ports: list[tuple[str, str]], pin_nets: set[str]) -> list[str]:
+def hierarchical_ports(
+    zone: str,
+    ports: list[tuple[str, str]],
+    pin_nets: set[str],
+) -> list[str]:
     out: list[str] = []
     for idx, (net, shape) in enumerate(ports):
         if net not in pin_nets:
             fail(f"{zone}: puerto inter-zona {net} no llega a ningún pin interno")
         y = 20.0 + idx * 5.08
+        h_uid = uid(f"{zone}:hlabel:{net}")
+        w_uid = uid(f"{zone}:hwire:{net}")
+        l_uid = uid(f"{zone}:hlocal:{net}")
         out += [
-            f'  (hierarchical_label {q(net)} (shape {shape}) (at 20.32 {y:.4f} 180) (effects (font (size 1.0 1.0))) (uuid "{uid(f"{zone}:hlabel:{net}")}"))',
-            f'  (wire (pts (xy 20.32 {y:.4f}) (xy 30.48 {y:.4f})) (stroke (width 0) (type default)) (uuid "{uid(f"{zone}:hwire:{net}")}"))',
-            f'  (label {q(net)} (at 30.48 {y:.4f} 0) (effects (font (size 0.9 0.9))) (uuid "{uid(f"{zone}:hlocal:{net}")}"))',
+            f'  (hierarchical_label {q(net)} (shape {shape}) (at 20.32 {y:.4f} 180) (effects (font (size 1.0 1.0))) (uuid "{h_uid}"))',
+            f'  (wire (pts (xy 20.32 {y:.4f}) (xy 30.48 {y:.4f})) (stroke (width 0) (type default)) (uuid "{w_uid}"))',
+            f'  (label {q(net)} (at 30.48 {y:.4f} 0) (effects (font (size 0.9 0.9))) (uuid "{l_uid}"))',
         ]
     return out
 
 
-def generate_zone(zone: str, components: list[dict], root: str, sheet_uuid: str, ports: list[tuple[str, str]]) -> str:
+def generate_zone(
+    zone: str,
+    components: list[dict],
+    root: str,
+    sheet_uuid: str,
+    ports: list[tuple[str, str]],
+) -> str:
     sch_uuid = uid(f"{zone}:schematic")
     r_uuid = root_uuid(root)
     instance_path = f"/{r_uuid}/{sheet_uuid}"
@@ -341,8 +366,15 @@ def generate_zone(zone: str, components: list[dict], root: str, sheet_uuid: str,
     ]
     blocks.extend(library_symbol(comp, zone) for comp in components)
     blocks.append("  )")
+    banner = (
+        f"PR #15 — {zone} PRODUCTION HIERARCHY\n"
+        "Generated deterministically from frozen JSON. "
+        "Do not hand-edit connectivity; regenerate with tools/generate_pr15_hierarchy.py."
+    )
     blocks.append(
-        f'  (text {q(f"PR #15 — {zone} PRODUCTION HIERARCHY\\nGenerated deterministically from frozen JSON. Do not hand-edit connectivity; regenerate with tools/generate_pr15_hierarchy.py.")} (at 50.8 10.16 0) (effects (font (size 1.5 1.5)) (justify left bottom)) (uuid "{uid(f"{zone}:banner")}"))'
+        f'  (text {q(banner)} (at 50.8 10.16 0) '
+        f'(effects (font (size 1.5 1.5)) (justify left bottom)) '
+        f'(uuid "{uid(f"{zone}:banner")}"))'
     )
     blocks.extend(hierarchical_ports(zone, ports, pin_nets))
     extras: list[str] = []
@@ -352,7 +384,7 @@ def generate_zone(zone: str, components: list[dict], root: str, sheet_uuid: str,
         blocks.append(inst)
         extras.extend(xtra)
     blocks.extend(extras)
-    blocks += ["  (sheet_instances (path \"/\" (page \"1\")))", ")", ""]
+    blocks += ['  (sheet_instances (path "/" (page "1")))', ")", ""]
     return "\n".join(blocks)
 
 
@@ -371,21 +403,33 @@ def expected_outputs() -> dict[Path, str]:
         if filename != expected_filename:
             fail(f"{zone}: contract file {filename} != {expected_filename}")
         sh_uuid, ports = sheet_meta(root, filename)
-        contract_ports = {net for net, owners in contract["interzone_nets"].items() if zone in owners}
+        contract_ports = {
+            net
+            for net, owners in contract["interzone_nets"].items()
+            if zone in owners
+        }
         if {n for n, _ in ports} != contract_ports:
             fail(f"{zone}: root pins no coinciden con root_eda_contract")
         if zone == "Z0":
             components = [z0_component()]
         else:
-            data = json.loads(ZONE_NETLISTS[zone].read_text(encoding="utf-8"))
+            data = json.loads(
+                ZONE_NETLISTS[zone].read_text(encoding="utf-8")
+            )
             components = validate_zone_netlist(data, zone)
-        outputs[ZONE_FILES[zone]] = generate_zone(zone, components, root, sh_uuid, ports)
+        outputs[ZONE_FILES[zone]] = generate_zone(
+            zone, components, root, sh_uuid, ports
+        )
     return outputs
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--check", action="store_true", help="fallar si los child sheets versionados no coinciden con la generación")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="fallar si los child sheets versionados no coinciden con la generación",
+    )
     args = ap.parse_args()
     outputs = expected_outputs()
     changed = []
