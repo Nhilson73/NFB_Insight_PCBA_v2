@@ -30,15 +30,7 @@ La documentación web/PDF se usa como confirmación y como artefacto de expedien
 
 ### Prioridad 3 — Fabricante del componente
 
-Para componentes que **no son Arduino UNO Q**, la fuente primaria es el fabricante original:
-
-- Texas Instruments;
-- Honeywell;
-- Nexperia;
-- DFRobot para sus módulos propios;
-- fabricante del conector, sensor, regulador u otro MPN correspondiente.
-
-Se priorizan datasheets, product pages, PCN/EOL, modelos CAD y documentación de calidad/RoHS/REACH del fabricante.
+Para componentes que **no son Arduino UNO Q**, la fuente primaria es el fabricante original: TI, Honeywell, Nexperia, DFRobot, Phoenix Contact, Littelfuse y el fabricante del MPN correspondiente. Se priorizan datasheets, product pages, PCN/EOL, modelos CAD y documentación de calidad/RoHS/REACH.
 
 ### Prioridad 4 — Fuentes secundarias
 
@@ -59,6 +51,38 @@ Si dos fuentes oficiales parecen contradecirse:
 La revisión de `arduino/docs-content` corrigió una interpretación previa del pin de 5 V del UNO Q: Arduino documenta oficialmente que el pin de 5 V de JANALOG puede recibir **5 V regulados** para alimentar el host, además de USB-C 5 V y VIN 7–24 V.
 
 NFB Insight V2 mantiene, sin embargo, **12 V protegido → VIN** como método preferido y conserva `5V_RAIL` / `3V3_RAIL` del shield separados. Esa separación es una **decisión de arquitectura NFB**, no una limitación atribuida al UNO Q.
+
+## Snapshot oficial aplicado a PR #16 — pre-placement
+
+Antes de autorizar coordenadas XY de producción se revalidó `arduino/docs-content` en el commit:
+
+`24445a32e249d410c1e4359bdc99d8c0dcb17bd2`
+
+Archivos primarios revisados:
+
+- `content/hardware/02.uno/boards/uno-q/product.md`
+- `content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md`
+- `content/hardware/02.uno/boards/uno-q/tech-specs.yml`
+
+La revisión confirma para los SKU ABX00162/ABX00173:
+
+- módulo wireless `WCBN3536A`, basado en Qualcomm `WCN3980`;
+- Wi‑Fi/Bluetooth con **shared PCB antenna** en el UNO Q;
+- soporte oficial para expansión mediante shields/carriers;
+- evidencia de certificaciones del host que incluye CE/RED, RoHS, REACH y WEEE.
+
+### Regla RF derivada para NFB
+
+En los archivos fuente de Arduino revisados **no se encontró una dimensión textual oficial para un antenna keepout numérico**. Por tanto:
+
+- NFB **no inventa** una distancia/rectángulo RF atribuido a Arduino;
+- ningún footprint de producción NFB se coloca dentro del envelope físico Z0 del UNO Q;
+- la extensión del shield comienza en `X=53.34 mm`;
+- Z1, inmediatamente adyacente, permanece como zona de sensores/quiet;
+- Z3 y Z4, donde viven switching/high-current, continúan desplazadas hacia +X;
+- cualquier metal, shield, bracket, PCB apilada o elemento de enclosure sobre la región RF del host queda sujeto a revisión 3D/RF posterior.
+
+Las separaciones resultantes entre el borde +X del host y los guides Z3/Z4 son **consecuencia de la arquitectura NFB**, no especificaciones de antenna clearance de Arduino.
 
 ## Gate de ingeniería
 
