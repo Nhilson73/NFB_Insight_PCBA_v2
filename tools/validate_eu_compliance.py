@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gate de cumplimiento europeo de diseño para NFB Insight PCBA v2 como shield UNO Q."""
 from __future__ import annotations
-import csv,json
+import csv,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 CONTRACT=ROOT/"compliance"/"eu_compliance_contract.json"; MATRIX=ROOT/"compliance"/"EU_COMPLIANCE_MATRIX.csv"; DOC=ROOT/"docs"/"EU_COMPLIANCE_GATE.md"; SOURCE_POLICY=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWER=ROOT/"hardware"/"power_architecture_contract.json"; README=ROOT/"README.md"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"
@@ -35,10 +35,14 @@ def main():
     for t in ("reference plane","rf keepout","tvs","efuse","iec 61000-4-5"):
         if t not in rules: fail(f"power contract sin guardrail {t}")
     readme=README.read_text(encoding="utf-8")
-    for m in ("shield/carrier","EU Compliance Design Gate","docs/EU_COMPLIANCE_GATE.md","compliance/eu_compliance_contract.json","Arduino UNO Q","Fuente primaria UNO Q"):
+    # El README evoluciona por fases. Proteger conceptos/links, no títulos literales históricos.
+    for m in ("shield/carrier","docs/EU_COMPLIANCE_GATE.md","compliance/eu_compliance_contract.json","Arduino UNO Q","Fuente primaria UNO Q","hardware/power_architecture_contract.json"):
         if m not in readme: fail(f"README sin marcador requerido: {m}")
-    # El heading puede evolucionar; exigir semánticamente Z3 + PR9 + contrato de potencia en vez de una frase literal histórica.
-    if "Z3 potencia" not in readme or "PR #9" not in readme or "hardware/power_architecture_contract.json" not in readme: fail("README no preserva arquitectura de potencia PR9")
+    readme_l=readme.lower()
+    if "compliance" not in readme_l or not any(t in readme for t in ("gate europeo","EU Compliance","cumplimiento europeo")): fail("README no preserva frontera/gate europeo")
+    if not re.search(r"(?m)^##\s+Z3(?:\s*[—-]\s*|\s+)potencia\b",readme,re.IGNORECASE): fail("README no conserva sección Z3 potencia")
+    for m in ("12 V protegido → VIN","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR"):
+        if m not in readme: fail(f"README no preserva arquitectura de potencia: {m}")
     doc=DOC.read_text(encoding="utf-8")
     for m in ("RoHS 3","REACH","WEEE","RED","Marcado CE","keepout","SAC305","ENIG"):
         if m not in doc: fail(f"EU compliance doc sin {m}")
@@ -49,7 +53,7 @@ def main():
         text=bom.read_text(encoding="utf-8").upper()
         for token in forbidden:
             if token in text: fail(f"{bom.name} introduce RF '{token}' sin compliance PR")
-    print("OK: EU Compliance Design Gate PR8 preservado bajo PR13")
+    print("OK: EU Compliance Design Gate PR8 preservado bajo PR15")
     print("- RF host, GND/EMC, SELV/no-mains y evidencia UE permanecen activos")
     return 0
 if __name__=="__main__": raise SystemExit(main())
