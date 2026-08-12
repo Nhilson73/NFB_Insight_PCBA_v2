@@ -1,0 +1,48 @@
+name: PR16 materialización pre-placement
+
+on:
+  push:
+    branches: [agent/pr16-preplacement-readiness]
+    paths:
+      - 'tools/migrate_pr16_loadcell_connector.py'
+      - 'hardware/z2_production_netlist.json'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'tools/normalize_pr15_schematics.py'
+      - 'kicad/z2_interface.kicad_sch'
+      - '.github/workflows/pr16-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/pr16-preplacement-readiness
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Migrar J_LOADCELL
+        run: python3 tools/migrate_pr16_loadcell_connector.py
+      - name: Regenerar hierarchy determinista
+        run: python3 tools/normalize_pr15_schematics.py
+      - name: Verificar migración y generación
+        run: |
+          python3 tools/migrate_pr16_loadcell_connector.py --check
+          python3 tools/normalize_pr15_schematics.py --check
+      - name: Versionar outputs
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" config user.name "github-actions[bot]"
+          git -C "$GITHUB_WORKSPACE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$GITHUB_WORKSPACE" add hardware/z2_production_netlist.json bom/insight_z2_production_bom.csv kicad/z2_interface.kicad_sch kicad/lib/nfb_generated.kicad_sym
+          if git -C "$GITHUB_WORKSPACE" diff --cached --quiet; then
+            echo 'No changes'
+          else
+            git -C "$GITHUB_WORKSPACE" commit -m 'bom: materializar Phoenix 1757268 en Z2 PR16'
+            git -C "$GITHUB_WORKSPACE" push origin HEAD:agent/pr16-preplacement-readiness
+          fi
