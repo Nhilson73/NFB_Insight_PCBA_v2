@@ -12,6 +12,7 @@ on:
       - 'tools/validate_pr17_placement.py'
       - 'hardware/placement_readiness_contract.json'
       - 'hardware/placement_manifest.json'
+      - 'hardware/placement_plan_probe.json'
       - 'hardware/insight_pin_contract.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
@@ -25,7 +26,7 @@ on:
       - '.github/workflows/pr17-pcbnew-probe.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   placement:
@@ -37,8 +38,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
       - name: Preparar git seguro dentro del contenedor
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Compilar herramientas PR17
         run: |
           python3 -m py_compile tools/probe_pcbnew_api.py
@@ -73,3 +78,12 @@ jobs:
           print('ZONES',p['zone_bounds_mm'])
           print('REFS',len(p['placements']))
           PY
+      - name: Persistir artefactos de placement verificados
+        run: |
+          git add hardware/placement_manifest.json hardware/placement_plan_probe.json kicad/NFB_Insight_PCBA_v2.kicad_pcb
+          if ! git diff --cached --quiet; then
+            git commit -m "placement: materializar PCB de producción PR17"
+            git push origin "HEAD:agent/pr17-production-placement"
+          else
+            echo "Artefactos PR17 ya están reproducidos en el branch."
+          fi
