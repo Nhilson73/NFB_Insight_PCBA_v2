@@ -1,27 +1,27 @@
 (kicad_sch
   (version 20250114)
   (generator "nfb_pr6_contract")
-  (generator_version "1.4")
+  (generator_version "1.5")
   (uuid "8d1b8c9c-4f38-4be9-a83e-5bd34c8eef41")
   (paper "A3")
   (title_block
     (title "NFB Insight PCBA v2 — Z1 Sensor Production Contract")
     (date "2026-08-11")
-    (rev "0.6.5")
+    (rev "0.9.0")
     (company "Cafelium SRL / Nebula Ecosystem")
-    (comment 1 "PR #6 — contrato discreto Z1 gobernado por hardware/z1_production_netlist.json")
+    (comment 1 "PR #6 Z1 preservado; frontera de potencia corregida por PR #9")
     (comment 2 "BOM: bom/insight_z1_production_bom.csv")
     (comment 3 "A4/CO2_ADC DNP; CO2=MPRLS0030PA00002A I2C 0x28")
-    (comment 4 "Hoja raíz contractual; placement/routing fuera de alcance")
+    (comment 4 "5V_RAIL/3V3_RAIL son locales al shield; J_UNOQ.4/.5 no los alimentan")
   )
   (lib_symbols)
-  (text "PR #6 — Z1 PRODUCTION BASELINE\nFuente de verdad eléctrica: hardware/z1_production_netlist.json\nContrato de sensores: hardware/sensor_interface_contract.json\nContrato UNO Q: hardware/insight_pin_contract.json"
+  (text "PR #6 — Z1 PRODUCTION BASELINE / POWER CORRECTION PR #9\nFuente de verdad eléctrica: hardware/z1_production_netlist.json\nContrato de sensores: hardware/sensor_interface_contract.json\nPotencia: hardware/power_architecture_contract.json"
     (exclude_from_sim no)
     (at 38.1 35.56 0)
     (effects (font (size 2.0 2.0)) (justify left bottom))
     (uuid "78dc41ae-1a63-4e88-b1b0-0db6465bf920")
   )
-  (text "J_UNOQ SENSOR ENDPOINTS\nA0 / pad 9 = PH_ADC\nA1 / pad 10 = ORP_ADC\nA2-D16 / pad 11 = TEMP_1WIRE\nA4 / pad 13 = DNP_RESERVE — A4/CO2_ADC DNP\nA5 / pad 14 = DO_ADC\nD20 / pad 31 = I2C_SDA\nD21 / pad 32 = I2C_SCL"
+  (text "J_UNOQ SENSOR ENDPOINTS\nA0 / pad 9 = PH_ADC\nA1 / pad 10 = ORP_ADC\nA2-D16 / pad 11 = TEMP_1WIRE\nA4 / pad 13 = DNP_RESERVE — A4/CO2_ADC DNP\nA5 / pad 14 = DO_ADC\nD20 / pad 31 = I2C_SDA\nD21 / pad 32 = I2C_SCL\nPOWER PR9: pad 4 +3V3 OUT y pad 5 +5V no alimentan rails locales del shield."
     (exclude_from_sim no)
     (at 38.1 66.04 0)
     (effects (font (size 1.5 1.5)) (justify left bottom))
@@ -39,13 +39,13 @@
     (effects (font (size 1.5 1.5)) (justify left bottom))
     (uuid "50bb54e0-5e39-4457-926c-bb836148bd13")
   )
-  (text "TEMP / A2-D16\nJ_TEMP → TEMP_1WIRE; D_TEMP PESD3V3U1UL a GND; R_TEMP_PU 4.7k poblado a 3V3_RAIL.\nSensor KIT0021 / DS18B20 digital 1-Wire."
+  (text "TEMP / A2-D16\nJ_TEMP → TEMP_1WIRE; D_TEMP PESD3V3U1UL a GND; R_TEMP_PU 4.7k poblado a 3V3_RAIL LOCAL.\nSensor KIT0021 / DS18B20 digital 1-Wire."
     (exclude_from_sim no)
     (at 38.1 167.64 0)
     (effects (font (size 1.5 1.5)) (justify left bottom))
     (uuid "e9187b87-82aa-4cf8-b3bc-2188553f06a2")
   )
-  (text "CO2 PRESSURE — DIGITAL I2C\nU_CO2 = MPRLS0030PA00002A, 0–30 psi absolute, I2C 0x28.\nU_CO2.2=I2C_SDA | U_CO2.3=I2C_SCL | U_CO2.10=GND | U_CO2.12=3V3_RAIL.\nC_CO2 100nF bypass. R_CO2_SDA_PU y R_CO2_SCL_PU = 10k DNP backup.\nMPX5700AP y CO2_ADC quedan fuera de producción."
+  (text "CO2 PRESSURE — DIGITAL I2C\nU_CO2 = MPRLS0030PA00002A, 0–30 psi absolute, I2C 0x28.\nU_CO2.2=I2C_SDA | U_CO2.3=I2C_SCL | U_CO2.10=GND | U_CO2.12=3V3_RAIL LOCAL.\nC_CO2 100nF bypass. R_CO2_SDA_PU y R_CO2_SCL_PU = 10k DNP backup.\nMPX5700AP y CO2_ADC quedan fuera de producción."
     (exclude_from_sim no)
     (at 38.1 198.12 0)
     (effects (font (size 1.5 1.5)) (justify left bottom))
