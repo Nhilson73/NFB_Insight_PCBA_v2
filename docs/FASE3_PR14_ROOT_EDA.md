@@ -6,7 +6,7 @@
 
 ## Objetivo
 
-Sustituir el antiguo root textual/Z1 por una jerarquía KiCad real que conecte las fronteras eléctricas entre:
+Sustituir el antiguo root textual/Z1 por una jerarquía KiCad que conecte las fronteras eléctricas entre:
 
 - Z0 — Arduino UNO Q host;
 - Z1 — sensores;
@@ -61,7 +61,7 @@ Puntos críticos:
 
 El archivo raíz antiguo contenía en realidad el contrato textual Z1. PR #14 lo separa como `kicad/z1_sensor_contract.kicad_sch` para que los gates Z1 sigan validando el baseline PR #6/#12 sin confundirlo con la nueva jerarquía raíz.
 
-## Gate automático
+## Gate automático de estructura
 
 `tools/validate_root_eda.py` comprueba:
 
@@ -75,13 +75,26 @@ El archivo raíz antiguo contenía en realidad el contrato textual Z1. PR #14 lo
 - footprints PR #13 siguen cerrados;
 - `.kicad_pcb` continúa sin placement de componentes de producción.
 
-El workflow `Validación root EDA inter-zona Insight` ejecuta además ERC del root con KiCad 10.0.5.
+## Gate ERC transitorio y explícito
 
-## Alcance explícitamente pendiente
+`zone_internal_component_symbols=false` significa que los endpoints de las hojas terminan de forma deliberada en labels/hierarchical labels hasta que PR #15 genere los símbolos internos. Con KiCad 10.0.5, el hierarchy PR #14 produce **exactamente 125 eventos `label_dangling`** y ningún otro tipo de violación.
 
-`zone_internal_component_symbols=false` en PR #14.
+Esto NO se resuelve bajando la severidad `label_dangling` ni ignorando el ERC. La política está congelada en `hardware/root_eda_contract.json` y `tools/validate_pr14_erc_report.py` exige:
 
-Por tanto, antes de placement se requiere un siguiente gate que materialice símbolos/conectividad interna de Z1/Z2/Z3/Z4 a partir de JSON/BOM de forma reproducible, evitando transcripción manual. Ese será el siguiente PR.
+- `expected_violation_type = label_dangling`;
+- `expected_violation_count = 125`;
+- `unexpected_violation_count_allowed = 0`;
+- resumen del reporte = 125 errores / 0 warnings.
+
+Si cambia el número o aparece otra categoría ERC, CI falla. Así, PR #14 mantiene una deuda técnica **acotada, reproducible y visible** exclusivamente porque faltan símbolos internos.
+
+## Gate de eliminación
+
+PR #15 debe materializar los símbolos/conectividad internos desde JSON/BOM y eliminar esta deuda. Antes de placement se exigirá:
+
+- paridad refs/pines/nets/footprints JSON↔KiCad;
+- **ERC = 0** del hierarchy completo;
+- ausencia de placement/routing mientras no cierre esa paridad.
 
 ## Fuera de alcance
 
