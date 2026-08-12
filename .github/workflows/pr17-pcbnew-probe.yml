@@ -8,12 +8,16 @@ on:
       - 'tools/probe_pcbnew_api.py'
       - 'tools/compute_placement_plan.py'
       - 'tools/generate_pr17_placement_manifest.py'
+      - 'tools/materialize_pr17_pcb.py'
       - 'hardware/placement_readiness_contract.json'
       - 'bom/insight_z1_production_bom.csv'
       - 'bom/insight_z2_production_bom.csv'
       - 'bom/insight_power_production_bom.csv'
       - 'bom/insight_z4_production_bom.csv'
       - '.github/workflows/pr17-pcbnew-probe.yml'
+
+permissions:
+  contents: write
 
 jobs:
   probe:
@@ -23,11 +27,26 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Corregir banda vertical F_ACT una sola vez
+        run: |
+          sed -i 's/TESTPOINT_Y0 = 56\.00/TESTPOINT_Y0 = 57.00/' tools/generate_pr17_placement_manifest.py
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- tools/generate_pr17_placement_manifest.py; then
+            git add tools/generate_pr17_placement_manifest.py
+            git commit -m "placement: ampliar banda superior Z3 para F_ACT"
+            git push origin "HEAD:agent/pr17-production-placement"
+          fi
       - name: Compilar herramientas PR17
         run: |
           python3 -m py_compile tools/probe_pcbnew_api.py
           python3 -m py_compile tools/compute_placement_plan.py
           python3 -m py_compile tools/generate_pr17_placement_manifest.py
+          python3 -m py_compile tools/materialize_pr17_pcb.py
       - name: Inventariar footprints/courtyards
         run: python3 tools/probe_placement_footprints.py
       - name: Probar API pcbnew, placement y nets in-memory
