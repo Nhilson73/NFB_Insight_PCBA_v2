@@ -24,9 +24,11 @@ def main():
     for p in (CONTRACT,PIN,Z1,Z2,POWER,Z4,AUDIT,PCB,ROOTSCH):
         if not p.exists(): fail(f"falta {p.relative_to(ROOT)}")
     c=json.loads(CONTRACT.read_text(encoding="utf-8")); pin=json.loads(PIN.read_text(encoding="utf-8")); z1=json.loads(Z1.read_text(encoding="utf-8")); z2=json.loads(Z2.read_text(encoding="utf-8")); power=json.loads(POWER.read_text(encoding="utf-8")); z4=json.loads(Z4.read_text(encoding="utf-8")); audit=json.loads(AUDIT.read_text(encoding="utf-8"))
-    if c.get("schema_version")!=1 or c.get("status")!="ROOT_EDA_INTERZONE_BASELINE_PR14": fail("root EDA contract no es PR14")
+    if c.get("schema_version")!=2 or c.get("status")!="ROOT_EDA_INTERZONE_BASELINE_PR14": fail("root EDA contract no es PR14/schema2")
     scope=c.get("scope",{})
     if scope!={"interzone_hierarchy":True,"zone_internal_component_symbols":False,"placement":False,"routing":False,"pcb_geometry_change":False}: fail(f"scope PR14 inesperado: {scope}")
+    erc=c.get("erc_interzone_policy",{})
+    if erc.get("mode")!="BOUNDED_INTENTIONAL_INTERFACE_DEBT_PR14" or erc.get("expected_violation_type")!="label_dangling" or int(erc.get("expected_violation_count",0))!=125 or int(erc.get("unexpected_violation_count_allowed",-1))!=0: fail("política ERC PR14 no está congelada")
     if pin.get("schema_version")!=6: fail("pin contract no es schema6")
     if z1.get("status")!="FROZEN_Z1_NETLIST_PR6_POWER_CORRECTED_PR9": fail("Z1 baseline cambió")
     if z2.get("status")!="FROZEN_Z2_NETLIST_PR7_POWER_CORRECTED_PR9": fail("Z2 baseline cambió")
@@ -41,7 +43,6 @@ def main():
     inter={k:set(v) for k,v in c["interzone_nets"].items()}
     forbidden={"CO2_ADC","TEMP_ADC","HUM_ADC","CO2_PWM","CO2_FLOW_PWM","RS485_IRQ_RSVD"}
     if forbidden & set(inter): fail(f"nets prohibidas en root: {sorted(forbidden & set(inter))}")
-    # Z0 = endpoints funcionales activos del pin contract + referencia GND común.
     active_host={x.get("net") for x in pin["pins"] if str(x.get("status","")).startswith("ACTIVE") and x.get("net")}
     if any(x.get("net")=="GND" for x in pin["pins"]): active_host.add("GND")
     z0={net for net,zones in inter.items() if "Z0" in zones}
@@ -76,6 +77,6 @@ def main():
     print("OK: root EDA inter-zona PR14 coherente")
     print(f"- {len(inter)} nets inter-zona / 5 sheets / GND incluye host")
     print("- 3V3/5V locales excluyen Z0; I2C compartido Z0/Z1/Z2")
-    print("- placement/routing=0; zone-internal symbols quedan para siguiente gate")
+    print("- placement/routing=0; deuda ERC intencional PR14=125 label_dangling; 0 inesperadas")
     return 0
 if __name__=="__main__": raise SystemExit(main())
