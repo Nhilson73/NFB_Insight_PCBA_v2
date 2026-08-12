@@ -50,12 +50,11 @@ def main():
     if "12V_ACT" not in n4 or "U_PUMP_DRV.6" not in n4["12V_ACT"] or "U_CO2_DRV.8" not in n4["12V_ACT"]: fail("Z4 no usa rama 12V_ACT")
     if "U_CHILLER.3" in n4["12V_ACT"] or "U_CHILLER.4" in n4["12V_ACT"]: fail("chiller no debe consumir 12V_ACT")
     pcb=PCB.read_text(encoding="utf-8"); placed=[r for r in list(comps)+["U_PUMP_DRV","U_CO2_DRV","U_CHILLER"] if f'"{r}"' in pcb]
-    if placed: fail(f"PR13 no debe hacer placement: {placed[:5]}")
+    if placed: fail(f"PR13/14 no debe hacer placement: {placed[:5]}")
     blockers=n.get("placement_blockers",[])
     if any("footprint" in x.lower() or "audit/create" in x.lower() for x in blockers): fail("quedó blocker de footprint en potencia")
     if len(blockers)!=2: fail("se esperaban solo dos blockers no físicos de potencia")
     readme=README.read_text(encoding="utf-8"); road=ROADMAP.read_text(encoding="utf-8")
-    # README puede resumir el histórico como "PR #9 / #10 / #13"; verificar semánticamente el baseline PR10.
     if "Z3 potencia" not in readme or "power_production_netlist.json" not in readme or "TPSM33625RDNR" not in readme: fail("README perdió baseline de producción PR10")
     if "PR #10" not in road or "potencia de producción" not in road: fail("ROADMAP perdió baseline PR10")
     print("OK: power production PR10 preservado + RPW/RDN cerrados PR13; placement=0")
