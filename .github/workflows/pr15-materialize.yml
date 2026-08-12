@@ -6,6 +6,7 @@ on:
     paths:
       - 'tools/generate_production_schematics.py'
       - 'tools/normalize_pr15_schematics.py'
+      - 'tools/migrate_pr15_verified_footprints.py'
       - 'hardware/insight_pin_contract.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
@@ -23,6 +24,7 @@ on:
       - 'kicad/z3_interface.kicad_sch'
       - 'kicad/z4_interface.kicad_sch'
       - 'kicad/lib/nfb_generated.kicad_sym'
+      - 'kicad/lib/nfb_footprints.pretty/TI_DCU0008A_TXU0202.kicad_mod'
       - 'kicad/sym-lib-table'
       - 'kicad/fp-lib-table'
       - '.github/workflows/pr15-materialize.yml'
@@ -45,10 +47,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Compilar generadores
+      - name: Compilar generadores y migrador
         run: |
           python3 -m py_compile tools/generate_production_schematics.py
           python3 -m py_compile tools/normalize_pr15_schematics.py
+          python3 -m py_compile tools/migrate_pr15_verified_footprints.py
+
+      - name: Aplicar footprints verificados
+        run: |
+          python3 tools/migrate_pr15_verified_footprints.py
+          python3 tools/migrate_pr15_verified_footprints.py --check
 
       - name: Materializar representación normalizada
         run: python3 tools/normalize_pr15_schematics.py
@@ -62,14 +70,10 @@ jobs:
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
 
-      - name: Diagnosticar footprints estándar KiCad 10.0.5
+      - name: Diagnosticar footprint de fusible pendiente
         run: |
-          echo '=== Phoenix MSTBA / 5.08 ==='
-          find /usr/share/kicad/footprints/TerminalBlock_Phoenix.pretty -maxdepth 1 -type f -printf '%f\n' | grep -Ei 'MSTBA|5\.08' | head -100 || true
-          echo '=== Fuse 2410 / 6125 / Nano ==='
+          echo '=== Fuse 2410 / 6125 / Nano en KiCad 10.0.5 ==='
           find /usr/share/kicad/footprints/Fuse.pretty -maxdepth 1 -type f -printf '%f\n' | grep -Ei '2410|6125|Nano' | head -100 || true
-          echo '=== MSOP/VSSOP/DGS 10-pin ==='
-          find /usr/share/kicad/footprints -maxdepth 2 -type f -printf '%p\n' | grep -Ei '(MSOP|VSSOP|DGS).*10|10.*(MSOP|VSSOP|DGS)' | head -100 || true
 
       - name: ERC hierarchy completo
         run: |
@@ -78,12 +82,18 @@ jobs:
             --severity-all
           cat /tmp/root_pr15.rpt
 
-      - name: Versionar outputs normalizados
+      - name: Versionar fuentes y outputs normalizados
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git -C "$GITHUB_WORKSPACE" config user.name "github-actions[bot]"
-          git -C "$GITHUB_WORKSPACE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git -C "$GITHUB_WORKSPACE" add \
+            hardware/z2_production_netlist.json \
+            hardware/power_production_netlist.json \
+            hardware/z4_production_netlist.json \
+            bom/insight_z2_production_bom.csv \
+            bom/insight_power_production_bom.csv \
+            bom/insight_z4_production_bom.csv \
             kicad/uno_q_interface.kicad_sch \
             kicad/z1_interface.kicad_sch \
             kicad/z2_interface.kicad_sch \
@@ -91,8 +101,8 @@ jobs:
             kicad/z4_interface.kicad_sch \
             kicad/lib/nfb_generated.kicad_sym
           if git -C "$GITHUB_WORKSPACE" diff --cached --quiet; then
-            echo "Outputs normalizados ya estaban versionados."
+            echo "Fuentes y outputs PR15 ya estaban versionados."
           else
-            git -C "$GITHUB_WORKSPACE" commit -m "eda: normalizar hierarchy PR15 y registrar NFB_GEN"
+            git -C "$GITHUB_WORKSPACE" commit -m "eda: aplicar footprints verificados y regenerar hierarchy PR15"
             git -C "$GITHUB_WORKSPACE" push origin "HEAD:agent/pr15-production-symbol-materialization"
           fi
