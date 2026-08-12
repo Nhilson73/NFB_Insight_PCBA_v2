@@ -1,0 +1,21 @@
+canal,ref,qty,funcion,valor,mpn_o_familia,footprint,poblacion,nota
+PH,J_PH,1,connector,JST XH 3p side-entry,S3B-XH-A(LF)(SN),Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal,POPULATE,Side-entry; orientar hacia -Y sobre FIELD I/O EDGE.
+PH,D_PH,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,
+PH,R_PH,1,resistor,1k 1%,CRCW04021K00FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,
+PH,C_PH,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+ORP,J_ORP,1,connector,JST XH 3p side-entry,S3B-XH-A(LF)(SN),Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal,POPULATE,Side-entry; orientar hacia -Y sobre FIELD I/O EDGE.
+ORP,R_ORP_TOP,1,resistor,10k 0.1%,Vishay TNPW0402 e3 / 10k / 0.1%,Resistor_SMD:R_0402_1005Metric,POPULATE,
+ORP,R_ORP_BOT,1,resistor,20k 0.1%,Vishay TNPW0402 e3 / 20k / 0.1%,Resistor_SMD:R_0402_1005Metric,POPULATE,
+ORP,D_ORP,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,"Clamp en ORP_ADC, después del divisor 10k/20k."
+ORP,C_ORP,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+TEMP,J_TEMP,1,connector,JST XH 3p side-entry,S3B-XH-A(LF)(SN),Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal,POPULATE,Side-entry; orientar hacia -Y sobre FIELD I/O EDGE.
+TEMP,D_TEMP,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,
+TEMP,R_TEMP_PU,1,resistor,4.7k 1%,CRCW04024K70FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,
+CO2,U_CO2,1,pressure_sensor,MPR 0-30 psi abs I2C 0x28,MPRLS0030PA00002A,NFB:Honeywell_MPR_LongPort_12Pad,POPULATE,Sensor onboard; puerto largo para tubing. A4/CO2_ADC eliminado.
+CO2,C_CO2,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+CO2,R_CO2_SDA_PU,1,resistor,10k,DNP / generic 0402,Resistor_SMD:R_0402_1005Metric,DNP,Footprint de respaldo; DNP. Pull-ups globales se resolverán en Z2.
+CO2,R_CO2_SCL_PU,1,resistor,10k,DNP / generic 0402,Resistor_SMD:R_0402_1005Metric,DNP,Footprint de respaldo; DNP. Pull-ups globales se resolverán en Z2.
+DO,J_DO,1,connector,JST XH 3p side-entry,S3B-XH-A(LF)(SN),Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal,POPULATE,Side-entry; orientar hacia -Y sobre FIELD I/O EDGE.
+DO,D_DO,1,esd,PESD3V3U1UL,"PESD3V3U1UL,315",Diode_SMD:D_SOD-882,POPULATE,
+DO,R_DO,1,resistor,1k 1%,CRCW04021K00FKED,Resistor_SMD:R_0402_1005Metric,POPULATE,
+DO,C_DO,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
