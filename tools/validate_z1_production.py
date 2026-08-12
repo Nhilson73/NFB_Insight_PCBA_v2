@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate de producción PR #6 para Z1 sensores."""
+"""Gate de producción Z1 con corrección de potencia PR #9."""
 from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SENSOR = ROOT / "hardware" / "sensor_interface_contract.json"
 NETLIST = ROOT / "hardware" / "z1_production_netlist.json"
 PIN = ROOT / "hardware" / "insight_pin_contract.json"
+POWER = ROOT / "hardware" / "power_architecture_contract.json"
 BOM = ROOT / "bom" / "insight_z1_production_bom.csv"
 SCH = ROOT / "kicad" / "NFB_Insight_PCBA_v2.kicad_sch"
 MPR_FP = ROOT / "kicad" / "lib" / "nfb_footprints.pretty" / "Honeywell_MPR_LongPort_12Pad.kicad_mod"
@@ -19,11 +20,15 @@ def close(a,b,tol=1e-6):
     return math.isclose(float(a),float(b),rel_tol=tol,abs_tol=tol)
 
 def main() -> int:
-    for p in (SENSOR,NETLIST,PIN,BOM,SCH,MPR_FP):
+    for p in (SENSOR,NETLIST,PIN,POWER,BOM,SCH,MPR_FP):
         if not p.exists(): fail(f"falta {p.relative_to(ROOT)}")
-    s=json.loads(SENSOR.read_text(encoding="utf-8")); n=json.loads(NETLIST.read_text(encoding="utf-8")); p=json.loads(PIN.read_text(encoding="utf-8"))
+    s=json.loads(SENSOR.read_text(encoding="utf-8")); n=json.loads(NETLIST.read_text(encoding="utf-8")); p=json.loads(PIN.read_text(encoding="utf-8")); power=json.loads(POWER.read_text(encoding="utf-8"))
     if s.get("status")!="Z1_PRODUCTION_BASELINE_PR6": fail("sensor contract no es PR6")
-    if n.get("status")!="FROZEN_Z1_NETLIST_PR6": fail("netlist Z1 no está congelado")
+    if n.get("status")!="FROZEN_Z1_NETLIST_PR6_POWER_CORRECTED_PR9": fail("netlist Z1 no refleja corrección PR9")
+    if n.get("schema_version")!=2: fail("netlist Z1 no es schema v2")
+    if n.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("Z1 no declara contrato de potencia")
+    if p.get("schema_version")!=5: fail("pin contract no es schema v5")
+    if power.get("status")!="POWER_ARCHITECTURE_BASELINE_PR9": fail("contrato potencia no es PR9")
     ch={x["id"]:x for x in s["channels"]}
     if set(ch)!={"PH","ORP","TEMP","CO2","DO"}: fail("canales Z1 incorrectos")
     co2=ch["CO2"]
@@ -38,6 +43,7 @@ def main() -> int:
     pins={int(x["pad"]):x for x in p["pins"]}
     if pins[13].get("net") is not None or pins[13].get("status")!="DNP_RESERVE": fail("A4 debe quedar DNP/Reserva")
     if pins[31].get("net")!="I2C_SDA" or pins[32].get("net")!="I2C_SCL": fail("bus I2C UNO Q incorrecto")
+    if pins[4].get("net") is not None or pins[5].get("net") is not None: fail("Z1 no debe tomar rails locales del host")
     active={x.get("net") for x in p["pins"] if str(x.get("status","")).startswith("ACTIVE")}
     if "CO2_ADC" in active: fail("CO2_ADC reapareció activo")
     for name in ("PH","DO"):
@@ -63,6 +69,8 @@ def main() -> int:
             if net=="NC": continue
             node=f"{ref}.{pin}"
             if net not in net_nodes or node not in net_nodes[net]: fail(f"nodo {node} no aparece en net {net}")
+    if "J_UNOQ.4" in net_nodes.get("3V3_RAIL",set()): fail("3V3_RAIL Z1 unido al host")
+    if "J_UNOQ.5" in net_nodes.get("5V_RAIL",set()): fail("5V_RAIL Z1 unido al host")
     forbidden=("BNC","MPX5700AP","SN6501","AMC1301","750315371")
     for c in comps.values():
         token=(str(c.get("value",""))+" "+str(c.get("mpn",""))).upper()
@@ -80,10 +88,9 @@ def main() -> int:
         if f'"{ref}"' not in sch: fail(f"schematic no contiene {ref}")
     for marker in ("MPRLS0030PA00002A","I2C_SDA","I2C_SCL","TEMP_1WIRE","A4/CO2_ADC DNP"):
         if marker not in sch: fail(f"schematic sin marcador {marker}")
-    print("OK: Z1 PR #6 congelado y coherente")
+    print("OK: Z1 PR #6 preservado + power correction PR #9")
     print(f"- CO2: MPRLS0030PA00002A I2C 0x28, 0-30 psi abs = {expected_kpa:.3f} kPa")
-    print("- A4/CO2_ADC retirado; presión usa D20/D21 I2C")
-    print("- PH/DO: 1k + 100nF; ORP: 10k/20k + 100nF; TEMP: 4.7k 1-Wire")
+    print("- 3V3_RAIL/5V_RAIL son locales al shield; no J_UNOQ.4/.5")
     print(f"- {len(comps)} placements Z1; BOM y netlist coinciden")
     return 0
 
