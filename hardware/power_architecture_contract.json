@@ -1,8 +1,18 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
   "status": "POWER_ARCHITECTURE_BASELINE_PR9",
   "design_object": "SHIELD_CARRIER_FOR_ARDUINO_UNO_Q",
+  "source_hierarchy": {
+    "uno_q_primary": [
+      "https://github.com/Arduino",
+      "https://github.com/orgs/arduino/repositories",
+      "arduino/docs-content UNO Q datasheet/power specification",
+      "other official Arduino UNO Q repositories"
+    ],
+    "uno_q_secondary": ["https://docs.arduino.cc/hardware/uno-q/"],
+    "shield_components_primary": "manufacturer datasheets/product pages"
+  },
   "input": {
     "nominal_v": 12.0,
     "allowed_v": [10.8, 13.2],
@@ -11,14 +21,21 @@
     "input_net": "12V_IN_RAW"
   },
   "host_power": {
-    "uno_q_method": "VIN_7_TO_24V",
+    "preferred_method_for_nfb": "VIN_7_TO_24V",
     "uno_q_pad": 8,
     "host_net": "12V_HOST_VIN",
     "usb_c_can_coexist": true,
-    "source_note": "Arduino UNO Q datasheet: VIN accepts 7-24 V; USB-C and VIN are diode-OR combined internally.",
-    "forbidden": [
-      "Do not power shield 5V_RAIL from J_UNOQ pad 5 USB VBUS pass-through.",
-      "Do not back-feed J_UNOQ pad 4 PWR_3P3V or pad 2 IOREF."
+    "official_supported_inputs": [
+      "USB-C 5 V / up to 3 A",
+      "VIN 7-24 V",
+      "regulated 5 V through JANALOG 5 V pin / up to 3 A"
+    ],
+    "source_note": "Official Arduino GitHub docs-content confirms VIN is buck-converted to 5 V and diode-OR'd with USB-C into 5V_SYS. The regulated JANALOG 5 V pin is also a supported host power input.",
+    "nfb_architecture_decisions": [
+      "Use protected 12 V into VIN as the baseline host-power method.",
+      "Do not tie the shield-local 5V_RAIL to the UNO Q 5 V pin in the baseline, although Arduino officially supports that pin as a regulated 5 V input; separation is intentional to avoid shared-load transients and back-feed paths.",
+      "Do not tie shield-local 3V3_RAIL to UNO Q PWR_3P3V; use it only if a future PR deliberately proves current budget and sequencing.",
+      "Never drive IOREF; use it only as a high-impedance host-ready/reference signal."
     ]
   },
   "input_protection": {
@@ -54,6 +71,7 @@
   },
   "shield_5v": {
     "net": "5V_RAIL",
+    "host_5v_tied": false,
     "regulator": {
       "ref": "U_5V",
       "mpn": "TPSM33625RDNR",
@@ -77,6 +95,7 @@
   },
   "shield_3v3": {
     "net": "3V3_RAIL",
+    "host_3v3_tied": false,
     "regulator": {
       "ref": "U_3V3",
       "mpn": "TLV75533PDBVR",
@@ -88,12 +107,11 @@
       "enable_source": "5V_PGOOD"
     },
     "loads": ["MPR pressure", "DS18B20", "HX711", "DFR1103", "I2C pullups", "TXU0202 VCCA", "watchdog", "ESD/support logic"],
-    "host_3v3_connection": false,
-    "reason": "avoid relying on undocumented available current of UNO Q 3.3V output and prevent shield rail back-feed"
+    "reason": "preserve independent shield power domain and avoid accidental back-feed; not because UNO Q lacks a 3.3V output"
   },
   "power_sequence": [
     "12V_IN_RAW -> TVS/eFuse -> 12V_PROTECTED",
-    "12V_PROTECTED -> J_UNOQ VIN; UNO Q boots from its own certified power tree",
+    "12V_PROTECTED -> J_UNOQ VIN; UNO Q boots from its own power tree",
     "UNO Q IOREF rises to 3.3 V -> enable U_5V",
     "U_5V PGOOD -> enable U_3V3",
     "Only then are shield field sensors/HMI and 3.3V logic energized"
@@ -117,14 +135,16 @@
     "Keep switching regulator and 12V_ACT physically in Z3/Z4, away from Z1 analog and UNO Q RF keepout.",
     "Use continuous reference plane; do not route switching-node copper on internal reference plane.",
     "TVS and eFuse must be adjacent to the power-entry connector.",
-    "Do not connect shield 5V_RAIL to UNO Q pad 5 or shield 3V3_RAIL to UNO Q pad 4.",
+    "Do not connect shield-local 5V_RAIL to UNO Q 5V pin or shield-local 3V3_RAIL to UNO Q 3V3 pin unless a future reviewed PR changes the architecture.",
     "Use IOREF only as a high-impedance enable/reference signal; never back-feed it.",
     "Final input filter and IEC 61000-4-5 pre-compliance values require bench/lab validation."
   ],
   "sources": [
-    {"manufacturer":"Arduino","document":"UNO Q datasheet ABX00162-ABX00173","url":"https://docs.arduino.cc/resources/datasheets/ABX00162-ABX00173-datasheet.pdf"},
-    {"manufacturer":"Texas Instruments","part":"TPS25947","url":"https://www.ti.com/product/TPS25947"},
-    {"manufacturer":"Texas Instruments","part":"TPSM33625","url":"https://www.ti.com/product/TPSM33625"},
-    {"manufacturer":"Texas Instruments","part":"TLV755P","url":"https://www.ti.com/product/TLV755P"}
+    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md","kind":"official_github_primary"},
+    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md","kind":"official_github_primary"},
+    {"priority":1,"owner":"Arduino","repository":"docs-content","path":"content/hardware/02.uno/carriers/uno-breakout-carrier/datasheet/datasheet.md","kind":"official_github_primary"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TPS259470ARPWR","url":"https://www.ti.com/product/TPS25947/part-details/TPS259470ARPWR"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625","url":"https://www.ti.com/product/TPSM33625"},
+    {"priority":2,"manufacturer":"Texas Instruments","part":"TLV75533PDBVR","url":"https://www.ti.com/product/TLV755P/part-details/TLV75533PDBVR"}
   ]
 }
