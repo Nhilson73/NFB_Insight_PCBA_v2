@@ -121,7 +121,22 @@ def root_paths() -> tuple[str, dict[str, str]]:
     return root_uuid, sheets
 
 
-def validate_netlist(data: dict, zone: str) -> None:
+def zone_interzone_nets(contract: dict, zone: str) -> list[str]:
+    nets = [net for net, zones in contract["interzone_nets"].items() if zone in zones]
+    if set(nets) != set(HIER_DIRECTIONS[zone]):
+        fail(f"{zone}: direcciones jerárquicas no cubren ownership root")
+    return nets
+
+
+def validate_netlist(data: dict, zone: str, global_refs: set[str], interzone_nets: set[str]) -> None:
+    """Valida pins locales y permite endpoints externos solo en fronteras root.
+
+    Algunos netlists de zona contienen el endpoint de la zona vecina para dejar
+    explícita la conectividad global (por ejemplo Z2:I2C_* incluye U_CO2, que
+    físicamente pertenece a Z1). Esto es válido únicamente si la referencia
+    existe en el conjunto global de componentes y la net está declarada como
+    inter-zona para esa zona.
+    """
     comps = {c["ref"]: c for c in data["components"]}
     nets = {n["name"]: set(n["nodes"]) for n in data["nets"]}
     for ref, comp in comps.items():
@@ -135,8 +150,12 @@ def validate_netlist(data: dict, zone: str) -> None:
     for net, nodes in nets.items():
         for node in nodes:
             ref = node.rsplit(".", 1)[0]
-            if ref != "J_UNOQ" and ref not in comps:
-                fail(f"{zone}: {net} referencia {ref} inexistente")
+            if ref in comps:
+                continue
+            if ref not in global_refs:
+                fail(f"{zone}: {net} referencia endpoint global inexistente {ref}")
+            if net not in interzone_nets:
+                fail(f"{zone}: endpoint externo {ref} aparece indebidamente en net interna {net}")
 
 
 def validate_bom(data: dict, bom_path: Path, zone: str) -> None:
@@ -148,13 +167,6 @@ def validate_bom(data: dict, bom_path: Path, zone: str) -> None:
     for ref, comp in comps.items():
         if by_ref[ref].get("footprint", "") != comp.get("footprint", ""):
             fail(f"{zone}/{ref}: footprint BOM != JSON")
-
-
-def zone_interzone_nets(contract: dict, zone: str) -> list[str]:
-    nets = [net for net, zones in contract["interzone_nets"].items() if zone in zones]
-    if set(nets) != set(HIER_DIRECTIONS[zone]):
-        fail(f"{zone}: direcciones jerárquicas no cubren ownership root")
-    return nets
 
 
 def z0_component() -> dict:
@@ -304,10 +316,16 @@ def render_zone(zone: str, components: list[dict], source_name: str, root_uuid: 
 
 def load_all():
     contract = json.loads(ROOT_CONTRACT.read_text(encoding="utf-8"))
+    raw: dict[str, dict] = {}
+    for zone, (net_path, _bom_path, _filename) in ZONE_CONFIG.items():
+        raw[zone] = json.loads(net_path.read_text(encoding="utf-8"))
+    global_refs = {"J_UNOQ"}
+    for data in raw.values():
+        global_refs.update(str(c["ref"]) for c in data["components"])
     zones = {"Z0": [z0_component()]}
-    for zone, (net_path, bom_path, _filename) in ZONE_CONFIG.items():
-        data = json.loads(net_path.read_text(encoding="utf-8"))
-        validate_netlist(data, zone)
+    for zone, data in raw.items():
+        _net_path, bom_path, _filename = ZONE_CONFIG[zone]
+        validate_netlist(data, zone, global_refs, set(zone_interzone_nets(contract, zone)))
         validate_bom(data, bom_path, zone)
         zones[zone] = data["components"]
     return contract, zones
