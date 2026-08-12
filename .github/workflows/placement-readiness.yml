@@ -1,0 +1,71 @@
+name: Validación pre-placement readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/SOURCE_OF_TRUTH.md'
+      - 'docs/FASE4_PR16_PREPLACEMENT_READINESS.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/placement_readiness_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/z2_interface.kicad_sch'
+      - 'tools/migrate_pr16_loadcell_connector.py'
+      - 'tools/validate_placement_readiness.py'
+      - '.github/workflows/placement-readiness.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'docs/SOURCE_OF_TRUTH.md'
+      - 'docs/FASE4_PR16_PREPLACEMENT_READINESS.md'
+      - 'docs/ROADMAP.md'
+      - 'hardware/placement_readiness_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/z2_interface.kicad_sch'
+      - 'tools/migrate_pr16_loadcell_connector.py'
+      - 'tools/validate_placement_readiness.py'
+      - '.github/workflows/placement-readiness.yml'
+
+jobs:
+  readiness:
+    name: Arduino source + FIELD I/O + EMC + ERC/DRC
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar migración de J_LOADCELL
+        run: python3 tools/migrate_pr16_loadcell_connector.py --check
+      - name: Verificar hierarchy determinista PR15
+        run: python3 tools/normalize_pr15_schematics.py --check
+      - name: Validar contrato pre-placement
+        run: python3 tools/validate_placement_readiness.py
+      - name: Inicializar librerías KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Exigir ERC hierarchy 0/0
+        run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_pr16.rpt --severity-all --exit-code-violations
+      - name: Exigir DRC PCB limpio
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --output /tmp/drc_pr16.rpt --severity-all --exit-code-violations
+      - name: Mostrar reportes
+        if: always()
+        run: |
+          test ! -f /tmp/erc_pr16.rpt || cat /tmp/erc_pr16.rpt
+          test ! -f /tmp/drc_pr16.rpt || cat /tmp/drc_pr16.rpt
