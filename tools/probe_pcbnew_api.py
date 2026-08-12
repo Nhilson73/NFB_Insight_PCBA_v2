@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """PR17 probe de la API pcbnew en KiCad 10.0.5.
 
-No modifica archivos. Verifica que la misma toolchain CI puede cargar el board y
-footprints reales, y reporta orientación/pads de conectores de campo antes de
-materializar placement.
+No modifica archivos. Verifica carga, placement y asignación de nets en memoria
+antes de materializar el PCB de producción.
 """
 from __future__ import annotations
 from pathlib import Path
@@ -33,30 +32,49 @@ def main() -> int:
     board = pcbnew.LoadBoard(str(BOARD))
     print("BOARD_FOOTPRINTS", len(list(board.GetFootprints())))
 
+    loaded = {}
     for ref, lib, name in CASES:
         libdir = LOCAL if lib == "NFB" else STD / f"{lib}.pretty"
         fp = pcbnew.FootprintLoad(str(libdir), name)
         if fp is None:
             raise SystemExit(f"no pudo cargar {lib}:{name}")
-        bb = fp.GetBoundingBox()
-        print(
-            "CASE",
-            ref,
-            f"{lib}:{name}",
-            "bbox_mm=",
-            [mm(bb.GetX()), mm(bb.GetY()), mm(bb.GetWidth()), mm(bb.GetHeight())],
-        )
+        loaded[ref] = fp
         pads = []
         for pad in fp.Pads():
             p = pad.GetPosition()
             pads.append((str(pad.GetNumber()), mm(p.x), mm(p.y)))
         print("PADS", ref, pads)
 
-    # Confirmar que la API necesaria para PR17 existe sin alterar el board.
-    for symbol in ("FootprintLoad", "LoadBoard", "SaveBoard", "NETINFO_ITEM"):
+    for symbol in ("FootprintLoad", "LoadBoard", "SaveBoard", "NETINFO_ITEM", "VECTOR2I", "FromMM"):
         if not hasattr(pcbnew, symbol):
             raise SystemExit(f"pcbnew sin API requerida: {symbol}")
-    print("OK: pcbnew API disponible para materialización determinista PR17")
+
+    # Ensayo in-memory de las operaciones exactas que usará el materializador PR17.
+    fp = loaded["J_PWR_IN"]
+    fp.SetReference("J_PROBE")
+    fp.SetValue("PROBE")
+    fp.SetPosition(pcbnew.VECTOR2I(pcbnew.FromMM(10.0), pcbnew.FromMM(5.0)))
+    fp.SetOrientationDegrees(0.0)
+    board.Add(fp)
+    net = pcbnew.NETINFO_ITEM(board, "__PR17_PROBE_NET__")
+    board.Add(net)
+    first_pad = next(iter(fp.Pads()))
+    first_pad.SetNet(net)
+    print(
+        "INMEMORY",
+        fp.GetReference(),
+        mm(fp.GetPosition().x),
+        mm(fp.GetPosition().y),
+        fp.GetOrientationDegrees(),
+        str(first_pad.GetNumber()),
+        first_pad.GetNetname(),
+    )
+    if first_pad.GetNetname() != "__PR17_PROBE_NET__":
+        raise SystemExit("SetNet no preservó net de prueba")
+    if len(list(board.GetTracks())) != 0:
+        raise SystemExit("probe introdujo tracks inesperados")
+
+    print("OK: pcbnew API disponible para placement+nets deterministas PR17")
     return 0
 
 
