@@ -1,6 +1,7 @@
 {
   "schema_version": 5,
   "product": "NFB Insight PCBA v2",
+  "uno_q_source_policy": "docs/SOURCE_OF_TRUTH.md",
   "firmware_reference": {
     "repository": "Nhilson73/Nebula_ArduinoAPPLab_UNOQ",
     "branch": "main",
@@ -26,7 +27,7 @@
     {"pad":2,"arduino":"IOREF","net":"UNO_IOREF_3V3","status":"ACTIVE_CONTROL_OUTPUT"},
     {"pad":3,"arduino":"~RESET","net":"MCU_NRST","status":"ACTIVE"},
     {"pad":4,"arduino":"3V3 OUT","net":null,"status":"NC_HOST_POWER_OUT"},
-    {"pad":5,"arduino":"5V USB VBUS","net":null,"status":"NC_HOST_USB_VBUS"},
+    {"pad":5,"arduino":"5V JANALOG","net":null,"status":"NC_HOST_5V_SUPPORTED_INPUT"},
     {"pad":6,"arduino":"GND","net":"GND","status":"ACTIVE"},
     {"pad":7,"arduino":"GND","net":"GND","status":"ACTIVE"},
     {"pad":8,"arduino":"VIN","net":"12V_HOST_VIN","status":"ACTIVE_POWER_INPUT"},
@@ -56,11 +57,14 @@
     {"pad":32,"arduino":"D21/SCL","net":"I2C_SCL","status":"ACTIVE"}
   ],
   "power_interface": {
-    "uno_q_datasheet_basis": "ABX00162-ABX00173 modified 2026-08-07",
-    "vin": {"pad":8,"range_v":[7.0,24.0],"design_input_v":12.0,"net":"12V_HOST_VIN"},
-    "ioref": {"pad":2,"direction":"OUTPUT_ONLY","net":"UNO_IOREF_3V3","use":"high-impedance enable/reference for shield 5V sequencing"},
+    "uno_q_primary_sources": [
+      "arduino/docs-content/content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+      "arduino/docs-content/content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md"
+    ],
+    "vin": {"pad":8,"range_v":[7.0,24.0],"design_input_v":12.0,"net":"12V_HOST_VIN","nfb_preferred":true},
+    "ioref": {"pad":2,"direction":"OUTPUT_ONLY_REFERENCE","net":"UNO_IOREF_3V3","use":"high-impedance enable/reference for shield 5V sequencing","never_drive":true},
     "host_3v3": {"pad":4,"direction":"OUTPUT","shield_connection":"NC","reason":"shield generates independent sequenced 3V3_RAIL"},
-    "host_usb_vbus": {"pad":5,"direction":"USB_VBUS_PASS_THROUGH","shield_connection":"NC","reason":"shield generates independent 5V_RAIL"},
+    "host_5v": {"pad":5,"official_capability":"REGULATED_5V_HOST_INPUT_UP_TO_3A","shield_connection":"NC","reason":"NFB baseline intentionally separates shield-local 5V_RAIL from UNO Q 5V_SYS"},
     "shield_5v_net":"5V_RAIL",
     "shield_3v3_net":"3V3_RAIL",
     "backfeed_forbidden":true
