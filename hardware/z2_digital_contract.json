@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "Z2_PRODUCTION_BASELINE_PR7",
+  "decision_date": "2026-08-11",
+  "design_policy": {
+    "zone": "Z2_DIGITAL_LOW_NOISE",
+    "field_io_edge": "Y=0",
+    "connector_facing": "-Y",
+    "logic_domain_v": 3.3,
+    "placement_in_scope": false,
+    "routing_in_scope": false,
+    "shared_ground": true,
+    "onboard_i2c_isolator": false
+  },
+  "sources": [
+    {"id": "DFR1103", "manufacturer": "DFRobot", "part": "DFR1103", "kind": "official_product_and_library", "url": "https://wiki.dfrobot.com/dfr1103/", "i2c_address_hex": "0x66"},
+    {"id": "TPS3823_30", "manufacturer": "Texas Instruments", "part": "TPS3823-30DBVR", "kind": "official_product", "url": "https://www.ti.com/product/TPS3823/part-details/TPS3823-30DBVR"},
+    {"id": "TXU0202", "manufacturer": "Texas Instruments", "part": "TXU0202DCUR", "kind": "official_product", "url": "https://www.ti.com/product/TXU0202/part-details/TXU0202DCUR"},
+    {"id": "NEXPERIA_ESD_3V3", "manufacturer": "Nexperia", "part": "PESD3V3U1UL,315", "kind": "official_product", "url": "https://www.nexperia.com/product/PESD3V3U1UL"},
+    {"id": "NEXPERIA_ESD_5V", "manufacturer": "Nexperia", "part": "PESD5V0U1UL,315", "kind": "official_product", "url": "https://www.nexperia.com/product/PESD5V0U1UL"}
+  ],
+  "i2c": {
+    "nets": ["I2C_SDA", "I2C_SCL"],
+    "uno_q_pads": {"sda": 31, "scl": 32},
+    "pullups": {"sda_ref": "R_I2C_SDA", "scl_ref": "R_I2C_SCL", "ohm": 4700, "tolerance_pct": 1.0, "to_net": "3V3_RAIL", "population": "POPULATE", "mpn": "CRCW04024K70FKED"},
+    "external_esd": {"sda_ref": "D_GNSS_SDA", "scl_ref": "D_GNSS_SCL", "mpn": "PESD3V3U1UL,315", "common_net": "GND", "population": "POPULATE"},
+    "devices": [
+      {"device": "MPRLS0030PA00002A", "address_hex": "0x28", "zone": "Z1", "status": "ACTIVE"},
+      {"device": "DFR1103", "address_hex": "0x66", "zone": "Z2", "status": "ACTIVE"}
+    ],
+    "forbidden_active_addresses": ["0x42", "0x68"],
+    "note": "GPS SAM-M8Q/RTC DS3231 separados quedan supersedidos por DFR1103 combinado."
+  },
+  "gnss_rtc": {
+    "module": "DFR1103",
+    "interface": "I2C",
+    "i2c_address_hex": "0x66",
+    "supply_net": "3V3_RAIL",
+    "operating_voltage_v": [3.3, 5.0],
+    "connector": {"ref": "J_GNSS_RTC", "mpn": "S4B-XH-A(LF)(SN)", "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal", "pinout": {"1": "I2C_SDA", "2": "I2C_SCL", "3": "GND", "4": "3V3_RAIL"}, "harness": "XH-4 ↔ Gravity 4P; conservar orden D/T,C/R,-,+"},
+    "unused_module_pins": ["PPS", "INT", "32K"],
+    "firmware_migration_required": true,
+    "supersedes": ["GPS_SAM-M8Q_0x42", "RTC_DS3231_0x68"]
+  },
+  "hx711": {
+    "ref": "U_HX",
+    "part": "HX711",
+    "supply_mode": "EXTERNAL_3V3_NO_INTERNAL_REGULATOR",
+    "rate_sps": 10,
+    "gain_channel_a": 128,
+    "uno_q": {"dout_pad": 17, "dout_net": "HX711_DOUT", "sck_pad": 18, "sck_net": "HX711_SCK"},
+    "pinout": {"1": "3V3_RAIL", "2": "NC", "3": "3V3_RAIL", "4": "GND", "5": "GND", "6": "HX_VBG", "7": "LOAD_A_NEG", "8": "LOAD_A_POS", "9": "NC", "10": "NC", "11": "HX711_SCK", "12": "HX711_DOUT", "13": "NC", "14": "GND", "15": "GND", "16": "3V3_RAIL"},
+    "load_cell_connector": {"ref": "J_LOADCELL", "pins": {"1": "3V3_RAIL", "2": "GND", "3": "LOAD_A_POS", "4": "LOAD_A_NEG"}, "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_PT-1,5-4-5.0-H_1x04_P5.00mm_Horizontal", "orientation": "side-entry hacia -Y"},
+    "decoupling": [{"ref": "C_HX_100N", "value_f": 1e-07}, {"ref": "C_HX_10U", "value_f": 1e-05}, {"ref": "C_HX_VBG", "value_f": 1e-07}],
+    "bringup_note": "Validar ruido, cero, span y estabilidad con celda real antes de liberar."
+  },
+  "hmi_uart": {
+    "connector": {"ref": "J_HMI", "mpn": "S4B-XH-A(LF)(SN)", "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal", "pinout": {"1": "5V_RAIL", "2": "GND", "3": "HMI_FIELD_RX", "4": "HMI_FIELD_TX"}},
+    "translator": {"ref": "U_HMI_LVL", "mpn": "TXU0202DCUR", "package": "VSSOP-8_DCU", "vcca_net": "3V3_RAIL", "vccb_net": "5V_RAIL", "oe_net": "3V3_RAIL", "pinout": {"1": "HMI_FIELD_TX", "2": "GND", "3": "3V3_RAIL", "4": "HMI_RX", "5": "HMI_TX", "6": "3V3_RAIL", "7": "5V_RAIL", "8": "HMI_FIELD_RX"}, "direction": {"channel1": "A1(HMI_TX)->B1Y(HMI_FIELD_RX)", "channel2": "B2(HMI_FIELD_TX)->A2Y(HMI_RX)"}},
+    "esd": {"rx_ref": "D_HMI_RX", "tx_ref": "D_HMI_TX", "mpn": "PESD5V0U1UL,315", "common_net": "GND", "protected_nets": ["HMI_FIELD_RX", "HMI_FIELD_TX"]},
+    "decoupling_refs": ["C_HMI_A", "C_HMI_B"],
+    "uno_q_pads": {"rx": 15, "tx": 16},
+    "phase3_dependency": "Capacidad/corriente del 5V_RAIL para alimentar HMI se revalidará en Fase 3."
+  },
+  "watchdog": {
+    "ref": "U_WDT",
+    "mpn": "TPS3823-30DBVR",
+    "watchdog_timeout_s": 1.6,
+    "firmware_feed_interval_ms": 400,
+    "pinout": {"1": "MCU_NRST", "2": "GND", "3": "WDT_MR_N", "4": "MCU_WDI", "5": "3V3_RAIL"},
+    "manual_reset": {"pullup_ref": "R_WDT_MR", "ohm": 10000, "to_net": "3V3_RAIL", "testpoint_ref": "TP_WDT_MR"},
+    "decoupling_ref": "C_WDT",
+    "uno_q": {"reset_pad": 3, "wdi_pad": 19}
+  },
+  "status_led": {"net": "LED_STATUS", "uno_q_pad": 28, "implementation": "UNO_Q_BUILTIN_LED_PLUS_TESTPOINT"},
+  "testpoints": ["TP_3V3", "TP_5V", "TP_GND", "TP_I2C_SDA", "TP_I2C_SCL", "TP_HX_DOUT", "TP_HX_SCK", "TP_LOAD_A_POS", "TP_LOAD_A_NEG", "TP_HMI_TX", "TP_HMI_RX", "TP_WDI", "TP_NRST", "TP_WDT_MR", "TP_LED_STATUS"],
+  "excluded_from_insight_z2": ["MAX3485", "SC16IS740", "SN74LVC1G04_RS485", "ISO1541", "SAM-M8Q", "DS3231_ONBOARD", "CELL_DENSITY"]
+}
