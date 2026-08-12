@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "product": "NFB Insight PCBA v2",
   "firmware_reference": {
     "repository": "Nhilson73/Nebula_ArduinoAPPLab_UNOQ",
@@ -20,15 +20,16 @@
   "z1_netlist_source_of_truth": "hardware/z1_production_netlist.json",
   "z2_contract_source_of_truth": "hardware/z2_digital_contract.json",
   "z2_netlist_source_of_truth": "hardware/z2_production_netlist.json",
+  "power_architecture_source_of_truth": "hardware/power_architecture_contract.json",
   "pins": [
     {"pad":1,"arduino":"BOOT","net":null,"status":"NC"},
-    {"pad":2,"arduino":"IOREF","net":null,"status":"NC"},
+    {"pad":2,"arduino":"IOREF","net":"UNO_IOREF_3V3","status":"ACTIVE_CONTROL_OUTPUT"},
     {"pad":3,"arduino":"~RESET","net":"MCU_NRST","status":"ACTIVE"},
-    {"pad":4,"arduino":"3V3","net":"3V3_RAIL","status":"ACTIVE"},
-    {"pad":5,"arduino":"5V","net":"5V_RAIL","status":"ACTIVE"},
+    {"pad":4,"arduino":"3V3 OUT","net":null,"status":"NC_HOST_POWER_OUT"},
+    {"pad":5,"arduino":"5V USB VBUS","net":null,"status":"NC_HOST_USB_VBUS"},
     {"pad":6,"arduino":"GND","net":"GND","status":"ACTIVE"},
     {"pad":7,"arduino":"GND","net":"GND","status":"ACTIVE"},
-    {"pad":8,"arduino":"VIN","net":"12V_RAIL","status":"REVIEW"},
+    {"pad":8,"arduino":"VIN","net":"12V_HOST_VIN","status":"ACTIVE_POWER_INPUT"},
     {"pad":9,"arduino":"A0","net":"PH_ADC","status":"ACTIVE"},
     {"pad":10,"arduino":"A1","net":"ORP_ADC","status":"ACTIVE"},
     {"pad":11,"arduino":"A2/D16","net":"TEMP_1WIRE","status":"ACTIVE_DIGITAL"},
@@ -54,6 +55,16 @@
     {"pad":31,"arduino":"D20/SDA","net":"I2C_SDA","status":"ACTIVE"},
     {"pad":32,"arduino":"D21/SCL","net":"I2C_SCL","status":"ACTIVE"}
   ],
+  "power_interface": {
+    "uno_q_datasheet_basis": "ABX00162-ABX00173 modified 2026-08-07",
+    "vin": {"pad":8,"range_v":[7.0,24.0],"design_input_v":12.0,"net":"12V_HOST_VIN"},
+    "ioref": {"pad":2,"direction":"OUTPUT_ONLY","net":"UNO_IOREF_3V3","use":"high-impedance enable/reference for shield 5V sequencing"},
+    "host_3v3": {"pad":4,"direction":"OUTPUT","shield_connection":"NC","reason":"shield generates independent sequenced 3V3_RAIL"},
+    "host_usb_vbus": {"pad":5,"direction":"USB_VBUS_PASS_THROUGH","shield_connection":"NC","reason":"shield generates independent 5V_RAIL"},
+    "shield_5v_net":"5V_RAIL",
+    "shield_3v3_net":"3V3_RAIL",
+    "backfeed_forbidden":true
+  },
   "i2c_devices_reserved_or_active": [
     {"device":"MPRLS0030PA00002A","address_hex":"0x28","status":"ACTIVE_Z1"},
     {"device":"DFR1103_GNSS_RTC","address_hex":"0x66","status":"ACTIVE_Z2"},
