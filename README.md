@@ -8,7 +8,7 @@ Toda decisión dependiente del Arduino UNO Q se contrasta primero contra reposit
 
 ## Frontera del producto / compliance
 
-NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su radio. No añade transmisores, antena, matching ni amplificación RF; debe preservar sus keepouts y condiciones de integración. El gate europeo vive en `docs/EU_COMPLIANCE_GATE.md` / `compliance/eu_compliance_contract.json` y cubre la estrategia EMC, RoHS 3, REACH, WEEE, RED/CE del producto integrado.
+NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su radio. No añade transmisores, antena, matching ni amplificación RF; debe preservar sus keepouts y condiciones de integración. El **EU Compliance Design Gate** vive en `docs/EU_COMPLIANCE_GATE.md` / `compliance/eu_compliance_contract.json` y cubre la estrategia EMC, RoHS 3, REACH, WEEE, RED/CE del producto integrado.
 
 ## Mecánica congelada
 
