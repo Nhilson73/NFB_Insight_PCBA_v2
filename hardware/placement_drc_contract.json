@@ -4,7 +4,20 @@
   "product": "NFB Insight PCBA v2",
   "kicad_version": "10.0.5",
   "scope": "PLACEMENT_ONLY_NO_ROUTING",
-  "ci_revalidation_requires_zero_artifact_diff": true,
+  "ci_revalidation_mode": "SEMANTIC_KICAD_UUID_TOLERANT",
+  "json_artifacts_require_zero_diff": true,
+  "pcb_equivalence_requires": [
+    "references",
+    "XY",
+    "rotation",
+    "LIB_ID",
+    "pads_and_nets",
+    "zone_confinement",
+    "field_io_order",
+    "courtyard_overlap_zero",
+    "tracks_vias_zones_zero",
+    "bounded_DRC_contract"
+  ],
   "expected_error_count": 0,
   "allowed_warning_types_exact": {
     "silk_edge_clearance": 13,
@@ -29,6 +42,7 @@
   "interpretation": {
     "warnings": "Deuda acotada de serigrafía/rotulación aceptada únicamente para revisión de placement PR17; no habilita salidas de fabricación.",
     "unconnected_items": "Deuda intencional de placement-only: PR17 prohíbe tracks, vías y zonas de cobre.",
+    "uuid_note": "pcbnew puede regenerar UUIDs al reconstruir footprints; la equivalencia del PCB se valida semánticamente, mientras los JSON derivados sí deben reproducirse sin diff.",
     "zero_errors_required": true
   },
   "removal_gates": {
