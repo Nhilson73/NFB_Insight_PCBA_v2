@@ -1,5 +1,11 @@
 # NFB Insight PCBA v2 — Hoja de Ruta de Desarrollo
 
+## Regla transversal — fuentes de verdad
+
+- [x] Para cualquier decisión del **Arduino UNO Q**, revisar primero repositorios oficiales `arduino/*` en GitHub.
+- [x] Documentar la jerarquía en `docs/SOURCE_OF_TRUTH.md`.
+- [x] Resolver contradicciones por revisión/commit/especificidad antes de congelar producción.
+
 ## Fase 0 — Congelar arquitectura
 
 - [x] Repositorio limpio y herencia selectiva desde Q-Shield.
@@ -17,7 +23,7 @@
 - [x] Contorno inicial `68.58 mm` alto × `220 mm` ancho provisional.
 - [x] Validación automática mecánica/DRC.
 - [ ] Convertir keepouts definitivos después de contrastar CAD/STEP y enclosure.
-- [ ] Confirmar específicamente keepout RF/antena del UNO Q antes de placement.
+- [ ] Confirmar específicamente keepout RF/antena del UNO Q contra fuentes oficiales Arduino antes de placement.
 - [ ] Verificar UNO Q + carrier en KiCad 3D Viewer.
 - [ ] Congelar ancho final solo después del placement.
 
@@ -47,95 +53,105 @@
 - [x] Gates de dominio ADC y coherencia.
 
 ### PR #6 — Z1 netlist de producción
-- [x] Seleccionar Honeywell `MPRLS0030PA00002A` para presión CO₂.
-- [x] Migrar presión CO₂ de `CO2_ADC/A4` a I²C `0x28` sobre D20/D21.
-- [x] Dejar A4 DNP/Reserva y prohibir `CO2_ADC` como net activa.
-- [x] Congelar JST XH `S3B-XH-A(LF)(SN)` side-entry para pH/ORP/TEMP/DO.
-- [x] Congelar `PESD3V3U1UL,315` como ESD de líneas externas.
-- [x] Congelar filtros pH/DO `1 kΩ + 100 nF`.
-- [x] Congelar ORP `10 kΩ / 20 kΩ + 100 nF`, clamp después del divisor.
-- [x] Poblar pull-up `4.7 kΩ` de `TEMP_1WIRE`.
-- [x] Congelar `GRM155R71E104KE14D` para 100 nF.
-- [x] Crear footprint propio `NFB:Honeywell_MPR_LongPort_12Pad`.
-- [x] Crear `hardware/z1_production_netlist.json`.
-- [x] Crear `bom/insight_z1_production_bom.csv`.
-- [x] Materializar componentes y nets Z1 en el root schematic KiCad.
-- [x] Añadir gates automáticos BOM/netlist/footprint/contrato/ERC.
-- [ ] Verificar filtros frente a ruido real durante bring-up/HIL; cualquier cambio requerirá PR.
+- [x] Honeywell `MPRLS0030PA00002A` para presión CO₂.
+- [x] Presión CO₂ por I²C `0x28`; A4/CO2_ADC DNP/Reserva.
+- [x] JST XH side-entry para pH/ORP/TEMP/DO.
+- [x] ESD `PESD3V3U1UL,315`.
+- [x] Filtros pH/DO `1 kΩ + 100 nF`.
+- [x] ORP `10 kΩ / 20 kΩ + 100 nF`.
+- [x] Pull-up `4.7 kΩ` de `TEMP_1WIRE`.
+- [x] Footprint MPR propio.
+- [x] Netlist/BOM/gates automáticos.
+- [x] PR #9 corrige `3V3_RAIL`/`5V_RAIL` para que sean rails locales del shield, sin J_UNOQ.4/.5.
+- [ ] Verificar filtros frente a ruido real durante bring-up/HIL.
 - [ ] Validar footprint MPR contra STEP/3D antes del placement definitivo.
 
 ### PR #7 — Z2 digital / bajo ruido
-- [x] Congelar HX711 onboard a 3.3 V, DOUT/SCK en D2/D3 y 10 SPS.
-- [x] Congelar conector de celda de carga y test points diferenciales.
-- [x] Reemplazar GPS `0x42` + RTC `0x68` separados por DFR1103 combinado I²C `0x66`.
-- [x] Congelar `J_GNSS_RTC` externo y protección ESD individual del bus de campo.
-- [x] Congelar I²C global con pull-ups definitivos de `4.7 kΩ`.
-- [x] Congelar HMI UART D0/D1 con `TXU0202DCUR` 3.3 V↔5 V.
-- [x] Congelar ESD individual 5 V de las líneas UART de campo.
-- [x] Congelar watchdog `TPS3823-30DBVR`, WDI=D4, reset por `MCU_NRST`.
-- [x] Mantener D13/`LED_STATUS` sobre LED integrado UNO Q + test point.
-- [x] Congelar test points de bring-up Z2.
-- [x] Crear `hardware/z2_digital_contract.json`.
-- [x] Crear `hardware/z2_production_netlist.json` y BOM Z2.
-- [x] Crear hoja KiCad contractual Z2 separada; integración jerárquica posterior.
-- [x] Añadir gates automáticos Z2 + ERC.
+- [x] HX711 onboard a 3.3 V, DOUT/SCK en D2/D3 y 10 SPS.
+- [x] Conector de celda de carga y test points diferenciales.
+- [x] DFR1103 GNSS+RTC I²C `0x66` reemplaza GPS/RTC legacy separados.
+- [x] I²C global con pull-ups de `4.7 kΩ`.
+- [x] HMI D0/D1 con `TXU0202DCUR` 3.3 V↔5 V.
+- [x] ESD individual de UART de campo.
+- [x] Watchdog `TPS3823-30DBVR`, WDI=D4, reset por `MCU_NRST`.
+- [x] Test points de bring-up Z2.
+- [x] Netlist/BOM/hoja contractual/gates Z2.
+- [x] PR #9 corrige `3V3_RAIL`/`5V_RAIL` para que sean rails locales del shield, sin J_UNOQ.4/.5.
 - [ ] Calificar fuente/lifecycle del HX711 antes de fabricación.
-- [ ] Revalidar consumo de HMI y DFR1103 al cerrar Fase 3.
+- [ ] Medir consumo real de HMI y DFR1103 durante bring-up.
 - [ ] Validar HX711 con celda real durante bring-up/HIL.
 
 ### PR #8 — EU Compliance Design Gate del shield
 - [x] Definir NFB Insight PCBA v2 como shield/carrier del Arduino UNO Q.
-- [x] Congelar que el shield base no añade transmisor, antena, matching ni amplificación RF.
+- [x] Shield base sin transmisor/antena/matching/amplificación RF añadidos.
 - [x] Exigir preservación de keepout/condiciones RF del UNO Q.
-- [x] Registrar la conformidad/certificación del UNO Q como evidencia de proveedor del host, no como sustituto automático de la evaluación integrada.
-- [x] Crear matriz EMC / RoHS 3 / WEEE / RED / REACH / CE.
-- [x] Congelar reglas EMC de plano GND, retornos, zonas de ruido, ESD e interfaces externas.
-- [x] Exigir evidencia RoHS/REACH de BOM, PCB y ensamblaje antes de liberar producción.
-- [x] Crear `docs/EU_COMPLIANCE_GATE.md`.
-- [x] Crear `compliance/eu_compliance_contract.json` y matriz CSV.
-- [x] Crear workflow `EU Compliance Gate`.
-- [x] Actualizar `README.md` con frontera de producto, Z2 y compliance.
+- [x] Matriz EMC / RoHS 3 / WEEE / RED / REACH / CE.
+- [x] Reglas EMC de plano GND, retornos, ruido, ESD e interfaces externas.
+- [x] Evidencia RoHS/REACH de BOM, PCB y ensamblaje antes de producción.
+- [x] Workflow `EU Compliance Gate`.
+- [x] README actualizado.
 - [ ] Archivar certificados/DoC oficiales específicos del SKU UNO Q utilizado antes de release RC.
-- [ ] Confirmar con laboratorio la edición exacta de normas armonizadas antes del plan final de ensayo.
-
-### Integración eléctrica posterior
-- [ ] Integrar jerarquía Z1 + Z2 preservando contratos machine-readable.
-- [ ] Construir hoja de potencia después de Fase 3.
-- [ ] Construir hoja de actuadores Insight.
-- [ ] Integrar jerarquía completa y mantener ERC = 0.
+- [ ] Confirmar con laboratorio edición exacta de normas armonizadas y plan final de ensayo.
 
 ## Fase 3 — Arquitectura de potencia
 
-- [ ] Separar lógica/sensores de potencia ruidosa.
-- [ ] Decidir qué cargas atraviesan la PCBA.
-- [ ] Chiller con energía externa y solo señal de control por defecto.
-- [ ] Calcular corrientes continuas/pico, incluyendo HMI y DFR1103.
-- [ ] Reseleccionar F1/D2/conector de entrada.
-- [ ] Revalidar buck/LDO.
-- [ ] Definir netclasses.
-- [ ] Revisar filtro de entrada/transitorios desde EMC y no solo corriente nominal.
-- [ ] Pasar `EU Compliance Gate` antes de congelar potencia.
+### PR #9 — Power tree y frontera UNO Q
+- [x] Revisar repos oficiales Arduino/GitHub como fuente primaria del power tree UNO Q.
+- [x] Confirmar métodos oficiales UNO Q: USB-C 5 V, VIN 7–24 V y 5 V regulados por JANALOG.
+- [x] Elegir **12 V protegido → VIN** como método NFB preferido.
+- [x] Separar `5V_RAIL` y `3V3_RAIL` locales del shield de J_UNOQ.5/J_UNOQ.4.
+- [x] Usar `IOREF` solo como salida/referencia de alta impedancia; prohibir back-feed.
+- [x] Congelar entrada nominal 12 V y fuente recomendada 12 V / 5 A / 60 W.
+- [x] Congelar eFuse `TPS259470ARPWR` y familia TVS `SMBJ15A`.
+- [x] Congelar split estrella `12V_HOST_VIN` / `12V_LOGIC` / `12V_ACT`.
+- [x] Congelar chiller con potencia externa y solo señal de control por PCBA.
+- [x] Congelar buck local `TPSM33625RDNR` para `5V_RAIL`.
+- [x] Congelar LDO `TLV75533PDBVR` para `3V3_RAIL`.
+- [x] Congelar envelope de diseño de 43.5 W sobre fuente de 60 W.
+- [x] Crear `hardware/power_architecture_contract.json`.
+- [x] Crear `docs/POWER_ARCHITECTURE.md` y `docs/SOURCE_OF_TRUTH.md`.
+- [x] Elevar contrato UNO Q a schema v5 y corregir netlists Z1/Z2.
+- [x] Crear `Validación arquitectura de potencia Insight` en CI.
+- [x] Actualizar README.
+
+### PR #10 — Esquemático de potencia de producción
+- [ ] Revisar nuevamente schematic/power docs oficiales Arduino antes de materializar conexiones UNO Q.
+- [ ] Calcular y congelar `R_ILIM`, OVLO, dV/dt/soft-start del TPS25947.
+- [ ] Seleccionar MPN exacto del conector de entrada y `F_ACT`.
+- [ ] Calcular feedback, frecuencia, capacitores y filtro EMI del TPSM33625 para 5.0 V.
+- [ ] Congelar capacitores/enable del TLV75533.
+- [ ] Materializar `power.kicad_sch` con ERC = 0.
+- [ ] Crear BOM/netlist machine-readable de potencia.
+- [ ] Definir netclasses de `12V_HOST_VIN`, `12V_ACT`, `5V_RAIL`, `3V3_RAIL`.
+- [ ] Revisión térmica a 60 °C ambiente objetivo.
+- [ ] Pasar EU Compliance Gate + power gate + gates Z1/Z2.
+
+### Integración eléctrica posterior
+- [ ] Integrar jerarquía Z1 + Z2 + potencia preservando contratos machine-readable.
+- [ ] Construir hoja de actuadores Insight.
+- [ ] Integrar jerarquía completa y mantener ERC = 0.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado.
-- [ ] Keepout RF/antena UNO Q confirmado y bloqueado.
+- [ ] Keepout RF/antena UNO Q confirmado contra GitHub/CAD oficial y bloqueado.
 - [ ] Z1 sensores con conectores sobre `Y=0`, salida `-Y`.
 - [ ] U_CO2 accesible al tubing desde borde de servicio.
-- [ ] Z2 digital/bajo ruido con J_LOADCELL, J_GNSS_RTC y J_HMI orientados al borde de servicio.
+- [ ] Z2 digital/bajo ruido con J_LOADCELL, J_GNSS_RTC y J_HMI hacia borde de servicio.
 - [ ] TVS próximos a entradas de cable.
-- [ ] Z3 potencia.
-- [ ] Z4 actuadores.
+- [ ] Z3: entrada/eFuse/buck/LDO con loops mínimos y lejos de Z1/RF.
+- [ ] Z4: actuadores/retornos sucios.
 - [ ] Revisión 3D completa.
 - [ ] Congelar ancho final.
 
 ## Fase 5 — Routing
 
 - [ ] Plano de referencia continuo.
-- [ ] Prioridad: sensores → I²C/HX711/clocks → potencia → actuadores.
-- [ ] No usar In1.Cu como capa de señales si se congela como GND.
+- [ ] Prioridad: sensores → I²C/HX711 → potencia → actuadores.
+- [ ] No usar In1.Cu como señales si se congela como GND.
 - [ ] No atravesar keepout RF del UNO Q con cobre/señales/componentes del shield.
-- [ ] Routing de alta corriente solo después de Fase 3.
+- [ ] Confinar nodo SW del buck a Z3.
+- [ ] Retornos `12V_ACT` a región de entrada/estrella sin cruzar Z1/Z2.
 - [ ] Stitching vias y test points deliberados.
 - [ ] Revisar retornos EMC de cada interfaz externa.
 - [ ] 0 desconectados inesperados.
@@ -145,7 +161,7 @@
 
 - [ ] Lifecycle/disponibilidad BOM.
 - [ ] Calificar fabricante/fuente de HX711.
-- [ ] Auditoría footprint vs datasheet.
+- [ ] Auditoría footprint vs datasheet/CAD primario.
 - [ ] Conectores y alivio de tensión.
 - [ ] Evidencia RoHS 3 de todos los MPN/materiales poblados.
 - [ ] Evidencia REACH/SVHC de proveedores relevantes.
@@ -163,14 +179,17 @@
 
 - [ ] Rails antes de instalar UNO Q.
 - [ ] Encendido limitado en corriente.
+- [ ] Medir secuencia `12V_PROTECTED → UNO Q → IOREF → 5V_RAIL → 3V3_RAIL`.
+- [ ] Verificar ausencia de back-feed con UNO Q apagado/USB conectado/desconectado.
+- [ ] Medir consumo real ABX00173 bajo Wi‑Fi/App Lab/carga representativa.
 - [ ] Inyección de pH/ORP/DO.
 - [ ] DS18B20/1-Wire.
-- [ ] MPR I²C `0x28` y prueba de presión hasta rango de trabajo.
+- [ ] MPR I²C `0x28` y prueba de presión.
 - [ ] Ruido/interferencia de sensores y decisión final sobre aislamiento inline.
 - [ ] DFR1103 I²C `0x66`: GNSS + RTC.
 - [ ] HX711/celda real: cero, span, ruido y estabilidad.
 - [ ] HMI UART con TXU0202 3.3 V↔5 V.
-- [ ] Bomba/solenoide/chiller.
+- [ ] Bomba/solenoide/chiller control.
 - [ ] Watchdog/failsafe.
 - [ ] Fixture HIL y prueba repetible de producción.
 - [ ] Pre-scan EMC del conjunto con UNO Q, cables y actuadores representativos.

@@ -1,0 +1,41 @@
+name: Validación arquitectura de potencia Insight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hardware/power_architecture_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'docs/POWER_ARCHITECTURE.md'
+      - 'docs/SOURCE_OF_TRUTH.md'
+      - 'docs/ROADMAP.md'
+      - 'README.md'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_power_architecture.py'
+      - '.github/workflows/power-architecture.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/power_architecture_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'docs/POWER_ARCHITECTURE.md'
+      - 'docs/SOURCE_OF_TRUTH.md'
+      - 'docs/ROADMAP.md'
+      - 'README.md'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'tools/validate_power_architecture.py'
+      - '.github/workflows/power-architecture.yml'
+
+jobs:
+  power:
+    name: Contrato de potencia + frontera UNO Q
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Validar arquitectura de potencia
+        run: python3 tools/validate_power_architecture.py

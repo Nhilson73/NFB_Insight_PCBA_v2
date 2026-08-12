@@ -1,8 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "Z2_PRODUCTION_BASELINE_PR7",
+  "status": "Z2_PRODUCTION_BASELINE_PR7_POWER_LINKED_PR9",
   "decision_date": "2026-08-11",
+  "power_source_contract": "hardware/power_architecture_contract.json",
   "design_policy": {
     "zone": "Z2_DIGITAL_LOW_NOISE",
     "field_io_edge": "Y=0",
@@ -61,7 +62,7 @@
     "esd": {"rx_ref": "D_HMI_RX", "tx_ref": "D_HMI_TX", "mpn": "PESD5V0U1UL,315", "common_net": "GND", "protected_nets": ["HMI_FIELD_RX", "HMI_FIELD_TX"]},
     "decoupling_refs": ["C_HMI_A", "C_HMI_B"],
     "uno_q_pads": {"rx": 15, "tx": 16},
-    "phase3_dependency": "Capacidad/corriente del 5V_RAIL para alimentar HMI se revalidará en Fase 3."
+    "phase3_resolution": "PR #9 congela 5V_RAIL local con TPSM33625RDNR, 2.5 A nominal y límite de diseño de 1.5 A continuo. El consumo real de HMI se medirá en bring-up antes del release."
   },
   "watchdog": {
     "ref": "U_WDT",
