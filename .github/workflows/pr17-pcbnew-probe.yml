@@ -1,3 +1,4 @@
+# Gate PR17: la corrida final debe reproducir también los artefactos ya persistidos.
 name: PR17 placement KiCad
 
 on:
