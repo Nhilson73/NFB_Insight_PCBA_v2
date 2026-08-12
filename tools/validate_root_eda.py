@@ -11,6 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "hardware" / "root_eda_contract.json"
+MATERIAL = ROOT / "hardware" / "eda_materialization_contract.json"
 PIN = ROOT / "hardware" / "insight_pin_contract.json"
 Z1 = ROOT / "hardware" / "z1_production_netlist.json"
 Z2 = ROOT / "hardware" / "z2_production_netlist.json"
@@ -49,9 +50,7 @@ def run_check(path: Path) -> None:
         capture_output=True,
     )
     if cp.returncode:
-        fail(
-            f"{path.name} --check falló:\n{cp.stdout}{cp.stderr}".rstrip()
-        )
+        fail(f"{path.name} --check falló:\n{cp.stdout}{cp.stderr}".rstrip())
 
 
 def component_map(*netlists: dict) -> dict[str, dict]:
@@ -65,9 +64,23 @@ def component_map(*netlists: dict) -> dict[str, dict]:
     return result
 
 
+def materialization_fixes(material: dict) -> dict[str, tuple[str, str]]:
+    result: dict[str, tuple[str, str]] = {}
+    for item in material.get("footprint_link_closures", []):
+        refs = item.get("references") or [item.get("reference")]
+        for ref in refs:
+            if not ref:
+                fail("eda_materialization_contract tiene closure sin referencia")
+            if ref in result:
+                fail(f"closure duplicado en eda_materialization_contract: {ref}")
+            result[ref] = (item["mpn"], item["footprint"])
+    return result
+
+
 def main() -> int:
     required = (
         CONTRACT,
+        MATERIAL,
         PIN,
         Z1,
         Z2,
@@ -85,6 +98,7 @@ def main() -> int:
             fail(f"falta {path.relative_to(ROOT)}")
 
     c = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    material = json.loads(MATERIAL.read_text(encoding="utf-8"))
     pin = json.loads(PIN.read_text(encoding="utf-8"))
     z1 = json.loads(Z1.read_text(encoding="utf-8"))
     z2 = json.loads(Z2.read_text(encoding="utf-8"))
@@ -96,6 +110,8 @@ def main() -> int:
         fail("root EDA contract no es schema 3")
     if c.get("status") != "ROOT_EDA_PRODUCTION_MATERIALIZED_PR15":
         fail("root EDA contract no está cerrado como PR15")
+    if material.get("schema_version") != 1 or material.get("status") != "PRODUCTION_EDA_MATERIALIZED_PR15":
+        fail("eda_materialization_contract no está cerrado como PR15/schema1")
 
     scope = c.get("scope", {})
     expected_scope = {
@@ -118,6 +134,39 @@ def main() -> int:
         or erc.get("severity_relaxation_allowed") is not False
     ):
         fail("política ERC PR15 no exige cero violaciones")
+
+    merc = material.get("erc_gate", {})
+    if (
+        merc.get("root") != "kicad/NFB_Insight_PCBA_v2.kicad_sch"
+        or int(merc.get("required_errors", -1)) != 0
+        or int(merc.get("required_warnings", -1)) != 0
+        or merc.get("severity_all") is not True
+        or merc.get("exit_code_violations") is not True
+        or merc.get("pr14_debt_eliminated") is not True
+    ):
+        fail("eda_materialization_contract no exige ERC 0/0 real")
+
+    toolchain = material.get("toolchain", {})
+    expected_tools = {
+        "generator": "tools/generate_production_schematics.py",
+        "normalizer": "tools/normalize_pr15_schematics.py",
+        "verified_footprint_migrator": "tools/migrate_pr15_verified_footprints.py",
+        "kicad_ci_version": "10.0.5",
+    }
+    for key, value in expected_tools.items():
+        if toolchain.get(key) != value:
+            fail(f"toolchain PR15 cambió: {key}")
+
+    expected_outputs = {
+        "kicad/uno_q_interface.kicad_sch",
+        "kicad/z1_interface.kicad_sch",
+        "kicad/z2_interface.kicad_sch",
+        "kicad/z3_interface.kicad_sch",
+        "kicad/z4_interface.kicad_sch",
+        "kicad/lib/nfb_generated.kicad_sym",
+    }
+    if set(material.get("outputs", [])) != expected_outputs:
+        fail("outputs de materialización PR15 cambiaron")
 
     if pin.get("schema_version") != 6:
         fail("pin contract no es schema 6")
@@ -145,14 +194,7 @@ def main() -> int:
             fail(f"falta child sheet {item['file']}")
 
     inter = {net: set(zones) for net, zones in c["interzone_nets"].items()}
-    forbidden = {
-        "CO2_ADC",
-        "TEMP_ADC",
-        "HUM_ADC",
-        "CO2_PWM",
-        "CO2_FLOW_PWM",
-        "RS485_IRQ_RSVD",
-    }
+    forbidden = {"CO2_ADC", "TEMP_ADC", "HUM_ADC", "CO2_PWM", "CO2_FLOW_PWM", "RS485_IRQ_RSVD"}
     bad = forbidden & set(inter)
     if bad:
         fail(f"nets prohibidas en root: {sorted(bad)}")
@@ -208,11 +250,7 @@ def main() -> int:
             f"pins={sorted(extra_pins)} labels={sorted(extra_labels)}"
         )
 
-    if inter["I2C_SDA"] != {"Z0", "Z1", "Z2"} or inter["I2C_SCL"] != {
-        "Z0",
-        "Z1",
-        "Z2",
-    }:
+    if inter["I2C_SDA"] != {"Z0", "Z1", "Z2"} or inter["I2C_SCL"] != {"Z0", "Z1", "Z2"}:
         fail("I2C root ownership cambió")
     if inter["GND"] != {"Z0", "Z1", "Z2", "Z3", "Z4"}:
         fail("GND debe abarcar Z0..Z4")
@@ -221,22 +259,23 @@ def main() -> int:
     if inter["5V_RAIL"] != {"Z1", "Z2", "Z3"}:
         fail("5V_RAIL ownership incorrecto")
 
-    # Verificar las correcciones físicas PR15 contra las fuentes JSON ya migradas.
     comps = component_map(z1, z2, power, z4)
-    fixes = c.get("pr15_verified_footprint_corrections", [])
-    if len(fixes) != 6:
-        fail("PR15 debe congelar exactamente seis correcciones de footprint")
-    for fix in fixes:
-        ref = fix["ref"]
+    root_fixes = {
+        item["ref"]: (item["mpn"], item["footprint"])
+        for item in c.get("pr15_verified_footprint_corrections", [])
+    }
+    material_fixes = materialization_fixes(material)
+    if len(root_fixes) != 6 or root_fixes != material_fixes:
+        fail("root contract y materialization contract divergen en footprints PR15")
+    for ref, (mpn, footprint) in root_fixes.items():
         comp = comps.get(ref)
         if comp is None:
             fail(f"corrección PR15 apunta a ref inexistente: {ref}")
-        if comp.get("mpn") != fix["mpn"]:
-            fail(f"{ref}: MPN no coincide con contrato PR15")
-        if comp.get("footprint") != fix["footprint"]:
-            fail(f"{ref}: footprint no coincide con contrato PR15")
+        if comp.get("mpn") != mpn:
+            fail(f"{ref}: MPN no coincide con contratos PR15")
+        if comp.get("footprint") != footprint:
+            fail(f"{ref}: footprint no coincide con contratos PR15")
 
-    # El PCB físico sigue congelado: la materialización PR15 es esquemática.
     pcb = PCB.read_text(encoding="utf-8")
     production_refs = [
         comp["ref"]
@@ -249,7 +288,7 @@ def main() -> int:
 
     print("OK: root EDA PR15 materializado y reproducible")
     print(f"- {len(inter)} nets inter-zona / 5 sheets / JSON-BOM-KiCad parity")
-    print("- 3V3/5V locales excluyen Z0; I2C compartido Z0/Z1/Z2")
+    print("- root contract + materialization contract sincronizados")
     print("- placement/routing=0; ERC contractual requerido=0 errores/0 warnings")
     return 0
 
