@@ -1,22 +1,31 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "product": "NFB Insight PCBA v2",
-  "status": "ROOT_EDA_INTERZONE_BASELINE_PR14",
+  "status": "ROOT_EDA_PRODUCTION_MATERIALIZED_PR15",
   "decision_date": "2026-08-12",
   "scope": {
     "interzone_hierarchy": true,
-    "zone_internal_component_symbols": false,
+    "zone_internal_component_symbols": true,
+    "generated_from_production_contracts": true,
     "placement": false,
     "routing": false,
     "pcb_geometry_change": false
   },
   "root_schematic": "kicad/NFB_Insight_PCBA_v2.kicad_sch",
+  "generation": {
+    "raw_generator": "tools/generate_production_schematics.py",
+    "normalizer": "tools/normalize_pr15_schematics.py",
+    "verified_footprint_migration": "tools/migrate_pr15_verified_footprints.py",
+    "symbol_library": "kicad/lib/nfb_generated.kicad_sym",
+    "policy": "JSON/BOM remain electrical source of truth; KiCad child sheets must reproduce deterministically and must not be hand-edited for connectivity",
+    "pin_semantics": "generated carrier pins are passive/no-connect to preserve exact net topology without inventing electrical pin types absent from production JSON"
+  },
   "sheets": [
     {"id":"Z0","name":"Z0 — Arduino UNO Q Host","file":"kicad/uno_q_interface.kicad_sch","source":"hardware/insight_pin_contract.json"},
-    {"id":"Z1","name":"Z1 — Sensors","file":"kicad/z1_interface.kicad_sch","source":"hardware/z1_production_netlist.json"},
-    {"id":"Z2","name":"Z2 — Digital / Low Noise","file":"kicad/z2_interface.kicad_sch","source":"hardware/z2_production_netlist.json"},
-    {"id":"Z3","name":"Z3 — Power","file":"kicad/z3_interface.kicad_sch","source":"hardware/power_production_netlist.json"},
-    {"id":"Z4","name":"Z4 — Actuators","file":"kicad/z4_interface.kicad_sch","source":"hardware/z4_production_netlist.json"}
+    {"id":"Z1","name":"Z1 — Sensors","file":"kicad/z1_interface.kicad_sch","source":"hardware/z1_production_netlist.json","bom":"bom/insight_z1_production_bom.csv"},
+    {"id":"Z2","name":"Z2 — Digital / Low Noise","file":"kicad/z2_interface.kicad_sch","source":"hardware/z2_production_netlist.json","bom":"bom/insight_z2_production_bom.csv"},
+    {"id":"Z3","name":"Z3 — Power","file":"kicad/z3_interface.kicad_sch","source":"hardware/power_production_netlist.json","bom":"bom/insight_power_production_bom.csv"},
+    {"id":"Z4","name":"Z4 — Actuators","file":"kicad/z4_interface.kicad_sch","source":"hardware/z4_production_netlist.json","bom":"bom/insight_z4_production_bom.csv"}
   ],
   "interzone_nets": {
     "UNO_IOREF_3V3": ["Z0","Z3"],
@@ -45,14 +54,23 @@
     "CHILLER_CTL": ["Z0","Z4"],
     "ACT_FAULT_N": ["Z0","Z4"]
   },
-  "erc_interzone_policy": {
-    "mode": "BOUNDED_INTENTIONAL_INTERFACE_DEBT_PR14",
-    "expected_violation_type": "label_dangling",
-    "expected_violation_count": 125,
-    "unexpected_violation_count_allowed": 0,
-    "reason": "PR14 materializa fronteras jerárquicas, pero no símbolos internos. Los labels/hierarchical labels quedan intencionalmente sin pin interno hasta PR15; no se baja la severidad global de KiCad.",
-    "removal_gate": "PR15 must materialize zone-internal symbols/connectivity and reduce full hierarchy ERC to zero before placement."
+  "erc_policy": {
+    "mode": "ZERO_VIOLATIONS_REQUIRED_PR15",
+    "expected_errors": 0,
+    "expected_warnings": 0,
+    "expected_total_violations": 0,
+    "severity_relaxation_allowed": false,
+    "evidence": "KiCad 10.0.5 full hierarchy root ERC",
+    "placement_gate": "Full hierarchy must remain at ERC=0 and deterministic JSON/BOM parity before any production placement is enabled"
   },
+  "pr15_verified_footprint_corrections": [
+    {"ref":"U_HMI_LVL","mpn":"TXU0202DCUR","footprint":"NFB:TI_DCU0008A_TXU0202"},
+    {"ref":"J_PWR_IN","mpn":"1757242","footprint":"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"},
+    {"ref":"J_PUMP","mpn":"1757242","footprint":"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"},
+    {"ref":"J_CO2_SOL","mpn":"1757242","footprint":"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"},
+    {"ref":"J_CHILLER_CTL","mpn":"1757242","footprint":"Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"},
+    {"ref":"F_ACT","mpn":"045401.5MR","footprint":"NFB:Littelfuse_0454_NANO2"}
+  ],
   "hard_prohibitions": [
     "CO2_ADC must not exist as an active inter-zone net",
     "TEMP_ADC must not exist",
@@ -61,7 +79,8 @@
     "RS485_IRQ_RSVD must not be active in Insight",
     "J_UNOQ.4 must never feed 3V3_RAIL",
     "J_UNOQ.5 must never feed 5V_RAIL",
-    "PR14 must not place or route production components"
+    "PR15 must not place or route production components",
+    "Generated child connectivity must not diverge from JSON/BOM contracts"
   ],
-  "next_gate": "PR15: materialize zone-internal production symbols from JSON/BOM, prove parity, and eliminate intentional PR14 ERC debt before placement."
+  "next_gate": "Fase 4 pre-placement: close remaining mechanical/RF keepouts and audit any remaining placement-risk footprints before assigning XY coordinates."
 }
