@@ -1,4 +1,4 @@
-name: Validación root EDA inter-zona Insight
+name: Validación root EDA Insight
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
     paths:
       - 'README.md'
       - 'docs/FASE3_PR14_ROOT_EDA.md'
+      - 'docs/FASE3_PR15_PRODUCTION_HIERARCHY.md'
       - 'docs/ROADMAP.md'
       - 'hardware/root_eda_contract.json'
       - 'hardware/insight_pin_contract.json'
@@ -14,20 +15,30 @@ on:
       - 'hardware/power_production_netlist.json'
       - 'hardware/z4_production_netlist.json'
       - 'hardware/footprint_audit.json'
+      - 'bom/insight_z1_production_bom.csv'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'bom/insight_power_production_bom.csv'
+      - 'bom/insight_z4_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
       - 'kicad/uno_q_interface.kicad_sch'
       - 'kicad/z1_interface.kicad_sch'
       - 'kicad/z2_interface.kicad_sch'
       - 'kicad/z3_interface.kicad_sch'
       - 'kicad/z4_interface.kicad_sch'
+      - 'kicad/lib/nfb_generated.kicad_sym'
+      - 'kicad/lib/nfb_footprints.pretty/*.kicad_mod'
+      - 'kicad/sym-lib-table'
+      - 'kicad/fp-lib-table'
+      - 'tools/generate_production_schematics.py'
+      - 'tools/normalize_pr15_schematics.py'
+      - 'tools/migrate_pr15_verified_footprints.py'
       - 'tools/validate_root_eda.py'
-      - 'tools/validate_pr14_erc_report.py'
       - '.github/workflows/root-eda.yml'
   push:
     branches: [main]
     paths:
       - 'README.md'
-      - 'docs/FASE3_PR14_ROOT_EDA.md'
+      - 'docs/FASE3_PR15_PRODUCTION_HIERARCHY.md'
       - 'docs/ROADMAP.md'
       - 'hardware/root_eda_contract.json'
       - 'hardware/insight_pin_contract.json'
@@ -35,20 +46,27 @@ on:
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
       - 'hardware/z4_production_netlist.json'
-      - 'hardware/footprint_audit.json'
+      - 'bom/insight_z1_production_bom.csv'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'bom/insight_power_production_bom.csv'
+      - 'bom/insight_z4_production_bom.csv'
       - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
       - 'kicad/uno_q_interface.kicad_sch'
       - 'kicad/z1_interface.kicad_sch'
       - 'kicad/z2_interface.kicad_sch'
       - 'kicad/z3_interface.kicad_sch'
       - 'kicad/z4_interface.kicad_sch'
+      - 'kicad/lib/nfb_generated.kicad_sym'
+      - 'kicad/lib/nfb_footprints.pretty/*.kicad_mod'
+      - 'tools/generate_production_schematics.py'
+      - 'tools/normalize_pr15_schematics.py'
+      - 'tools/migrate_pr15_verified_footprints.py'
       - 'tools/validate_root_eda.py'
-      - 'tools/validate_pr14_erc_report.py'
       - '.github/workflows/root-eda.yml'
 
 jobs:
   root-eda:
-    name: Jerarquía Z0-Z4 + ERC root acotado
+    name: Jerarquía Z0-Z4 + paridad + ERC cero
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -56,23 +74,31 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-      - name: Validar contrato root EDA
+
+      - name: Validar contrato y reproducción PR15
         run: python3 tools/validate_root_eda.py
+
       - name: Inicializar librerías globales KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Generar ERC root Z0-Z4
-        run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_root_pr14.rpt --severity-all
-      - name: Exigir deuda ERC PR14 exacta y cero violaciones inesperadas
-        run: python3 tools/validate_pr14_erc_report.py /tmp/erc_root_pr14.rpt
+
+      - name: Exigir ERC root Z0-Z4 igual a cero
+        run: |
+          kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch \
+            --output /tmp/erc_root_pr15.rpt \
+            --severity-all \
+            --exit-code-violations
+
       - name: Mostrar ERC root
         if: always()
-        run: test ! -f /tmp/erc_root_pr14.rpt || cat /tmp/erc_root_pr14.rpt
+        run: test ! -f /tmp/erc_root_pr15.rpt || cat /tmp/erc_root_pr15.rpt
+
       - name: Guardar ERC root
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: erc-root-pr14
-          path: /tmp/erc_root_pr14.rpt
+          name: erc-root-pr15
+          path: /tmp/erc_root_pr15.rpt
+          if-no-files-found: ignore
