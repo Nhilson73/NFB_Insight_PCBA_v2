@@ -1,6 +1,6 @@
 # NFB Insight PCBA v2
 
-PCBA **shield/carrier** para **Nebula Fermentation Insight®**, diseñada alrededor del factor de forma inmutable del **Arduino UNO Q**. El repositorio `Nhilson73/nebula_qshield_pcb` es únicamente donante de ingeniería y trazabilidad; no gobierna placement, routing ni topología de producción de V2.
+PCBA **shield/carrier** para **Nebula Fermentation Insight®**, diseñada alrededor del factor de forma inmutable del **Arduino UNO Q**. El repositorio `Nhilson73/nebula_qshield_pcb` se conserva únicamente como donante de ingeniería y trazabilidad; no gobierna placement, routing ni topología de producción V2.
 
 ## Fuente primaria UNO Q
 
@@ -8,113 +8,115 @@ Toda decisión dependiente del **Arduino UNO Q** se contrasta primero contra los
 
 - `https://github.com/Arduino`
 - `https://github.com/orgs/arduino/repositories`
-- especialmente `arduino/docs-content` y los repos oficiales UNO Q aplicables.
+- especialmente `arduino/docs-content` y repos oficiales UNO Q aplicables.
 
-Después se contrastan `docs.arduino.cc` y datasheets/PDF oficiales. La jerarquía completa está en `docs/SOURCE_OF_TRUTH.md` y es obligatoria para pinout, potencia, mecánica, firmware, RF e interfaces.
+Después se contrastan `docs.arduino.cc` y datasheets/PDF oficiales. La jerarquía está en `docs/SOURCE_OF_TRUTH.md` y es obligatoria para pinout, potencia, mecánica, firmware, RF e interfaces.
 
-## Frontera del producto
+## Frontera del producto / compliance
 
 NFB Insight PCBA v2 es un **shield/carrier del Arduino UNO Q**, no un rediseño de su plataforma radio.
 
-- UNO Q aporta computación, MCU, Wi‑Fi/Bluetooth y su power tree interno.
+- UNO Q aporta computación, MCU y Wi‑Fi/Bluetooth.
 - El shield base no añade transmisores, antenas, matching ni amplificación RF.
-- Se preservarán keepouts y condiciones de integración RF del UNO Q.
-- La evidencia regulatoria del host se archiva en el expediente técnico, pero no reemplaza la calificación del shield ni la evaluación del producto integrado.
-
-El **EU Compliance Design Gate** está definido en `docs/EU_COMPLIANCE_GATE.md` y `compliance/eu_compliance_contract.json`.
+- Se preservarán keepouts y condiciones RF del UNO Q.
+- El **EU Compliance Design Gate** vive en `docs/EU_COMPLIANCE_GATE.md` y `compliance/eu_compliance_contract.json`.
+- La evidencia regulatoria del host no sustituye la calificación EMC/RoHS3/REACH/WEEE/CE del shield y del producto integrado.
 
 ## Mecánica congelada
 
-- Origen global `(0,0)` en la esquina inferior izquierda del UNO Q rotado.
-- USB-C hacia `-Y`.
+- UNO Q rotado, origen global `(0,0)`, USB‑C hacia `-Y`.
 - Envolvente UNO Q: `53.34 × 68.58 mm`.
-- Altura PCB fija: `68.58 mm`; crecimiento solo hacia `+X`.
+- Altura PCB fija: `68.58 mm`; crecimiento solo `+X`.
 - `Y=0` = FIELD I/O EDGE.
-- Gradiente: UNO Q → Z1 sensores → Z2 digital/bajo ruido → Z3 potencia → Z4 actuadores.
-- El ancho actual de 220 mm continúa **provisional** hasta placement.
+- Gradiente: Z0 UNO Q → Z1 sensores → Z2 digital → Z3 potencia → Z4 actuadores.
+- Ancho actual `220 mm` **provisional** hasta placement.
 
-## Z1 sensores — PR #6 / corrección PR #9 / audit PR #11
+## Z1 sensores — PR #6 / #9 / #11 / #12
 
-Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netlist.json` y `bom/insight_z1_production_bom.csv`.
+Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netlist.json`, `bom/insight_z1_production_bom.csv`.
 
-- pH/A0 y DO/A5: señal acondicionada 0–3 V, ESD + `1 kΩ / 100 nF`.
+- pH/A0 y DO/A5: 0–3 V acondicionados, ESD + `1 kΩ / 100 nF`.
 - ORP/A1: divisor `10 kΩ / 20 kΩ`, máximo 3.0 V.
 - TEMP/A2-D16: DS18B20 `TEMP_1WIRE`, pull-up 4.7 kΩ.
-- CO₂: Honeywell `MPRLS0030PA00002A`, I²C `0x28`; A4 queda DNP/Reserva.
-- BNC permanece en módulos OEM.
-- `5V_RAIL` y `3V3_RAIL` son rails locales del shield.
-- PR #11 auditó `NFB:Honeywell_MPR_LongPort_12Pad` contra Honeywell `32332628 Issue L / Figure 10` y corrigió el patrón al span recomendado de 4.20 mm.
+- CO₂ pressure: Honeywell `MPRLS0030PA00002A`, I²C `0x28`; **CO2_ADC permanece retirado**.
+- PR #11 cerró el footprint MPR contra Honeywell `32332628 Issue L / Fig.10`.
+- **PR #12 reutiliza A4/pad13 como `PUMP_CURRENT_ADC`** desde IPROPI del driver de bomba; A4 ya no es reserva ni sensor CO₂.
 
-## Z2 digital / bajo ruido — PR #7 / corrección PR #9
+## Z2 digital / bajo ruido — PR #7 / #9
 
-Fuentes: `hardware/z2_digital_contract.json`, `hardware/z2_production_netlist.json` y `bom/insight_z2_production_bom.csv`.
-
-- I²C 3.3 V, pull-ups 4.7 kΩ; MPR `0x28` + DFR1103 `0x66`.
-- HX711 a 3.3 V, 10 SPS, D2/D3.
-- HMI D0/D1 mediante `TXU0202DCUR` 3.3 V ↔ 5 V.
-- Watchdog `TPS3823-30DBVR`, WDI=D4, reset por `MCU_NRST`.
+- I²C 3.3 V con pull-ups 4.7 kΩ; MPR `0x28` + DFR1103 `0x66`.
+- HX711 3.3 V, 10 SPS, D2/D3.
+- HMI D0/D1 mediante `TXU0202DCUR`.
+- Watchdog `TPS3823-30DBVR`, WDI=D4.
 - GPS/RTC legacy separados y RS485 Signature quedan fuera del baseline Insight.
 
-## Arquitectura de potencia — PR #9
+## Z3 potencia — PR #9 / #10
 
-Fuente: `hardware/power_architecture_contract.json` y `docs/POWER_ARCHITECTURE.md`.
+**Arquitectura de potencia — PR #9**; esquemático/netlist de producción — PR #10.
+
+Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, `bom/insight_power_production_bom.csv`, `hardware/power_netclasses.json`, `kicad/power.kicad_sch`.
 
 - Entrada nominal **12 VDC**; fuente recomendada **12 V / 5 A / 60 W** certificada.
-- NFB alimenta UNO Q por **12 V protegido → VIN**; Arduino también soporta USB-C 5 V y 5 V regulados por JANALOG, pero no son el baseline NFB.
-- `5V_RAIL` y `3V3_RAIL` locales no se conectan a J_UNOQ.5/J_UNOQ.4.
-- `IOREF` es salida/referencia del host y nunca se retroalimenta.
-- Protección: `SMBJ15A` + `TPS259470ARPWR`.
-- Split: `12V_HOST_VIN`, `12V_LOGIC`, `12V_ACT`.
-- Chiller con potencia externa; control solamente desde el shield.
-- 5 V: `TPSM33625RDNR`; 3.3 V: `TLV75533PDBVR`.
+- NFB alimenta UNO Q por **12 V protegido → VIN**.
+- `5V_RAIL` y `3V3_RAIL` son rails locales del shield y no se unen a J_UNOQ.5/J_UNOQ.4.
+- Protección: `SMBJ15A-TR` + `TPS259470ARPWR`.
+- eFuse: ladder UV/OV `470 kΩ / 11 kΩ / 47 kΩ`, `R_ILIM=750 Ω`, `C_DVDT=3.3 nF`, `C_ITIMER=2.2 nF`.
+- Split: `12V_HOST_VIN`, `12V_LOGIC`, `12V_ACT`; `F_ACT=045401.5MR` 1.5 A Slo-Blo.
+- 5 V: `TPSM33625RDNR`, 1 MHz, feedback `40.2 kΩ / 10 kΩ`.
+- 3.3 V: `TLV75533PDBVR`.
+- Chiller no toma potencia de la PCBA.
 
-## Esquemático de potencia de producción — PR #10
+## Auditoría física — PR #11 / extensión PR #12
 
-Fuentes de verdad:
+Fuente: `hardware/footprint_audit.json`.
 
-- `hardware/power_production_netlist.json`
-- `bom/insight_power_production_bom.csv`
-- `hardware/power_netclasses.json`
-- `kicad/power.kicad_sch`
+- MPR Honeywell: **CLOSED**.
+- TPS259470A/RPW0010A: bloqueado hasta land pattern exacto TI.
+- TPSM33625/RDN-11: bloqueado hasta CAD autorizado/verificado TI.
+- PR #12 añade gates para DRV8242/RHL20, TPS1HC120/DYC8 y AQY212EHAX DIP4 SMD.
+- Ningún componente crítico con audit abierto puede entrar al placement.
 
-Baseline:
+## Z4 actuadores — PR #12
 
-- Conector 12 V: Phoenix Contact **1757242**, 2 polos / 5.08 mm.
-- TVS: `SMBJ15A-TR`; bulk: `EEEFK1E101P` 100 µF / 25 V.
-- eFuse `TPS259470ARPWR`: ladder UV/OV **470 kΩ / 11 kΩ / 47 kΩ**, `R_ILIM=750 Ω`, `C_DVDT=3.3 nF`, `C_ITIMER=2.2 nF`.
-- Split estrella mediante `NT_HOST`, `NT_LOGIC` y `F_ACT`.
-- `F_ACT`: Littelfuse **045401.5MR**, 1.5 A Slo-Blo; inrush real se revalida en HIL.
-- `TPSM33625RDNR`: **1 MHz**, RT→VCC, feedback **40.2 kΩ / 10 kΩ**, entrada 4.7 µF + 100 nF, VCC 1 µF, salida 2×22 µF nominal + 100 nF, PGOOD 47 kΩ.
-- `TLV75533PDBVR`: 1 µF de entrada, 1 µF + 100 nF de salida; `EN=5V_PGOOD`.
-- Secuencia: `12V_PROTECTED → UNO Q → IOREF → 5V_RAIL/PGOOD → 3V3_RAIL`.
-- Netclasses contractuales previas al routing.
-- Screening térmico analítico a 60 °C; termografía/HIL obligatoria antes de RC.
-- No se congela un filtro LC serie sin pre-scan EMC.
+Fuentes:
 
-## Auditoría de footprints e integración — PR #11
+- `hardware/z4_actuator_contract.json`
+- `hardware/z4_production_netlist.json`
+- `bom/insight_z4_production_bom.csv`
+- `kicad/z4_actuators.kicad_sch`
+- `docs/Z4_ACTUATORS.md`
 
-Fuentes nuevas:
+### Bomba
 
-- `hardware/footprint_audit.json`
-- `docs/FOOTPRINT_AUDIT.md`
-- `hardware/electrical_integration_contract.json`
-- `kicad/integration_contract.kicad_sch`
+- Driver **TI `DRV8242HQRHLRQ1`**, H-bridge automotriz integrado; sustituye `IR2104 + IRLZ44N`.
+- D5=`PUMP_PWM`, D6=`PUMP_DIR`, modo PH/EN.
+- SR=22 kΩ para limitar slew/EMI; 100 nF + 22 µF local en `12V_ACT`.
+- IPROPI + `1.5 kΩ / 100 nF` → **A4=`PUMP_CURRENT_ADC`**.
+- ~0.842 V esperados a 0.8 A típico; margen ADC hasta ~2.75 A usando el factor mínimo contractual.
 
-Reglas y estado:
+### Solenoide CO₂
 
-- **Honeywell MPR:** audit cerrado contra datasheet oficial `32332628 Issue L`; placement permitido cuando comience Fase 4.
-- **TPS259470A / RPW0010A:** package drawing TI `MPQF568 / 4225183/A` revisado; placement sigue **bloqueado** hasta importar/recrear y verificar exactamente el land pattern HotRod QFN.
-- **TPSM33625 / RDN-11:** cuerpo/pitch/pin-count verificados contra TI; placement sigue **bloqueado** hasta CAD autorizado/verificable. No se reconstruye el land pattern a partir de body + pitch.
-- El contrato Z1 + Z2 + Z3 congela `GND`, `3V3_RAIL`, `5V_RAIL`, I²C y la frontera de potencia con UNO Q.
-- `J_UNOQ.4` nunca pertenece a `3V3_RAIL`; `J_UNOQ.5` nunca pertenece a `5V_RAIL`.
-- `UNO_IOREF_3V3` es exclusivamente host→shield.
-- I²C integrado: MPR `0x28` + DFR1103 `0x66`.
-- Z4 actuadores, placement y routing permanecen fuera de alcance.
+- Driver **TI `TPS1HC120CQDYCRQ1`**, smart high-side protegido.
+- D7=`CO2_SOL_CTL`.
+- `R_ILIM=27 kΩ` → límite objetivo ~0.5 A.
+- Clamp inductivo integrado; no se puebla flyback discreto legacy.
+- FLT1 comparte diagnóstico común; FLT2 queda como `CO2_OPENLOAD_N`.
 
-El workflow `Validación footprints e integración PR11` impide que un footprint crítico abierto llegue accidentalmente al PCB.
+### Chiller
+
+- D8 controla **Panasonic `AQY212EHAX` PhotoMOS** mediante `2N7002,215`.
+- Salida = **contacto seco aislado**, separado de GND/rails del shield.
+- Uso contractual **SELV ≤48 V exclusivamente; NO MAINS**.
+- La potencia del chiller permanece externa.
+
+### Diagnóstico
+
+- **D10/pad25 = `ACT_FAULT_N`**, active-low wired-OR de bomba + solenoide.
+- D10 deja de ser reserva RS485 en Insight.
+- D9 continúa DNP/Reserva.
 
 ## Estado
 
-Z0 mecánico, Z1, Z2, EU Compliance, arquitectura PR #9, potencia PR #10 y la **integración eléctrica/auditoría PR #11** están protegidos contractualmente por CI/ERC.
+Z0 mecánico, Z1, Z2, Z3, Z4 y EU Compliance están contractualmente definidos y protegidos por CI/ERC. **Placement y routing siguen bloqueados** porque permanecen footprints críticos abiertos y falta el root EDA final integrado.
 
-El siguiente frente es **Z4 actuadores de Insight** y, en paralelo, cerrar los dos footprints TI pendientes antes de habilitar placement. El routing sigue bloqueado hasta completar jerarquía eléctrica, actuadores y auditorías físicas.
+El siguiente frente es cerrar los footprints críticos restantes contra CAD/drawings primarios y después materializar la jerarquía EDA completa antes de habilitar placement.

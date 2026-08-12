@@ -1,26 +1,28 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "ELECTRICAL_INTEGRATION_BASELINE_PR11",
+  "status": "ELECTRICAL_INTEGRATION_Z4_PR12",
   "decision_date": "2026-08-12",
   "sources": {
     "pin_contract": "hardware/insight_pin_contract.json",
     "z1": "hardware/z1_production_netlist.json",
     "z2": "hardware/z2_production_netlist.json",
     "power": "hardware/power_production_netlist.json",
+    "z4": "hardware/z4_production_netlist.json",
     "footprints": "hardware/footprint_audit.json"
   },
   "scope": {
     "z1_z2_power_cross_domain_connectivity": true,
+    "actuator_connectivity": true,
     "hierarchical_kicad_contract": true,
-    "actuators": false,
     "placement": false,
     "routing": false
   },
   "shared_nets": [
-    {"net":"GND","domains":["Z0_UNO_Q","Z1","Z2","Z3_POWER"],"policy":"single continuous reference plane; Z4 dirty returns join at power/star region"},
-    {"net":"3V3_RAIL","producer":"Z3_POWER/U_3V3","consumers":["Z1","Z2"],"host_power_tie_forbidden":"J_UNOQ.4"},
+    {"net":"GND","domains":["Z0_UNO_Q","Z1","Z2","Z3_POWER","Z4_ACTUATORS"],"policy":"single continuous reference plane; high-current Z4 returns join at power/star region and do not traverse Z1/Z2"},
+    {"net":"3V3_RAIL","producer":"Z3_POWER/U_3V3","consumers":["Z1","Z2","Z4_CONTROL"],"host_power_tie_forbidden":"J_UNOQ.4"},
     {"net":"5V_RAIL","producer":"Z3_POWER/U_5V","consumers":["Z1","Z2"],"host_power_tie_forbidden":"J_UNOQ.5"},
+    {"net":"12V_ACT","producer":"Z3_POWER/F_ACT","consumers":["Z4_PUMP","Z4_CO2_SOLENOID"],"chiller_excluded":true},
     {"net":"I2C_SDA","domains":["Z0_UNO_Q","Z1_MPR","Z2_DFR1103"],"uno_q_pad":31},
     {"net":"I2C_SCL","domains":["Z0_UNO_Q","Z1_MPR","Z2_DFR1103"],"uno_q_pad":32},
     {"net":"UNO_IOREF_3V3","producer":"Z0_UNO_Q/J_UNOQ.2","consumer":"Z3_POWER/U_5V_EN","direction":"HOST_TO_SHIELD_ONLY"},
@@ -30,12 +32,18 @@
     {"net":"PH_ADC","pad":9,"owner":"Z1"},
     {"net":"ORP_ADC","pad":10,"owner":"Z1"},
     {"net":"TEMP_1WIRE","pad":11,"owner":"Z1"},
+    {"net":"PUMP_CURRENT_ADC","pad":13,"owner":"Z4"},
     {"net":"DO_ADC","pad":14,"owner":"Z1"},
     {"net":"HMI_RX","pad":15,"owner":"Z2"},
     {"net":"HMI_TX","pad":16,"owner":"Z2"},
     {"net":"HX711_DOUT","pad":17,"owner":"Z2"},
     {"net":"HX711_SCK","pad":18,"owner":"Z2"},
     {"net":"MCU_WDI","pad":19,"owner":"Z2"},
+    {"net":"PUMP_PWM","pad":20,"owner":"Z4"},
+    {"net":"PUMP_DIR","pad":21,"owner":"Z4"},
+    {"net":"CO2_SOL_CTL","pad":22,"owner":"Z4"},
+    {"net":"CHILLER_CTL","pad":23,"owner":"Z4"},
+    {"net":"ACT_FAULT_N","pad":25,"owner":"Z4"},
     {"net":"LED_STATUS","pad":28,"owner":"Z2"},
     {"net":"I2C_SDA","pad":31,"owner":"SHARED_Z1_Z2"},
     {"net":"I2C_SCL","pad":32,"owner":"SHARED_Z1_Z2"}
@@ -47,26 +55,39 @@
     "U_5V -> 5V_RAIL and 5V_PGOOD",
     "5V_PGOOD -> U_3V3 enable",
     "U_3V3 -> 3V3_RAIL",
-    "Z1/Z2 loads energize from shield-local rails only"
+    "Z1/Z2 logic and Z4 control/diagnostics energize from shield-local rails",
+    "F_ACT -> 12V_ACT -> pump and CO2 solenoid only; chiller remains external power"
   ],
   "hard_prohibitions": [
     "No J_UNOQ.4 on 3V3_RAIL",
     "No J_UNOQ.5 on 5V_RAIL",
     "Never drive UNO_IOREF_3V3 from shield",
-    "No CO2_ADC/A4 active net",
+    "No CO2_ADC active net; A4 is PUMP_CURRENT_ADC",
     "No A3 humidity channel",
     "No D9 proportional CO2 PWM",
-    "No power placement while a required footprint audit is open",
-    "No routing before hierarchical integration and actuator contract are closed"
+    "No IR2104/IRLZ44N/HF46F/PC817 legacy actuator power stage",
+    "No mains voltage on J_CHILLER_CTL; dry contact SELV <=48V only",
+    "No chiller power through PCBA",
+    "No placement while any required production footprint audit is open",
+    "No routing before final hierarchical EDA root and footprint gates are closed"
   ],
   "i2c_address_map": [
     {"address":"0x28","device":"MPRLS0030PA00002A","domain":"Z1"},
     {"address":"0x66","device":"DFR1103","domain":"Z2"}
   ],
+  "z4_summary": {
+    "pump_driver":"DRV8242HQRHLRQ1",
+    "pump_current_feedback":"A4/PUMP_CURRENT_ADC",
+    "co2_driver":"TPS1HC120CQDYCRQ1",
+    "chiller_interface":"AQY212EHAX isolated dry contact SELV <=48V",
+    "diagnostic":"D10/ACT_FAULT_N active-low wired-OR"
+  },
   "open_gates": [
     "TPS259470A RPW0010A production footprint closure",
     "TPSM33625 RDN-11 vendor CAD footprint closure",
-    "Z4 actuator production schematic/netlist",
+    "DRV8242 RHL20 vendor CAD footprint closure",
+    "TPS1HC120 DYC8 vendor CAD footprint closure",
+    "AQY212EHAX SMD DIP4 Panasonic CAD footprint closure",
     "final hierarchical EDA root with all production symbols",
     "placement and routing"
   ]

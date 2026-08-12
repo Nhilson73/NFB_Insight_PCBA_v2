@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate de producción Z2 con corrección de potencia PR #9."""
+"""Gate de producción Z2 con potencia PR #9 y contrato UNO Q schema v6 PR #12."""
 from __future__ import annotations
 import csv, json
 from pathlib import Path
@@ -15,7 +15,7 @@ def main():
     if c.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("contrato Z2 no enlaza potencia")
     if n.get("status")!="FROZEN_Z2_NETLIST_PR7_POWER_CORRECTED_PR9" or n.get("schema_version")!=2: fail("netlist Z2 no refleja corrección PR9")
     if n.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("Z2 netlist no declara potencia")
-    if p.get("schema_version")!=5 or p.get("power_architecture_source_of_truth")!="hardware/power_architecture_contract.json": fail("pin contract no enlaza PR9")
+    if p.get("schema_version")!=6 or p.get("power_architecture_source_of_truth")!="hardware/power_architecture_contract.json": fail("pin contract no enlaza PR9/PR12")
     if power.get("status")!="POWER_ARCHITECTURE_BASELINE_PR9": fail("contrato potencia no es PR9")
     pins={int(x["pad"]):x for x in p["pins"]}
     for pad,net in {3:"MCU_NRST",15:"HMI_RX",16:"HMI_TX",17:"HX711_DOUT",18:"HX711_SCK",19:"MCU_WDI",28:"LED_STATUS",31:"I2C_SDA",32:"I2C_SCL"}.items():
@@ -59,9 +59,7 @@ def main():
     for ref in comps:
         if ref not in sch: fail(f"schematic Z2 no indexa {ref}")
     pcb=PCB.read_text(encoding="utf-8"); placed=[ref for ref in comps if f'"{ref}"' in pcb]
-    if placed: fail(f"PR9 no debe colocar Z2: {placed[:5]}")
-    print("OK: Z2 PR #7 preservado + potencia PR #9")
-    print("- 5V_RAIL TPSM33625 envelope 1.5A; consumo HMI pendiente de HIL")
-    print("- 3V3/5V locales; I2C/HX711/HMI/WDT intactos")
+    if placed: fail(f"Z2 no debe colocarse todavía: {placed[:5]}")
+    print("OK: Z2 PR #7 preservado bajo pin contract schema v6 PR12")
     return 0
 if __name__=="__main__": raise SystemExit(main())

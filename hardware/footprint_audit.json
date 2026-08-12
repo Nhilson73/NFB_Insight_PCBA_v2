@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "FOOTPRINT_AUDIT_BASELINE_PR11",
+  "status": "FOOTPRINT_AUDIT_EXTENDED_PR12",
   "decision_date": "2026-08-12",
   "policy": {
     "primary_source_required": true,
@@ -31,16 +31,7 @@
       "source_class": "HONEYWELL_OFFICIAL_DATASHEET",
       "source": "Honeywell 32332628 Issue L, Figure 10 Long Port and Recommended PCB Pad Layout Dimensions",
       "source_url": "https://prod-edam.honeywell.com/content/dam/honeywell-edam/sps/siot/en-us/products/sensors/pressure-sensors/board-mount-pressure-sensors/micropressure-mpr-series/documents/sps-siot-mpr-series-datasheet-32332628-ciid-172626.pdf",
-      "verified_geometry": {
-        "body_mm": [5.0, 5.0],
-        "pad_count": 12,
-        "pitch_mm": 1.27,
-        "recommended_layout_outer_span_mm": 4.20,
-        "top_bottom_pad_mm": [0.70, 0.65],
-        "side_pad_mm": [0.65, 0.70],
-        "long_port_od_mm": 2.50,
-        "note": "La geometría PCB se corrige en PR11 para que el span metálico exterior sea 4.20 mm. El orificio de referencia de gage no aplica al MPR absolute seleccionado y no se perfora."
-      }
+      "verified_geometry": {"body_mm":[5.0,5.0],"pad_count":12,"pitch_mm":1.27,"recommended_layout_outer_span_mm":4.20,"top_bottom_pad_mm":[0.70,0.65],"side_pad_mm":[0.65,0.70],"long_port_od_mm":2.50}
     },
     {
       "id": "TPS25947_RPW0010A",
@@ -52,15 +43,7 @@
       "source_class": "TI_OFFICIAL_PACKAGE_DRAWING",
       "source": "TI MPQF568 / RPW0010A / drawing 4225183/A",
       "source_url": "https://www.ti.com/lit/pdf/MPQF568",
-      "verified_geometry": {
-        "package": "VQFN-HR RPW0010A",
-        "pin_count": 10,
-        "body_nominal_mm": [2.0, 2.0],
-        "max_height_mm": 1.0,
-        "pitch_mm": 0.45,
-        "land_pattern_source_present": true,
-        "solder_mask_policy": "NSMD preferred per TI"
-      },
+      "verified_geometry": {"package":"VQFN-HR RPW0010A","pin_count":10,"body_nominal_mm":[2.0,2.0],"max_height_mm":1.0,"pitch_mm":0.45,"land_pattern_source_present":true,"solder_mask_policy":"NSMD preferred per TI"},
       "closure_gate": "Importar o recrear exactamente el land pattern RPW0010A y comparar pads/paste contra MPQF568 antes de autorizar placement."
     },
     {
@@ -73,15 +56,47 @@
       "source_class": "TI_OFFICIAL_PRODUCT_AND_DATASHEET",
       "source": "TI TPSM33625 Rev D + RDN package resources",
       "source_url": "https://www.ti.com/product/TPSM33625/part-details/TPSM33625RDNR",
-      "verified_geometry": {
-        "package": "QFN-FCMOD RDN",
-        "pin_count": 11,
-        "body_mm": [4.5, 3.5],
-        "pitch_mm": 0.5,
-        "height_mm": 2.0,
-        "cad_link_provided_by_ti": "Ultra Librarian"
-      },
-      "closure_gate": "No congelar geometría de pads a partir del body/pitch. Importar/verificar footprint/CAD autorizado por TI o una fuente primaria reproducible antes de placement."
+      "verified_geometry": {"package":"QFN-FCMOD RDN","pin_count":11,"body_mm":[4.5,3.5],"pitch_mm":0.5,"height_mm":2.0,"cad_link_provided_by_ti":"Ultra Librarian"},
+      "closure_gate": "Importar/verificar footprint/CAD autorizado por TI o fuente primaria reproducible antes de placement."
+    },
+    {
+      "id": "DRV8242_RHL20",
+      "reference": "U_PUMP_DRV",
+      "mpn": "DRV8242HQRHLRQ1",
+      "footprint": null,
+      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
+      "placement_allowed": false,
+      "source_class": "TI_OFFICIAL_DATASHEET_AND_PACKAGE",
+      "source": "TI DRV8242-Q1 datasheet / RHL-20 VQFN package resources",
+      "source_url": "https://www.ti.com/product/DRV8242-Q1/part-details/DRV8242HQRHLRQ1",
+      "verified_geometry": {"package":"RHL VQFN","pin_count":20,"body_mm":[4.5,3.5],"logic_domain":"3.3/5 V compatible","cad_source":"TI product package/CAD resources"},
+      "closure_gate": "Importar/verificar RHL20 land pattern y thermal pad contra drawing/CAD TI antes de placement."
+    },
+    {
+      "id": "TPS1HC120_DYC8",
+      "reference": "U_CO2_DRV",
+      "mpn": "TPS1HC120CQDYCRQ1",
+      "footprint": null,
+      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
+      "placement_allowed": false,
+      "source_class": "TI_OFFICIAL_DATASHEET_AND_PACKAGE",
+      "source": "TI TPS1HC120-Q1 C version / DYC SOT-5X3 8 package resources",
+      "source_url": "https://www.ti.com/product/TPS1HC120-Q1/part-details/TPS1HC120CQDYCRQ1",
+      "verified_geometry": {"package":"DYC SOT-5X3","pin_count":8,"cad_source":"TI product package/CAD resources"},
+      "closure_gate": "Importar/verificar DYC8 land pattern y pin-1 orientation contra drawing/CAD TI antes de placement."
+    },
+    {
+      "id": "AQY212EHAX_DIP4_SMD",
+      "reference": "U_CHILLER",
+      "mpn": "AQY212EHAX",
+      "footprint": null,
+      "status": "BLOCKED_VENDOR_CAD_VERIFICATION",
+      "placement_allowed": false,
+      "source_class": "PANASONIC_OFFICIAL_PRODUCT_AND_CAD",
+      "source": "Panasonic PhotoMOS AQY212EHAX GE 1 Form A, DIP4 SMD package/CAD resources",
+      "source_url": "https://industry.panasonic.com/global/en/products/control/relay/photomos/number/aqy212ehax",
+      "verified_geometry": {"package":"GE DIP4 SMD","pin_count":4,"load_voltage_rating_v":60,"recommended_system_use_v_max":48,"io_isolation_vrms":5000},
+      "closure_gate": "Importar/verificar terminal layout, gull-wing geometry, courtyard y 3D/CAD Panasonic antes de placement."
     }
   ]
 }

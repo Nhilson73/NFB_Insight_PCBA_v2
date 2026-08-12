@@ -1,7 +1,14 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "product": "NFB Insight PCBA v2",
   "uno_q_source_policy": "docs/SOURCE_OF_TRUTH.md",
+  "uno_q_latest_actuator_review": {
+    "repository":"arduino/docs-content",
+    "commit":"24445a32e249d410c1e4359bdc99d8c0dcb17bd2",
+    "path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+    "review_date":"2026-08-12",
+    "purpose":"revalidar JDIGITAL/JANALOG 3.3-V MCU I/O antes de Z4"
+  },
   "firmware_reference": {
     "repository": "Nhilson73/Nebula_ArduinoAPPLab_UNOQ",
     "branch": "main",
@@ -9,18 +16,21 @@
     "observed_build_tier": "NEBULA_TIER_SIGNATURE",
     "documented_divergences": [
       "A2 sigue definido como PIN_TEMPERATURE_ANALOG en firmware, pero NFB Insight V2 usa KIT0021/DS18B20 digital 1-Wire sobre A2/D16 y la net TEMP_1WIRE.",
-      "A4 sigue definido como PIN_CO2_PRESSURE_ANALOG en firmware; PR #6 retira CO2_ADC y mide presión con Honeywell MPRLS0030PA00002A por I2C 0x28 sobre D20/D21.",
+      "A4 sigue definido como PIN_CO2_PRESSURE_ANALOG en firmware; PR #6 retiró CO2_ADC y PR #12 reutiliza A4 como PUMP_CURRENT_ADC desde IPROPI del DRV8242H-Q1.",
       "A3 sigue definido como PIN_HUMIDITY_ANALOG en firmware, pero es DNP/Reserva en Insight V2.",
       "D9 sigue definido como PIN_CO2_FLOW_PWM en firmware, pero es DNP/Reserva en Insight V2.",
-      "El firmware describe chiller como función Signature; V2 conserva D8 solo como salida de control.",
+      "D10 deja la reserva RS485 de hardware y pasa a ACT_FAULT_N en PR #12; firmware debe añadir diagnóstico activo-bajo de actuadores.",
+      "El firmware describe chiller como función Signature; V2 conserva D8 como control y PR #12 lo implementa como contacto seco PhotoMOS aislado.",
       "Firmware mantiene GPS I2C 0x42 y RTC I2C 0x68 separados; PR #7 los supersede con DFR1103 combinado por I2C 0x66.",
-      "HMI conserva las nets lógicas HMI_RX/HMI_TX en D0/D1; PR #7 añade traducción física TXU0202DCUR 3.3V↔5V sin cambiar el contrato lógico."
+      "HMI conserva HMI_RX/HMI_TX en D0/D1; PR #7 añade TXU0202DCUR sin cambiar contrato lógico."
     ]
   },
   "sensor_interface_source_of_truth": "hardware/sensor_interface_contract.json",
   "z1_netlist_source_of_truth": "hardware/z1_production_netlist.json",
   "z2_contract_source_of_truth": "hardware/z2_digital_contract.json",
   "z2_netlist_source_of_truth": "hardware/z2_production_netlist.json",
+  "z4_contract_source_of_truth": "hardware/z4_actuator_contract.json",
+  "z4_netlist_source_of_truth": "hardware/z4_production_netlist.json",
   "power_architecture_source_of_truth": "hardware/power_architecture_contract.json",
   "power_production_netlist_source_of_truth": "hardware/power_production_netlist.json",
   "pins": [
@@ -36,7 +46,7 @@
     {"pad":10,"arduino":"A1","net":"ORP_ADC","status":"ACTIVE"},
     {"pad":11,"arduino":"A2/D16","net":"TEMP_1WIRE","status":"ACTIVE_DIGITAL"},
     {"pad":12,"arduino":"A3","net":null,"status":"DNP_RESERVE"},
-    {"pad":13,"arduino":"A4","net":null,"status":"DNP_RESERVE"},
+    {"pad":13,"arduino":"A4","net":"PUMP_CURRENT_ADC","status":"ACTIVE_ANALOG_DIAGNOSTIC"},
     {"pad":14,"arduino":"A5","net":"DO_ADC","status":"ACTIVE"},
     {"pad":15,"arduino":"D0","net":"HMI_RX","status":"ACTIVE"},
     {"pad":16,"arduino":"D1","net":"HMI_TX","status":"ACTIVE"},
@@ -48,7 +58,7 @@
     {"pad":22,"arduino":"D7","net":"CO2_SOL_CTL","status":"ACTIVE"},
     {"pad":23,"arduino":"D8","net":"CHILLER_CTL","status":"ACTIVE_CONTROL_ONLY"},
     {"pad":24,"arduino":"D9","net":null,"status":"DNP_RESERVE"},
-    {"pad":25,"arduino":"D10","net":"RS485_IRQ_RSVD","status":"RESERVE"},
+    {"pad":25,"arduino":"D10","net":"ACT_FAULT_N","status":"ACTIVE_DIAGNOSTIC"},
     {"pad":26,"arduino":"D11","net":null,"status":"NC"},
     {"pad":27,"arduino":"D12","net":null,"status":"NC"},
     {"pad":28,"arduino":"D13","net":"LED_STATUS","status":"ACTIVE"},
@@ -83,5 +93,11 @@
     "watchdog": {"wdi_pad":19,"reset_pad":3,"supervisor":"TPS3823-30DBVR","watchdog_timeout_s":1.6,"status":"ACTIVE_Z2"},
     "status_led": {"pad":28,"implementation":"UNO_Q_BUILTIN_LED_PLUS_TESTPOINT","status":"ACTIVE_Z2"},
     "i2c": {"sda_pad":31,"scl_pad":32,"global_pullup_ohm":4700,"status":"ACTIVE_Z2"}
+  },
+  "z4_implementation": {
+    "pump":{"pwm_pad":20,"dir_pad":21,"current_adc_pad":13,"driver":"DRV8242HQRHLRQ1","status":"ACTIVE_Z4"},
+    "co2_solenoid":{"control_pad":22,"driver":"TPS1HC120CQDYCRQ1","status":"ACTIVE_Z4"},
+    "chiller":{"control_pad":23,"interface":"AQY212EHAX isolated dry contact SELV <=48V","status":"ACTIVE_Z4"},
+    "fault":{"pad":25,"net":"ACT_FAULT_N","type":"active-low wired-OR","status":"ACTIVE_Z4"}
   }
 }
