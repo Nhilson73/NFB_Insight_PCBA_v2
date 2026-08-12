@@ -1,0 +1,46 @@
+name: PR15 materialización EDA temporal
+
+on:
+  push:
+    branches: [agent/pr15-production-symbol-materialization]
+    paths:
+      - 'tools/generate_production_schematics.py'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'hardware/root_eda_contract.json'
+      - 'bom/insight_z1_production_bom.csv'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'bom/insight_power_production_bom.csv'
+      - 'bom/insight_z4_production_bom.csv'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - '.github/workflows/pr15-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout rama PR15
+        uses: actions/checkout@v4
+        with:
+          ref: agent/pr15-production-symbol-materialization
+      - name: Compilar generador
+        run: python3 -m py_compile tools/generate_production_schematics.py
+      - name: Generar hojas Z0-Z4
+        run: python3 tools/generate_production_schematics.py
+      - name: Commit generado si cambió
+        run: |
+          if git diff --quiet -- kicad/uno_q_interface.kicad_sch kicad/z1_interface.kicad_sch kicad/z2_interface.kicad_sch kicad/z3_interface.kicad_sch kicad/z4_interface.kicad_sch; then
+            echo 'No generated changes'
+            exit 0
+          fi
+          git config user.name 'nfb-eda-bot'
+          git config user.email 'nfb-eda-bot@users.noreply.github.com'
+          git add kicad/uno_q_interface.kicad_sch kicad/z1_interface.kicad_sch kicad/z2_interface.kicad_sch kicad/z3_interface.kicad_sch kicad/z4_interface.kicad_sch
+          git commit -m 'eda: materializar hojas de producción Z0-Z4 PR15'
+          git push origin HEAD:agent/pr15-production-symbol-materialization
