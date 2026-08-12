@@ -1,0 +1,88 @@
+name: PR15 Materialización hierarchy producción
+
+on:
+  push:
+    branches:
+      - agent/pr15-materialize-production-hierarchy
+    paths:
+      - 'hardware/root_eda_contract.json'
+      - 'hardware/insight_pin_contract.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_sch'
+      - 'kicad/uno_q_interface.kicad_sch'
+      - 'kicad/z1_interface.kicad_sch'
+      - 'kicad/z2_interface.kicad_sch'
+      - 'kicad/z3_interface.kicad_sch'
+      - 'kicad/z4_interface.kicad_sch'
+      - 'tools/generate_pr15_hierarchy.py'
+      - '.github/workflows/pr15-materialization.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    name: JSON→KiCad Z0-Z4 + ERC=0
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - name: Descargar rama PR15
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Inicializar librerías globales KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Generar child sheets de producción
+        run: python3 tools/generate_pr15_hierarchy.py
+
+      - name: Verificar generación determinista
+        run: python3 tools/generate_pr15_hierarchy.py --check
+
+      - name: ERC completo hierarchy PR15
+        run: |
+          kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch \
+            --output /tmp/erc_root_pr15.rpt \
+            --severity-all \
+            --exit-code-violations
+
+      - name: Mostrar ERC PR15
+        if: always()
+        run: test ! -f /tmp/erc_root_pr15.rpt || cat /tmp/erc_root_pr15.rpt
+
+      - name: Guardar ERC PR15
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erc-root-pr15-${{ github.sha }}
+          path: /tmp/erc_root_pr15.rpt
+          if-no-files-found: ignore
+
+      - name: Versionar child sheets generados si cambiaron
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            kicad/uno_q_interface.kicad_sch \
+            kicad/z1_interface.kicad_sch \
+            kicad/z2_interface.kicad_sch \
+            kicad/z3_interface.kicad_sch \
+            kicad/z4_interface.kicad_sch
+          if git diff --cached --quiet; then
+            echo "Child sheets ya estaban actualizados."
+          else
+            git commit -m "eda: materializar símbolos y nets Z0-Z4 desde JSON"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
