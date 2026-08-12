@@ -5,6 +5,7 @@
 - [x] Para cualquier decisión del **Arduino UNO Q**, revisar primero repositorios oficiales `arduino/*` en GitHub.
 - [x] Jerarquía documentada en `docs/SOURCE_OF_TRUTH.md`.
 - [x] Resolver contradicciones por revisión/commit/especificidad antes de congelar producción.
+- [x] No inventar land patterns: footprint crítico requiere drawing/CAD primario reproducible.
 
 ## Fase 0 — Arquitectura
 
@@ -47,7 +48,8 @@
 - [x] ESD/filtros/JST/pull-up TEMP congelados.
 - [x] Netlist/BOM/gates Z1.
 - [x] PR #9 corrige 5V/3V3 a rails locales del shield.
-- [ ] Validar filtros y MPR footprint contra hardware real antes de placement final.
+- [x] PR #11 audita footprint MPR contra Honeywell 32332628 Issue L / Fig.10.
+- [ ] Validar filtros frente a ruido real durante HIL.
 
 ### PR #7 — Z2 digital / bajo ruido
 - [x] HX711 D2/D3, 10 SPS.
@@ -82,37 +84,47 @@
 - [x] Power gate + README.
 
 ### PR #10 — Esquemático de potencia de producción
-- [x] Revalidar frontera UNO Q contra `arduino/docs-content` antes de congelar conexiones.
-- [x] Congelar conector `J_PWR_IN = Phoenix 1757242`.
-- [x] Congelar `D_IN_TVS = SMBJ15A-TR` y `C_IN_BULK = EEEFK1E101P`.
-- [x] TPS259470A: ladder UV/OV `470k / 11k / 47k`.
+- [x] Revalidar frontera UNO Q contra `arduino/docs-content`.
+- [x] Congelar `J_PWR_IN = Phoenix 1757242`.
+- [x] `SMBJ15A-TR` + `EEEFK1E101P`.
+- [x] TPS259470A: UV/OV `470k / 11k / 47k`.
 - [x] TPS259470A: `R_ILIM = 750 Ω`, `C_DVDT = 3.3 nF`, `C_ITIMER = 2.2 nF`.
-- [x] Congelar `F_ACT = Littelfuse 045401.5MR`, 1.5 A Slo-Blo; HIL requerido.
+- [x] `F_ACT = Littelfuse 045401.5MR`, 1.5 A Slo-Blo; HIL requerido.
 - [x] TPSM33625: 1 MHz, RT→VCC, feedback `40.2k / 10k`.
 - [x] TPSM33625: 4.7 µF + 100 nF entrada; 1 µF VCC; 2×22 µF + 100 nF salida; PGOOD 47 kΩ.
 - [x] TLV75533: 1 µF entrada, 1 µF + 100 nF salida, `EN=5V_PGOOD`.
-- [x] Crear `hardware/power_production_netlist.json`.
-- [x] Crear `bom/insight_power_production_bom.csv`.
-- [x] Crear `hardware/power_netclasses.json`.
-- [x] Materializar `kicad/power.kicad_sch` contractual y gate ERC.
-- [x] Screening térmico analítico a 60 °C documentado.
-- [x] Mantener filtro LC serie abierto hasta pre-scan EMC, evitando dimensionamiento a ciegas.
-- [x] Actualizar README.
-- [ ] Crear/auditar footprint `TPS259470A RPW-10` desde drawing TI.
-- [ ] Crear/auditar footprint `TPSM33625 RDN-11` desde drawing TI.
+- [x] `hardware/power_production_netlist.json` + BOM + netclasses.
+- [x] `kicad/power.kicad_sch` contractual + ERC.
+- [x] Screening térmico analítico 60 °C.
+- [x] Filtro LC serie abierto hasta pre-scan EMC.
 - [ ] Validar DC-bias de 2×22 µF para garantizar ≥25 µF efectivos.
-- [ ] Cerrar MPN exacto del capacitor dV/dt de 3.3 nF durante BOM release.
+- [ ] Cerrar MPN exacto del capacitor dV/dt 3.3 nF en BOM release.
 - [ ] Termografía/HIL a 60 °C y cargas reales antes de RC.
 
+### PR #11 — Footprints críticos + integración eléctrica
+- [x] Crear `hardware/footprint_audit.json` con gate de placement.
+- [x] Auditar/corregir `Honeywell_MPR_LongPort_12Pad` contra Honeywell Issue L Fig.10.
+- [x] Revisar TI `MPQF568 / RPW0010A / 4225183-A` como fuente primaria del eFuse.
+- [x] Bloquear placement de `TPS259470A` hasta cerrar land pattern HotRod exacto.
+- [x] Verificar RDN-11: 11 pines, 4.5 × 3.5 mm, pitch 0.5 mm.
+- [x] Bloquear placement de `TPSM33625` hasta importar/verificar CAD autorizado por TI.
+- [x] Crear `hardware/electrical_integration_contract.json` para Z1 + Z2 + Z3.
+- [x] Congelar nets compartidas, ownership de pines UNO Q y no-backfeed.
+- [x] Crear `kicad/integration_contract.kicad_sch` y CI específico.
+- [x] Actualizar README.
+- [ ] Cerrar footprint RPW0010A exacto antes de placement Z3.
+- [ ] Cerrar footprint RDN-11 exacto antes de placement Z3.
+
 ### Integración eléctrica posterior
-- [ ] Integrar jerarquía Z1 + Z2 + potencia conservando contratos machine-readable.
-- [ ] Construir hoja de actuadores Insight.
-- [ ] Integrar jerarquía completa con ERC = 0.
+- [ ] Construir hoja/netlist de actuadores Insight Z4.
+- [ ] Integrar root EDA final Z1 + Z2 + Z3 + Z4 con ERC = 0.
+- [ ] Actualizar firmware contract cuando se ejecute migración TEMP/MPR/DFR1103.
 
 ## Fase 4 — Placement
 
 - [ ] Z0 UNO Q bloqueado.
 - [ ] Keepout RF/antena confirmado y bloqueado.
+- [ ] Todos los footprints críticos requeridos en placement con auditoría `CLOSED`.
 - [ ] Z1 sensores con conectores sobre `Y=0`, salida `-Y`.
 - [ ] U_CO2 accesible al tubing.
 - [ ] Z2 digital/bajo ruido hacia borde de servicio.
@@ -124,7 +136,7 @@
 
 ## Fase 5 — Routing
 
-- [ ] Aplicar físicamente `hardware/power_netclasses.json` en KiCad.
+- [ ] Aplicar `hardware/power_netclasses.json` físicamente en KiCad.
 - [ ] Plano de referencia continuo; In1.Cu sin señales si se congela como GND.
 - [ ] Sensores → I²C/HX711 → potencia → actuadores.
 - [ ] SW del buck confinado a Z3.
