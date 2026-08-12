@@ -52,6 +52,8 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 
 ## Z3 potencia — PR #9 / #10
 
+**Arquitectura de potencia — PR #9**; esquemático/netlist de producción — PR #10.
+
 Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, `bom/insight_power_production_bom.csv`, `hardware/power_netclasses.json`, `kicad/power.kicad_sch`.
 
 - Entrada nominal **12 VDC**; fuente recomendada **12 V / 5 A / 60 W** certificada.
