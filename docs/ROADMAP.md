@@ -64,16 +64,26 @@
 - [ ] Validar footprint MPR contra STEP/3D antes del placement definitivo.
 
 ### PR #7 — Z2 digital / bajo ruido
-- [ ] HX711 y celda de carga.
-- [ ] RTC.
-- [ ] GPS.
-- [ ] I²C global y pull-ups definitivos.
-- [ ] HMI UART.
-- [ ] Watchdog/supervisión.
-- [ ] Test points y contrato de bring-up.
-- [ ] ERC y BOM Z2.
+- [x] Congelar HX711 onboard a 3.3 V, DOUT/SCK en D2/D3 y 10 SPS.
+- [x] Congelar conector de celda de carga y test points diferenciales.
+- [x] Reemplazar GPS `0x42` + RTC `0x68` separados por DFR1103 combinado I²C `0x66`.
+- [x] Congelar `J_GNSS_RTC` externo y protección ESD individual del bus de campo.
+- [x] Congelar I²C global con pull-ups definitivos de `4.7 kΩ`.
+- [x] Congelar HMI UART D0/D1 con `TXU0202DCUR` 3.3 V↔5 V.
+- [x] Congelar ESD individual 5 V de las líneas UART de campo.
+- [x] Congelar watchdog `TPS3823-30DBVR`, WDI=D4, reset por `MCU_NRST`.
+- [x] Mantener D13/`LED_STATUS` sobre LED integrado UNO Q + test point.
+- [x] Congelar test points de bring-up Z2.
+- [x] Crear `hardware/z2_digital_contract.json`.
+- [x] Crear `hardware/z2_production_netlist.json` y BOM Z2.
+- [x] Crear hoja KiCad contractual Z2 separada; integración jerárquica posterior.
+- [x] Añadir gates automáticos Z2 + ERC.
+- [ ] Calificar fuente/lifecycle del HX711 antes de fabricación.
+- [ ] Revalidar consumo de HMI y DFR1103 al cerrar Fase 3.
+- [ ] Validar HX711 con celda real durante bring-up/HIL.
 
 ### Integración eléctrica posterior
+- [ ] Integrar jerarquía Z1 + Z2 preservando contratos machine-readable.
 - [ ] Construir hoja de potencia después de Fase 3.
 - [ ] Construir hoja de actuadores Insight.
 - [ ] Integrar jerarquía completa y mantener ERC = 0.
@@ -83,7 +93,7 @@
 - [ ] Separar lógica/sensores de potencia ruidosa.
 - [ ] Decidir qué cargas atraviesan la PCBA.
 - [ ] Chiller con energía externa y solo señal de control por defecto.
-- [ ] Calcular corrientes continuas/pico.
+- [ ] Calcular corrientes continuas/pico, incluyendo HMI y DFR1103.
 - [ ] Reseleccionar F1/D2/conector de entrada.
 - [ ] Revalidar buck/LDO.
 - [ ] Definir netclasses.
@@ -93,7 +103,7 @@
 - [ ] Z0 UNO Q bloqueado.
 - [ ] Z1 sensores con conectores sobre `Y=0`, salida `-Y`.
 - [ ] U_CO2 accesible al tubing desde borde de servicio.
-- [ ] Z2 digital/bajo ruido.
+- [ ] Z2 digital/bajo ruido con J_LOADCELL, J_GNSS_RTC y J_HMI orientados al borde de servicio.
 - [ ] Z3 potencia.
 - [ ] Z4 actuadores.
 - [ ] Revisión 3D completa.
@@ -112,6 +122,7 @@
 ## Fase 6 — Fabricación
 
 - [ ] Lifecycle/disponibilidad BOM.
+- [ ] Calificar fabricante/fuente de HX711.
 - [ ] Auditoría footprint vs datasheet.
 - [ ] Conectores y alivio de tensión.
 - [ ] Gerbers/drill.
@@ -128,7 +139,9 @@
 - [ ] DS18B20/1-Wire.
 - [ ] MPR I²C `0x28` y prueba de presión hasta rango de trabajo.
 - [ ] Ruido/interferencia de sensores y decisión final sobre aislamiento inline.
-- [ ] HX711/HMI/GPS/RTC/I²C.
+- [ ] DFR1103 I²C `0x66`: GNSS + RTC.
+- [ ] HX711/celda real: cero, span, ruido y estabilidad.
+- [ ] HMI UART con TXU0202 3.3 V↔5 V.
 - [ ] Bomba/solenoide/chiller.
 - [ ] Watchdog/failsafe.
 - [ ] Fixture HIL y prueba repetible de producción.
