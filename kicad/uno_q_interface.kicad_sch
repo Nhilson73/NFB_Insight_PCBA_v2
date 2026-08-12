@@ -1,10 +1,10 @@
 (kicad_sch
   (version 20250114)
   (generator "nfb_pr14_root_interface")
-  (generator_version "1.0")
+  (generator_version "1.1")
   (uuid "2d9db7e0-52da-4cc7-8ff3-a36286d3c141")
   (paper "A3")
-  (title_block (title "NFB Insight PCBA v2 — UNO Q Interface") (date "2026-08-12") (rev "0.14.0") (company "Cafelium SRL / Nebula Ecosystem") (comment 1 "PR #14 — interfaz jerárquica host, no rediseño UNO Q") (comment 2 "Fuente: hardware/insight_pin_contract.json"))
+  (title_block (title "NFB Insight PCBA v2 — UNO Q Interface") (date "2026-08-12") (rev "0.14.0") (company "Cafelium SRL / Nebula Ecosystem") (comment 1 "PR #14 — interfaz jerárquica host, no rediseño UNO Q") (comment 2 "Fuente: hardware/insight_pin_contract.json") (comment 3 "GND común sí forma parte de la frontera; 3V3/5V host permanecen NC"))
   (lib_symbols)
   (text "UNO Q HOST INTERFACE — PR #14\n32 pads físicos permanecen gobernados por hardware/insight_pin_contract.json.\nEsta hoja expone únicamente endpoints activos del shield; no modela la electrónica interna Qualcomm/STM32 del UNO Q."
     (exclude_from_sim no) (at 30.48 25.4 0) (effects (font (size 1.6 1.6)) (justify left bottom)) (uuid "97d2e9cf-e8bd-46cf-a4bc-6ae330518561"))
@@ -29,5 +29,6 @@
   (hierarchical_label "LED_STATUS" (shape output) (at 20.32 142.24 180) (effects (font (size 1.27 1.27))) (uuid "14025ee4-582c-4348-aa92-0aa046e7ff4c"))
   (hierarchical_label "I2C_SDA" (shape bidirectional) (at 20.32 147.32 180) (effects (font (size 1.27 1.27))) (uuid "a1013297-b0d1-48b7-8a3e-f6c2d26e6683"))
   (hierarchical_label "I2C_SCL" (shape bidirectional) (at 20.32 152.4 180) (effects (font (size 1.27 1.27))) (uuid "37721397-36c4-40d2-b660-c2551b5a8d23"))
+  (hierarchical_label "GND" (shape bidirectional) (at 20.32 157.48 180) (effects (font (size 1.27 1.27))) (uuid "7a2d06ed-fdf6-49c2-b087-80c275637a18"))
   (sheet_instances (path "/" (page "1")))
 )
