@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "EU_COMPLIANCE_DESIGN_GATE_PR8",
+  "design_object": "SHIELD_CARRIER_FOR_ARDUINO_UNO_Q",
+  "compliance_boundary": {
+    "host": "Arduino UNO Q",
+    "host_supplier_compliance_evidence": "REQUIRED_TO_ARCHIVE_BEFORE_RELEASE",
+    "shield_adds_intentional_radiator": false,
+    "shield_modifies_host_rf_chain": false,
+    "shield_modifies_host_antenna": false,
+    "shield_modifies_host_rf_matching": false,
+    "shield_modifies_host_regulatory_firmware": false,
+    "final_integrated_product_assessment_required": true,
+    "note": "La conformidad del UNO Q se conserva como evidencia del host; no se interpreta como sustituto automático de la evaluación del shield/producto integrado."
+  },
+  "rf_design_rules": {
+    "preserve_host_rf_keepout": true,
+    "no_added_rf_transceiver": true,
+    "no_added_antenna": true,
+    "no_added_rf_power_amplifier": true,
+    "no_added_rf_matching_network": true,
+    "rf_boundary_change_requires_compliance_pr": true
+  },
+  "eu_targets": [
+    {
+      "id": "EMC",
+      "directive": "2014/30/EU",
+      "target_standards": ["EN 55032 Class B", "EN 61000-4-2", "EN 61000-4-3", "EN 61000-4-4", "EN 61000-4-5", "EN 61000-4-6"],
+      "shield_action": "DESIGN_FOR_PRECOMPLIANCE_AND_SYSTEM_INTEGRATION_TEST",
+      "edition_status": "CONFIRM_WITH_LAB_BEFORE_FINAL_TEST"
+    },
+    {
+      "id": "ROHS3",
+      "directive": "2011/65/EU + (EU) 2015/863",
+      "shield_action": "DIRECT_BOM_AND_MATERIAL_EVIDENCE",
+      "baseline_process": {"solder": "SAC305", "pcb_finish": "ENIG"},
+      "restricted_substances_control_count": 10
+    },
+    {
+      "id": "WEEE",
+      "directive": "2012/19/EU",
+      "shield_action": "FINAL_EQUIPMENT_CLASSIFICATION_MARKING_AND_COUNTRY_REGISTRATION"
+    },
+    {
+      "id": "RED",
+      "directive": "2014/53/EU",
+      "shield_action": "HOST_RADIO_EVIDENCE_PLUS_FINAL_INTEGRATION_ASSESSMENT_IF_RADIO_ENABLED",
+      "radio_source": "ARDUINO_UNO_Q_ONLY"
+    },
+    {
+      "id": "REACH",
+      "regulation": "(EC) 1907/2006",
+      "shield_action": "SUPPLIER_SVHC_DECLARATIONS"
+    },
+    {
+      "id": "CE",
+      "shield_action": "FINAL_PRODUCT_TECHNICAL_FILE_RISK_ASSESSMENT_TEST_EVIDENCE_AND_EU_DOC"
+    }
+  ],
+  "emc_layout_rules": {
+    "continuous_ground_reference_required": true,
+    "no_plane_split_under_sensitive_or_fast_signals": true,
+    "functional_noise_gradient": ["Z0_UNO_Q", "Z1_SENSORS_ANALOG", "Z2_DIGITAL_LOW_NOISE", "Z3_POWER", "Z4_ACTUATORS"],
+    "field_io_edge": "Y=0",
+    "field_connector_facing": "-Y",
+    "external_wired_signal_esd_strategy_required": true,
+    "tvs_close_to_connector_during_placement": true,
+    "high_dvdt_didt_outside_z1_z2": true,
+    "chiller_default_power": "EXTERNAL_POWER_CONTROL_SIGNAL_ONLY",
+    "in1_signal_routing_allowed_if_frozen_as_gnd": false
+  },
+  "production_evidence_gate": {
+    "rohs_evidence_all_populated_mpns": true,
+    "reach_svhc_evidence_relevant_suppliers": true,
+    "pcb_fabricator_material_declaration": true,
+    "assembly_solder_process_declaration": true,
+    "host_compliance_evidence_archive": true,
+    "missing_evidence_blocks_production_release": true
+  },
+  "release_gates": {
+    "before_placement": ["HOST_RF_KEEPOUT_CONFIRMED", "FIELD_CABLES_IDENTIFIED", "NOISE_ZONES_CONFIRMED"],
+    "before_routing": ["STACKUP_FROZEN", "GROUND_REFERENCE_FROZEN", "NETCLASSES_FROZEN", "NO_ROUTING_IN_HOST_RF_KEEPOUT"],
+    "before_fabrication_rc": ["ERC_ZERO", "DRC_ZERO", "ROHS_REACH_STATUS_FOR_BOM", "FOOTPRINT_DATASHEET_AUDIT", "PRECOMPLIANCE_PLAN", "HOST_EVIDENCE_ARCHIVED"],
+    "before_eu_market": ["FINAL_CONFIGURATION_ASSESSMENT", "TECHNICAL_FILE", "WEEE_AS_APPLICABLE", "EU_DECLARATION_OF_CONFORMITY", "CE_MARKING"]
+  },
+  "tracked_files": [
+    "docs/EU_COMPLIANCE_GATE.md",
+    "compliance/EU_COMPLIANCE_MATRIX.csv",
+    "compliance/eu_compliance_contract.json"
+  ]
+}

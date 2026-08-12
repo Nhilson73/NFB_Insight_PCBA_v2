@@ -1,0 +1,37 @@
+name: EU Compliance Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'compliance/**'
+      - 'docs/EU_COMPLIANCE_GATE.md'
+      - 'docs/ROADMAP.md'
+      - 'bom/**'
+      - 'hardware/**'
+      - 'kicad/**'
+      - 'tools/validate_eu_compliance.py'
+      - '.github/workflows/eu-compliance.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'README.md'
+      - 'compliance/**'
+      - 'docs/EU_COMPLIANCE_GATE.md'
+      - 'docs/ROADMAP.md'
+      - 'bom/**'
+      - 'hardware/**'
+      - 'kicad/**'
+      - 'tools/validate_eu_compliance.py'
+      - '.github/workflows/eu-compliance.yml'
+
+jobs:
+  compliance:
+    name: Frontera shield UNO Q + trazabilidad UE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Validar EU Compliance Design Gate
+        run: python3 tools/validate_eu_compliance.py
