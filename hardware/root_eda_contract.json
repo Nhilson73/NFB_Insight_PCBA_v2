@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
   "status": "ROOT_EDA_INTERZONE_BASELINE_PR14",
   "decision_date": "2026-08-12",
@@ -45,6 +45,14 @@
     "CHILLER_CTL": ["Z0","Z4"],
     "ACT_FAULT_N": ["Z0","Z4"]
   },
+  "erc_interzone_policy": {
+    "mode": "BOUNDED_INTENTIONAL_INTERFACE_DEBT_PR14",
+    "expected_violation_type": "label_dangling",
+    "expected_violation_count": 125,
+    "unexpected_violation_count_allowed": 0,
+    "reason": "PR14 materializa fronteras jerárquicas, pero no símbolos internos. Los labels/hierarchical labels quedan intencionalmente sin pin interno hasta PR15; no se baja la severidad global de KiCad.",
+    "removal_gate": "PR15 must materialize zone-internal symbols/connectivity and reduce full hierarchy ERC to zero before placement."
+  },
   "hard_prohibitions": [
     "CO2_ADC must not exist as an active inter-zone net",
     "TEMP_ADC must not exist",
@@ -55,5 +63,5 @@
     "J_UNOQ.5 must never feed 5V_RAIL",
     "PR14 must not place or route production components"
   ],
-  "next_gate": "Materialize zone-internal production symbols from JSON/BOM before placement."
+  "next_gate": "PR15: materialize zone-internal production symbols from JSON/BOM, prove parity, and eliminate intentional PR14 ERC debt before placement."
 }
