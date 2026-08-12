@@ -19,7 +19,7 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 - Gradiente: Z0 UNO Q → Z1 sensores → Z2 digital → Z3 potencia → Z4 actuadores.
 - Ancho actual `220 mm` **provisional** hasta placement.
 
-## Z1 — sensores
+## Z1 sensores — PR #6 / #9 / #11 / #12
 
 Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netlist.json`, BOM Z1.
 
@@ -29,7 +29,7 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 - CO₂ pressure: Honeywell `MPRLS0030PA00002A`, I²C `0x28`; `CO2_ADC` retirado.
 - A4/pad13 = `PUMP_CURRENT_ADC` desde PR #12.
 
-## Z2 — digital / bajo ruido
+## Z2 digital / bajo ruido — PR #7 / #9
 
 - I²C 3.3 V con MPR `0x28` + DFR1103 `0x66`.
 - HX711 3.3 V / 10 SPS en D2/D3.
@@ -37,7 +37,7 @@ Fuentes: `hardware/sensor_interface_contract.json`, `hardware/z1_production_netl
 - Watchdog `TPS3823-30DBVR`, WDI=D4.
 - GPS/RTC legacy separados y RS485 Signature quedan fuera de Insight.
 
-## Z3 — potencia
+## Z3 potencia — PR #9 / #10 / #13 / #15
 
 Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, BOM potencia y `hardware/power_netclasses.json`.
 
@@ -50,7 +50,7 @@ Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production
 - 5 V: `TPSM33625RDNR`; 3.3 V: `TLV75533PDBVR`.
 - La potencia del chiller permanece externa.
 
-## Z4 — actuadores
+## Z4 actuadores — PR #12 / #13
 
 - Bomba: `DRV8242HQRHLRQ1`, D5/D6 PH/EN, IPROPI → A4 `PUMP_CURRENT_ADC`.
 - Solenoide CO₂: `TPS1HC120CQDYCRQ1`, D7, `R_ILIM=27 kΩ` (~0.5 A), clamp integrado.
