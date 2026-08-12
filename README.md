@@ -2,31 +2,41 @@
 
 PCBA/carrier diseñada desde cero para **Nebula Fermentation Insight®**, construida alrededor del factor de forma mecánico inmutable del Arduino UNO Q.
 
-Este repositorio parte intencionalmente de una geometría limpia. El repositorio anterior `Nhilson73/nebula_qshield_pcb` se trata como **donante de ingeniería** para componentes, símbolos, footprints, nomenclatura, conceptos de prueba y trazabilidad; no se usa como plantilla de placement, routing ni como autoridad automática de topología eléctrica.
+El repositorio `Nhilson73/nebula_qshield_pcb` se conserva como **donante de ingeniería y trazabilidad**. No gobierna placement, routing ni topología eléctrica de producción de V2.
 
-## Convención mecánica V2 congelada
+## Convención mecánica congelada
 
-- Origen global de la board: `(0,0)` en la esquina inferior izquierda de la envolvente rotada del UNO Q.
-- UNO Q rotado de modo que su USB-C apunte hacia `-Y`.
-- Envolvente inmutable del UNO Q después de la rotación: `53.34 mm × 68.58 mm`.
-- Altura de la board congelada en `68.58 mm`.
-- La PCBA crece únicamente hacia `+X`.
-- Los conectores y cables de campo se ubican a lo largo del borde inferior `Y=0` y orientan su conexión hacia `-Y`, correspondiente al lado de salida de cables del enclosure.
-- La zonificación funcional crece de izquierda a derecha: UNO Q → sensores/interfaz → digital/bajo ruido → potencia → actuadores.
+- Origen global `(0,0)` en la esquina inferior izquierda de la envolvente rotada del UNO Q.
+- USB-C hacia `-Y`.
+- Envolvente UNO Q: `53.34 × 68.58 mm`.
+- Altura de la board fija: `68.58 mm`.
+- Crecimiento únicamente hacia `+X`.
+- `Y=0` = FIELD I/O EDGE.
+- Gradiente funcional: UNO Q → sensores/interfaz → digital/bajo ruido → potencia → actuadores.
 
-## Baseline eléctrico de sensores
+## Baseline Z1 de producción — PR #6
 
-Desde PR #5, la fuente de verdad de las interfaces es `hardware/sensor_interface_contract.json`.
+Fuentes de verdad:
 
-- pH A0 y DO A5 reciben señales ya acondicionadas de 0–3 V desde sus módulos DFRobot.
-- ORP A1 recibe la salida acondicionada y la escala a un máximo de 3.0 V antes del UNO Q.
-- Temperatura usa `KIT0021/DS18B20`: A2/D16 es `TEMP_1WIRE`, no una entrada NTC/ADC.
-- Presión CO₂ A4 permanece analógica, pero el `MPX5700AP` legacy debe sustituirse antes de fabricación.
-- Los BNC de electrodos permanecen en los acondicionadores OEM; no son conectores de la PCBA base.
-- El aislamiento analógico de sondas se evalúa a nivel de sistema mediante módulo inline cuando las pruebas de interferencia lo justifiquen.
+- `hardware/insight_pin_contract.json`
+- `hardware/sensor_interface_contract.json`
+- `hardware/z1_production_netlist.json`
+- `bom/insight_z1_production_bom.csv`
+- `kicad/NFB_Insight_PCBA_v2.kicad_sch`
 
-`hardware/analog_insight_manifest.json` y `bom/insight_analog_inheritance.csv` se conservan como **trazabilidad del Q-Shield donante**, no como BOM/topología de producción.
+Decisiones congeladas:
+
+- **pH / A0:** salida acondicionada 0–3 V; `1 kΩ + 100 nF`; ESD `PESD3V3U1UL`.
+- **ORP / A1:** divisor `10 kΩ / 20 kΩ`, salida máxima 3.0 V; `100 nF`; ESD en `ORP_ADC`.
+- **Temperatura / A2-D16:** `DS18B20`, net `TEMP_1WIRE`, pull-up onboard de `4.7 kΩ`.
+- **Presión CO₂:** Honeywell `MPRLS0030PA00002A`, 0–30 psi absolute, I²C `0x28`; **A4/CO2_ADC queda DNP/Reserva**.
+- **DO / A5:** salida acondicionada 0–3 V; `1 kΩ + 100 nF`; ESD `PESD3V3U1UL`.
+- **Conectores eléctricos de campo:** JST XH `S3B-XH-A(LF)(SN)` side-entry, con intención mecánica hacia `-Y`.
+- Los BNC permanecen en los módulos acondicionadores OEM.
+- El aislamiento inline `DFR0504` o equivalente sigue siendo una opción de sistema, no un placement base.
+
+`hardware/analog_insight_manifest.json` y `bom/insight_analog_inheritance.csv` permanecen únicamente como historial del Q-Shield.
 
 ## Estado
 
-Geometría, contrato UNO Q e interfaces reales de sensores están congelados. El siguiente hito es materializar el netlist discreto de sensores después de cerrar sensor de presión CO₂, conectores, protección y filtros.
+Z0 mecánico y el netlist de producción de Z1 están congelados y protegidos por CI/ERC. El siguiente bloque eléctrico será **Z2 digital/bajo ruido**; placement y routing continúan fuera de alcance hasta completar los bloques y la arquitectura de potencia.

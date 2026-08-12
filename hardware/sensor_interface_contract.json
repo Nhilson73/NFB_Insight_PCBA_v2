@@ -1,234 +1,43 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "PRODUCTION_INTERFACE_BASELINE_PR5",
+  "status": "Z1_PRODUCTION_BASELINE_PR6",
   "decision_date": "2026-08-11",
-  "uno_q": {
-    "analog_domain_v": 3.3,
-    "external_analog_design_target_max_v": 3.05,
-    "rule": "Ninguna señal externa analógica puede alcanzar el UNO Q por encima del objetivo de 3.05 V; el límite funcional del dominio analógico es 3.3 V."
-  },
-  "mechanical_policy": {
+  "supersedes": "PRODUCTION_INTERFACE_BASELINE_PR5",
+  "design_policy": {
+    "zone": "Z1_SENSOR_INTERFACES",
     "field_io_edge": "Y=0",
     "connector_facing": "-Y",
-    "bypass_raw_probe_bnc_on_pcba": true,
-    "rule": "Los BNC de electrodo permanecen en los módulos acondicionadores OEM; la PCBA NFB recibe la interfaz eléctrica ya acondicionada."
+    "analog_domain_v": 3.3,
+    "external_analog_design_target_max_v": 3.05,
+    "raw_probe_bnc_on_pcba": false,
+    "onboard_legacy_isolation": false,
+    "production_netlist": "hardware/z1_production_netlist.json",
+    "production_bom": "bom/insight_z1_production_bom.csv"
   },
   "sources": [
-    {
-      "id": "ARDUINO_UNO_Q",
-      "manufacturer": "Arduino",
-      "kind": "official_datasheet",
-      "url": "https://docs.arduino.cc/resources/datasheets/ABX00162-datasheet.pdf"
-    },
-    {
-      "id": "PH_CURRENT",
-      "manufacturer": "DFRobot",
-      "part": "SEN0161-V2",
-      "kind": "official_product",
-      "url": "https://www.dfrobot.com/product-1782.html"
-    },
-    {
-      "id": "PH_CONTINUOUS_PREFERRED",
-      "manufacturer": "DFRobot",
-      "part": "SEN0169-V2",
-      "kind": "official_product",
-      "url": "https://www.dfrobot.com/product-1110.html"
-    },
-    {
-      "id": "ORP",
-      "manufacturer": "DFRobot",
-      "part": "SEN0464",
-      "kind": "official_wiki",
-      "url": "https://wiki.dfrobot.com/Industrial_ORP_Sensor_SKU_SEN0464"
-    },
-    {
-      "id": "TEMP",
-      "manufacturer": "DFRobot",
-      "part": "KIT0021",
-      "sensor": "DS18B20",
-      "kind": "official_wiki",
-      "url": "https://wiki.dfrobot.com/Waterproof_DS18B20_Digital_Temperature_Sensor__SKU_DFR0198_"
-    },
-    {
-      "id": "CO2_LEGACY",
-      "manufacturer": "NXP",
-      "part": "MPX5700AP",
-      "kind": "official_datasheet",
-      "url": "https://www.nxp.com/docs/en/data-sheet/MPX5700.pdf"
-    },
-    {
-      "id": "DO",
-      "manufacturer": "DFRobot",
-      "part": "SEN0237-A",
-      "kind": "official_product",
-      "url": "https://www.dfrobot.com/product-1628.html"
-    },
-    {
-      "id": "INLINE_ISOLATOR",
-      "manufacturer": "DFRobot",
-      "part": "DFR0504",
-      "kind": "official_product",
-      "url": "https://www.dfrobot.com/product-1621.html"
-    }
+    {"id":"HONEYWELL_MPR","manufacturer":"Honeywell","part":"MPRLS0030PA00002A","kind":"official_datasheet","url":"https://prod-edam.honeywell.com/content/dam/honeywell-edam/sps/siot/en-us/products/sensors/pressure-sensors/board-mount-pressure-sensors/micropressure-mpr-series/documents/sps-siot-mpr-series-datasheet-32332628-ciid-172626.pdf"},
+    {"id":"NEXPERIA_ESD","manufacturer":"Nexperia","part":"PESD3V3U1UL","kind":"official_product","url":"https://www.nexperia.com/product/PESD3V3U1UL"},
+    {"id":"JST_XH","manufacturer":"JST","part":"S3B-XH-A(LF)(SN)","kind":"official_product","url":"https://www.jst-mfg.com/product/index.php?search_product=S3B-XH-A&type=1"},
+    {"id":"MURATA_100N","manufacturer":"Murata","part":"GRM155R71E104KE14D","kind":"official_product","url":"https://www.murata.com/products/productdetail?partno=GRM155R71E104KE14%23"},
+    {"id":"VISHAY_TNPW","manufacturer":"Vishay","part":"TNPW0402 e3","kind":"official_product","url":"https://www.vishay.com/en/product/28758/"},
+    {"id":"PH_CURRENT","manufacturer":"DFRobot","part":"SEN0161-V2","kind":"official_product","url":"https://www.dfrobot.com/product-1782.html"},
+    {"id":"PH_CONTINUOUS_PREFERRED","manufacturer":"DFRobot","part":"SEN0169-V2","kind":"official_product","url":"https://www.dfrobot.com/product-1110.html"},
+    {"id":"ORP","manufacturer":"DFRobot","part":"SEN0464","kind":"official_product","url":"https://wiki.dfrobot.com/Industrial_ORP_Sensor_SKU_SEN0464"},
+    {"id":"TEMP","manufacturer":"DFRobot","part":"KIT0021 / DS18B20","kind":"official_product","url":"https://wiki.dfrobot.com/Waterproof_DS18B20_Digital_Temperature_Sensor__SKU_DFR0198_"},
+    {"id":"DO","manufacturer":"DFRobot","part":"SEN0237-A","kind":"official_product","url":"https://www.dfrobot.com/product-1628.html"},
+    {"id":"INLINE_ISOLATOR","manufacturer":"DFRobot","part":"DFR0504","kind":"official_product","url":"https://www.dfrobot.com/product-1621.html"}
   ],
-  "channels": [
-    {
-      "id": "PH",
-      "arduino": "A0",
-      "uno_q_pad": 9,
-      "net": "PH_ADC",
-      "interface_class": "CONDITIONED_ANALOG",
-      "production_connector": "PH2.0-3P compatible / final family at placement",
-      "current_sensor": "SEN0161-V2",
-      "preferred_continuous_sensor": "SEN0169-V2",
-      "sensor_supply_v": [3.3, 5.5],
-      "conditioned_output_v": [0.0, 3.0],
-      "scaling": {
-        "required": false,
-        "ratio": 1.0,
-        "max_to_uno_q_v": 3.0
-      },
-      "onboard_chain": [
-        "field connector",
-        "low-leakage ESD/protection TBD",
-        "RC anti-alias/noise filter",
-        "PH_ADC"
-      ],
-      "isolation": {
-        "onboard_legacy_chain": "DO_NOT_POPULATE_AS_BASELINE",
-        "system_strategy": "INLINE_DFR0504_OR_EQUIVALENT_RECOMMENDED_WHEN_MULTI_WATER_SENSOR_INTERFERENCE_REQUIRES_IT",
-        "pcb_placement": false
-      },
-      "lifecycle_note": "SEN0161-V2 puede mantenerse para prototipo; SEN0169-V2 es la opción preferida para operación continua."
-    },
-    {
-      "id": "ORP",
-      "arduino": "A1",
-      "uno_q_pad": 10,
-      "net": "ORP_ADC",
-      "interface_class": "CONDITIONED_ANALOG_SCALED",
-      "production_connector": "PH2.0-3P compatible / final family at placement",
-      "sensor": "SEN0464",
-      "sensor_supply_nominal_v": 5.0,
-      "conditioned_output_v": [0.5, 4.5],
-      "scaling": {
-        "required": true,
-        "top_ohm": 10000,
-        "bottom_ohm": 20000,
-        "resistor_tolerance_target_pct": 0.1,
-        "ratio": 0.6666666667,
-        "input_max_v": 4.5,
-        "max_to_uno_q_v": 3.0,
-        "firmware_inverse_gain": 1.5
-      },
-      "onboard_chain": [
-        "field connector",
-        "low-leakage ESD/protection TBD",
-        "10k/20k precision divider",
-        "RC anti-alias/noise filter",
-        "ORP_ADC"
-      ],
-      "isolation": {
-        "onboard_legacy_chain": "DO_NOT_POPULATE_AS_BASELINE",
-        "system_strategy": "INLINE_DFR0504_OR_EQUIVALENT_RECOMMENDED_WHEN_MULTI_WATER_SENSOR_INTERFERENCE_REQUIRES_IT",
-        "pcb_placement": false
-      }
-    },
-    {
-      "id": "TEMP",
-      "arduino": "A2/D16",
-      "uno_q_pad": 11,
-      "net": "TEMP_1WIRE",
-      "interface_class": "DIGITAL_1WIRE",
-      "production_connector": "3-pin digital field connector / final family at placement",
-      "sensor_kit": "KIT0021",
-      "sensor": "DS18B20",
-      "sensor_supply_v": [3.0, 5.5],
-      "logic_domain_v": 3.3,
-      "analog": false,
-      "pullup": {
-        "nominal_ohm": 4700,
-        "to_v": 3.3,
-        "population_status": "REVIEW_MODULE_KIT_ALREADY_INCLUDES_RESISTOR_ADAPTER"
-      },
-      "onboard_chain": [
-        "field connector",
-        "3.3 V 1-Wire protection",
-        "optional 4.7k pull-up footprint",
-        "TEMP_1WIRE"
-      ],
-      "firmware_migration_required": true,
-      "firmware_current_state": "A2 se trata todavía como PIN_TEMPERATURE_ANALOG; debe migrar a DS18B20/1-Wire en un PR de firmware separado."
-    },
-    {
-      "id": "CO2",
-      "arduino": "A4",
-      "uno_q_pad": 13,
-      "net": "CO2_ADC",
-      "interface_class": "CONDITIONED_ANALOG_SCALED_SENSOR_TBD",
-      "production_connector": "3-pin analog field connector / final family at placement",
-      "legacy_sensor": "MPX5700AP",
-      "legacy_sensor_lifecycle": "REPLACE_BEFORE_FAB",
-      "legacy_sensor_supply_v": [4.75, 5.25],
-      "legacy_output_nominal_v": [0.2, 4.7],
-      "legacy_output_max_v": 4.813,
-      "scaling_for_legacy_validation_only": {
-        "required": true,
-        "top_ohm": 18000,
-        "bottom_ohm": 30000,
-        "resistor_tolerance_target_pct": 0.1,
-        "ratio": 0.625,
-        "input_max_v": 4.813,
-        "max_to_uno_q_v": 3.008125,
-        "firmware_inverse_gain": 1.6
-      },
-      "onboard_chain": [
-        "field connector",
-        "ESD/protection TBD",
-        "scaling network selected with final pressure sensor",
-        "RC anti-alias/noise filter",
-        "CO2_ADC"
-      ],
-      "production_gate": "Seleccionar sensor de presión vigente y apropiado al rango de fermentación antes de congelar valores/BOM."
-    },
-    {
-      "id": "DO",
-      "arduino": "A5",
-      "uno_q_pad": 14,
-      "net": "DO_ADC",
-      "interface_class": "CONDITIONED_ANALOG",
-      "production_connector": "PH2.0-3P compatible / final family at placement",
-      "sensor": "SEN0237-A",
-      "sensor_supply_v": [3.3, 5.5],
-      "conditioned_output_v": [0.0, 3.0],
-      "scaling": {
-        "required": false,
-        "ratio": 1.0,
-        "max_to_uno_q_v": 3.0
-      },
-      "onboard_chain": [
-        "field connector",
-        "low-leakage ESD/protection TBD",
-        "RC anti-alias/noise filter",
-        "DO_ADC"
-      ],
-      "isolation": {
-        "onboard_legacy_chain": "DO_NOT_POPULATE_AS_BASELINE",
-        "system_strategy": "INLINE_DFR0504_OR_EQUIVALENT_RECOMMENDED_WHEN_MULTI_WATER_SENSOR_INTERFERENCE_REQUIRES_IT",
-        "pcb_placement": false
-      }
-    }
-  ],
-  "supersedes_for_production": {
-    "artifact": "hardware/analog_insight_manifest.json",
-    "scope": "topología eléctrica y conectores de los cinco canales; el manifiesto PR4 se conserva únicamente como trazabilidad del donante"
+  "common_parts": {
+    "field_connector": {"manufacturer":"JST","mpn":"S3B-XH-A(LF)(SN)","series":"XH","pitch_mm":2.5,"positions":3,"entry":"side","footprint":"Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal","assembly_rule":"Orientar boca hacia -Y en placement."},
+    "signal_esd": {"manufacturer":"Nexperia","mpn":"PESD3V3U1UL,315","type":"unidirectional single-line ESD","vrwm_v":3.3,"typ_capacitance_pf":2.6,"typ_leakage_na":1.0,"footprint":"Diode_SMD:D_SOD-882"},
+    "filter_cap": {"manufacturer":"Murata","mpn":"GRM155R71E104KE14D","value_f":1e-7,"value":"100 nF","tolerance_pct":10,"dielectric":"X7R","rated_voltage_v":25,"footprint":"Capacitor_SMD:C_0402_1005Metric"}
   },
-  "explicit_non_goals_pr5": [
-    "placement",
-    "routing",
-    "selección final del sensor de presión CO2",
-    "selección final de MPN de protección ESD",
-    "modificación del firmware UNO Q"
+  "channels": [
+    {"id":"PH","uno_q_pad":9,"arduino":"A0","net":"PH_ADC","interface_class":"CONDITIONED_ANALOG","sensor":"SEN0161-V2","preferred_continuous_sensor":"SEN0169-V2","module_supply_net":"5V_RAIL","conditioned_output_v":[0.0,3.0],"connector":{"ref":"J_PH","mpn":"S3B-XH-A(LF)(SN)","pinout":{"1":"5V_RAIL","2":"GND","3":"PH_FIELD_SIG"}},"protection":{"ref":"D_PH","mpn":"PESD3V3U1UL,315","placement_net":"PH_FIELD_SIG"},"filter":{"series_ref":"R_PH","series_ohm":1000,"series_tolerance_pct":1.0,"series_mpn":"CRCW04021K00FKED","cap_ref":"C_PH","cap_f":1e-7,"cutoff_hz":1591.5494309189537},"chain":["J_PH.3:PH_FIELD_SIG","D_PH:PH_FIELD_SIG->GND","R_PH:PH_FIELD_SIG->PH_ADC","C_PH:PH_ADC->GND","J_UNOQ.9:PH_ADC"],"isolation":{"system_option":"DFR0504 or equivalent","pcb_placement":false}},
+    {"id":"ORP","uno_q_pad":10,"arduino":"A1","net":"ORP_ADC","interface_class":"CONDITIONED_ANALOG_SCALED","sensor":"SEN0464","module_supply_net":"5V_RAIL","conditioned_output_v":[0.5,4.5],"connector":{"ref":"J_ORP","mpn":"S3B-XH-A(LF)(SN)","pinout":{"1":"5V_RAIL","2":"GND","3":"ORP_FIELD_SIG"}},"divider":{"top_ref":"R_ORP_TOP","top_ohm":10000,"bottom_ref":"R_ORP_BOT","bottom_ohm":20000,"tolerance_pct":0.1,"family":"Vishay TNPW0402 e3","ratio":0.6666666666666666,"input_max_v":4.5,"max_to_uno_q_v":3.0,"firmware_inverse_gain":1.5},"protection":{"ref":"D_ORP","mpn":"PESD3V3U1UL,315","placement_net":"ORP_ADC","reason":"El clamp 3.3 V se coloca después del divisor para no recortar la salida normal de hasta 4.5 V del módulo."},"filter":{"cap_ref":"C_ORP","cap_f":1e-7,"thevenin_ohm":6666.666666666666,"cutoff_hz":238.73241463784302},"chain":["J_ORP.3:ORP_FIELD_SIG","R_ORP_TOP:ORP_FIELD_SIG->ORP_ADC","R_ORP_BOT:ORP_ADC->GND","D_ORP:ORP_ADC->GND","C_ORP:ORP_ADC->GND","J_UNOQ.10:ORP_ADC"],"isolation":{"system_option":"DFR0504 or equivalent","pcb_placement":false}},
+    {"id":"TEMP","uno_q_pad":11,"arduino":"A2/D16","net":"TEMP_1WIRE","interface_class":"DIGITAL_1WIRE","sensor":"DS18B20","sensor_kit":"KIT0021","logic_supply_net":"3V3_RAIL","connector":{"ref":"J_TEMP","mpn":"S3B-XH-A(LF)(SN)","pinout":{"1":"3V3_RAIL","2":"GND","3":"TEMP_1WIRE"}},"protection":{"ref":"D_TEMP","mpn":"PESD3V3U1UL,315","placement_net":"TEMP_1WIRE"},"pullup":{"ref":"R_TEMP_PU","ohm":4700,"to_net":"3V3_RAIL","population":"POPULATE","mpn":"CRCW04024K70FKED"},"chain":["J_TEMP.3:TEMP_1WIRE","D_TEMP:TEMP_1WIRE->GND","R_TEMP_PU:3V3_RAIL->TEMP_1WIRE","J_UNOQ.11:TEMP_1WIRE"],"firmware_migration_required":true},
+    {"id":"CO2","uno_q_pad":null,"arduino":"D20/D21 I2C","net":"I2C","interface_class":"ONBOARD_DIGITAL_PRESSURE_I2C","sensor":"MPRLS0030PA00002A","manufacturer":"Honeywell","pressure":{"type":"absolute","min_psi":0.0,"max_psi":30.0,"max_kpa":206.8427187950508,"overpressure_psi":60.0,"burst_psi":120.0,"transfer_function":"A_10_TO_90_PERCENT_OF_2POW24_COUNTS"},"electrical":{"supply_net":"3V3_RAIL","supply_nominal_v":3.3,"supply_range_v":[1.8,3.6],"i2c_address_hex":"0x28","sda_net":"I2C_SDA","scl_net":"I2C_SCL","decoupling_ref":"C_CO2","decoupling_f":1e-7},"package":{"port":"long","gel":"silicone","footprint":"NFB:Honeywell_MPR_LongPort_12Pad","body_mm":[5.0,5.0],"port_od_mm":2.5},"pinout":{"1":"NC","2":"I2C_SDA","3":"I2C_SCL","4":"NC_DIGITAL_ONLY","5":"NC","6":"NC_DIGITAL_ONLY","7":"NC","8":"NC_OPTIONAL_EOC","9":"NC_OPTIONAL_RES","10":"GND","11":"NC","12":"3V3_RAIL"},"i2c_pullup_backup":{"refs":["R_CO2_SDA_PU","R_CO2_SCL_PU"],"ohm":10000,"to_net":"3V3_RAIL","population":"DNP","reason":"Pull-ups globales del bus se congelarán en Z2; footprints locales quedan como respaldo de bring-up."},"chain":["U_CO2.2:I2C_SDA","U_CO2.3:I2C_SCL","U_CO2.10:GND","U_CO2.12:3V3_RAIL","C_CO2:3V3_RAIL->GND"],"legacy":{"sensor":"MPX5700AP","status":"REMOVED_FROM_PRODUCTION","legacy_net":"CO2_ADC","legacy_uno_q_pad":13},"firmware_migration_required":true},
+    {"id":"DO","uno_q_pad":14,"arduino":"A5","net":"DO_ADC","interface_class":"CONDITIONED_ANALOG","sensor":"SEN0237-A","module_supply_net":"5V_RAIL","conditioned_output_v":[0.0,3.0],"connector":{"ref":"J_DO","mpn":"S3B-XH-A(LF)(SN)","pinout":{"1":"5V_RAIL","2":"GND","3":"DO_FIELD_SIG"}},"protection":{"ref":"D_DO","mpn":"PESD3V3U1UL,315","placement_net":"DO_FIELD_SIG"},"filter":{"series_ref":"R_DO","series_ohm":1000,"series_tolerance_pct":1.0,"series_mpn":"CRCW04021K00FKED","cap_ref":"C_DO","cap_f":1e-7,"cutoff_hz":1591.5494309189537},"chain":["J_DO.3:DO_FIELD_SIG","D_DO:DO_FIELD_SIG->GND","R_DO:DO_FIELD_SIG->DO_ADC","C_DO:DO_ADC->GND","J_UNOQ.14:DO_ADC"],"isolation":{"system_option":"DFR0504 or equivalent","pcb_placement":false}}
   ]
 }

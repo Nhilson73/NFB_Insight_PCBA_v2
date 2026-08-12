@@ -1,93 +1,88 @@
 # NFB Insight PCBA v2 — Contrato de Esquemático
 
-**Estado:** línea base corregida por PR #5  
-**Producto objetivo:** NFB Insight  
-**Fuente mecánica:** `docs/MECHANICAL_CONVENTION.md`  
-**Firmware de referencia:** `Nhilson73/Nebula_ArduinoAPPLab_UNOQ`  
-**Fuente de verdad de interfaces de sensores:** `hardware/sensor_interface_contract.json`
+**Estado:** baseline Z1 congelado por PR #6  
+**Producto:** NFB Insight  
+**Firmware de referencia:** `Nhilson73/Nebula_ArduinoAPPLab_UNOQ` @ `cf100b38df890f61aed472e934241e145425569b`  
+**Fuente de verdad sensores:** `hardware/sensor_interface_contract.json`  
+**Netlist Z1:** `hardware/z1_production_netlist.json`
 
-## 1. Principio
+## Principio
 
-El esquemático V2 no copiará literalmente la jerarquía ni la hoja raíz del Q-Shield anterior. El primer gate eléctrico es un contrato explícito entre el conector del Arduino UNO Q y las señales que realmente pertenecen a Insight.
+La V2 hereda conocimiento del Q-Shield, no su topología. Todo cambio eléctrico debe mantenerse coherente entre contrato de pines, contrato de sensores, netlist, BOM, KiCad y validadores.
 
-La migración de circuitos se realiza por bloques funcionales contra este contrato: sensores/interfaz, digital/bajo ruido, potencia y actuadores. Desde PR #5, el Q-Shield conserva valor como **donante de trazabilidad**, pero sus front-end de electrodo crudo no constituyen la fuente de verdad de producción.
+## Contrato de pines UNO Q
 
-## 2. Contrato de pines Insight
-
-| Pad UNO Q | Pin Arduino | Net V2 | Estado Insight | Observación |
+| Pad | Pin | Net | Estado | Uso |
 |---:|---|---|---|---|
-| 1 | BOOT | NC | No usado | No conectar en la PCBA. |
-| 2 | IOREF | NC | No usado | No conectar en la PCBA. |
-| 3 | ~RESET | MCU_NRST | Activo | Reset desde watchdog/supervisión. |
-| 4 | 3V3 | 3V3_RAIL | Activo | Alimentación lógica. |
-| 5 | 5V | 5V_RAIL | Activo | Alimentación 5 V. |
-| 6 | GND | GND | Activo | Tierra. |
-| 7 | GND | GND | Activo | Tierra. |
-| 8 | VIN | 12V_RAIL | REVISAR | Se mantiene como contrato del donante hasta congelar arquitectura de potencia en Fase 3. |
-| 9 | A0 | PH_ADC | Activo | Entrada acondicionada de pH, 0–3 V. |
-| 10 | A1 | ORP_ADC | Activo | Entrada ORP acondicionada y escalada a ≤3.05 V. |
-| 11 | A2/D16 | TEMP_1WIRE | Activo digital | KIT0021/DS18B20, bus 1-Wire a 3.3 V. No es `TEMP_ADC`. |
-| 12 | A3 | NC | DNP/Reserva | Humedad eliminada de la línea base Insight. |
-| 13 | A4 | CO2_ADC | Activo | Presión CO₂ analógica; sensor final pendiente de selección, siempre escalada a ≤3.05 V. |
-| 14 | A5 | DO_ADC | Activo | Entrada acondicionada de DO, 0–3 V. |
-| 15 | D0 | HMI_RX | Activo | UART HMI. |
-| 16 | D1 | HMI_TX | Activo | UART HMI. |
-| 17 | D2 | HX711_DOUT | Activo | Celda de carga. |
-| 18 | D3 | HX711_SCK | Activo | Celda de carga. |
-| 19 | D4 | MCU_WDI | Activo | Watchdog externo. |
-| 20 | D5 | PUMP_PWM | Activo | Control bomba. |
-| 21 | D6 | PUMP_DIR | Activo | Dirección bomba. |
-| 22 | D7 | CO2_SOL_CTL | Activo | Solenoide CO₂. |
-| 23 | D8 | CHILLER_CTL | Activo control | Solo señal de control; energía del chiller fuera de la PCBA por defecto. |
-| 24 | D9 | NC | DNP/Reserva | PWM de válvula proporcional fuera de la línea base Insight. |
-| 25 | D10 | RS485_IRQ_RSVD | Reserva | Reservado para expansión Signature; no debe forzar placement Insight. |
-| 26 | D11 | NC | No usado | Disponible para expansión futura. |
-| 27 | D12 | NC | No usado | Disponible para expansión futura. |
-| 28 | D13 | LED_STATUS | Activo | Estado. |
-| 29 | GND | GND | Activo | Tierra. |
-| 30 | AREF | NC | No usado | No conectar por defecto. |
-| 31 | D20/SDA | I2C_SDA | Activo | Bus I²C de la PCBA. |
-| 32 | D21/SCL | I2C_SCL | Activo | Bus I²C de la PCBA. |
+| 1 | BOOT | NC | NC | No conectar |
+| 2 | IOREF | NC | NC | No conectar |
+| 3 | ~RESET | MCU_NRST | Activo | Supervisor |
+| 4 | 3V3 | 3V3_RAIL | Activo | Lógica/sensores |
+| 5 | 5V | 5V_RAIL | Activo | Módulos acondicionadores |
+| 6 | GND | GND | Activo | Tierra |
+| 7 | GND | GND | Activo | Tierra |
+| 8 | VIN | 12V_RAIL | Revisar | Se resolverá en Fase 3 |
+| 9 | A0 | PH_ADC | Activo | pH acondicionado |
+| 10 | A1 | ORP_ADC | Activo | ORP escalado |
+| 11 | A2/D16 | TEMP_1WIRE | Activo digital | DS18B20 |
+| 12 | A3 | NC | DNP/Reserva | Humedad eliminada |
+| 13 | A4 | NC | DNP/Reserva | `CO2_ADC` retirado en PR #6 |
+| 14 | A5 | DO_ADC | Activo | DO acondicionado |
+| 15 | D0 | HMI_RX | Activo | HMI |
+| 16 | D1 | HMI_TX | Activo | HMI |
+| 17 | D2 | HX711_DOUT | Activo | Celda de carga |
+| 18 | D3 | HX711_SCK | Activo | Celda de carga |
+| 19 | D4 | MCU_WDI | Activo | Watchdog |
+| 20 | D5 | PUMP_PWM | Activo | Bomba |
+| 21 | D6 | PUMP_DIR | Activo | Bomba |
+| 22 | D7 | CO2_SOL_CTL | Activo | Solenoide CO₂ |
+| 23 | D8 | CHILLER_CTL | Activo control | Energía fuera de PCBA |
+| 24 | D9 | NC | DNP/Reserva | PWM proporcional fuera de Insight |
+| 25 | D10 | RS485_IRQ_RSVD | Reserva | Signature futura |
+| 26 | D11 | NC | NC | Reserva física |
+| 27 | D12 | NC | NC | Reserva física |
+| 28 | D13 | LED_STATUS | Activo | Estado |
+| 29 | GND | GND | Activo | Tierra |
+| 30 | AREF | NC | NC | No conectar |
+| 31 | D20/SDA | I2C_SDA | Activo | Bus digital, incluye MPR `0x28` |
+| 32 | D21/SCL | I2C_SCL | Activo | Bus digital, incluye MPR `0x28` |
 
-## 3. Contrato real de sensores — corrección PR #5
+## Z1 congelado
 
-La revisión contra documentación oficial de los módulos elegidos cambia la interpretación del bloque analógico:
+### pH
+`J_PH → PESD3V3U1UL → 1 kΩ → PH_ADC`, con `100 nF` de PH_ADC a GND.
 
-- **pH A0:** la PCBA recibe la salida acondicionada del módulo DFRobot `SEN0161-V2` o del `SEN0169-V2` preferido para operación continua. El BNC permanece en el módulo acondicionador; la PCBA recibe 3 conductores y 0–3 V.
-- **ORP A1:** la PCBA recibe la salida acondicionada del `SEN0464`. Al ser un dominio de hasta aproximadamente 4.5 V, V2 exige divisor de precisión 10 kΩ / 20 kΩ para llevar el peor caso a 3.0 V.
-- **Temperatura A2/D16:** `KIT0021` usa `DS18B20`; por ello A2 se utiliza como GPIO digital 1-Wire y la net contractual pasa de `TEMP_ADC` a `TEMP_1WIRE`.
-- **Presión CO₂ A4:** `MPX5700AP` se conserva únicamente como referencia legacy de pruebas. Requiere escalamiento y debe sustituirse por un sensor vigente antes de fabricación.
-- **DO A5:** la PCBA recibe la salida acondicionada 0–3 V del `SEN0237-A`; el BNC permanece en el módulo DFRobot.
+### ORP
+`J_ORP → 10 kΩ → ORP_ADC`; desde ORP_ADC: `20 kΩ`, `PESD3V3U1UL` y `100 nF` a GND. El divisor convierte 4.5 V máximo en 3.0 V.
 
-El detalle eléctrico, fuentes oficiales y cálculos se encuentran en `docs/FASE2_PR5_SENSOR_INTERFACES.md` y `hardware/sensor_interface_contract.json`.
+### Temperatura
+`J_TEMP → TEMP_1WIRE`; `PESD3V3U1UL` a GND y pull-up onboard `4.7 kΩ` a 3.3 V.
 
-## 4. Aislamiento y conectores
+### Presión CO₂
+`U_CO2 = MPRLS0030PA00002A`, 0–30 psi absolute, I²C `0x28`, 3.3 V, `100 nF` de bypass. A4 no participa en presión.
 
-El baseline V2 **no incorpora tres cadenas obligatorias SN6501 + transformador + AMC1301** para pH/ORP/DO. Esas cadenas pertenecen a la arquitectura donante y no se justifican cuando la PCBA recibe las señales ya acondicionadas de los módulos comerciales.
+### DO
+`J_DO → PESD3V3U1UL → 1 kΩ → DO_ADC`, con `100 nF` de DO_ADC a GND.
 
-Cuando las pruebas con múltiples sondas en el mismo medio evidencien acoplamiento por tierra, se podrá incorporar un aislador analógico inline `DFR0504` o equivalente a nivel de sistema. No forma parte del placement base de la PCBA.
+## Conectores y mecánica de servicio
 
-Todos los conectores de sensores pertenecen al borde `Y=0` y salen hacia `-Y`. Los BNC de las sondas no se montan en la PCBA principal.
+`J_PH`, `J_ORP`, `J_TEMP` y `J_DO` usan JST XH `S3B-XH-A(LF)(SN)` / footprint `JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal`. El placement deberá orientar la boca hacia `-Y`. El MPR es onboard y recibe presión mediante tubing a su puerto largo.
 
-## 5. Diferencias detectadas contra firmware `main`
+## Diferencias pendientes de firmware
 
-El firmware snapshot `cf100b38df890f61aed472e934241e145425569b` todavía compila con `NEBULA_TIER_SIGNATURE` y define explícitamente:
+El snapshot de firmware aún:
+- lee temperatura con `analogRead(A2)`;
+- lee presión CO₂ con `analogRead(A4)`.
 
-- `A2` como `PIN_TEMPERATURE_ANALOG`, mientras V2 usa `TEMP_1WIRE` para DS18B20;
-- `A3` como `PIN_HUMIDITY_ANALOG`, mientras A3 es DNP/Reserva en Insight V2;
-- `D9` como `PIN_CO2_FLOW_PWM`, mientras D9 es DNP/Reserva en Insight V2;
-- chiller como función de Signature, mientras V2 conserva D8 solo como salida de control.
+Un PR de firmware deberá migrar a:
+- DS18B20 / 1-Wire en A2-D16;
+- Honeywell MPR I²C `0x28` en D20/D21.
 
-Los siguientes pines siguen coincidiendo en función general con firmware: A0 pH, A1 ORP, A4 presión CO₂, A5 DO, D2/D3 HX711, D4 watchdog, D5/D6 bomba, D7 solenoide CO₂ y D8 chiller.
+## Reglas
 
-La migración de temperatura a DS18B20/1-Wire se hará en un PR separado del repositorio de firmware después de aprobar este contrato de hardware.
-
-## 6. Reglas para la siguiente migración
-
-1. Ningún bloque eléctrico podrá cambiar este pinout sin actualizar simultáneamente `hardware/insight_pin_contract.json`, `hardware/sensor_interface_contract.json`, este documento y los validadores automáticos.
-2. A3 y D9 se consideran físicamente disponibles pero eléctricamente no poblados en Insight.
-3. D10 es una reserva de expansión; no se poblará el bridge RS485 en la línea base Insight salvo decisión explícita posterior.
-4. `12V_RAIL` en VIN permanece bajo revisión hasta congelar la separación entre potencia limpia y potencia de actuadores.
-5. A0/A1/A4/A5 deben respetar el dominio analógico del UNO Q; V2 fija objetivo de diseño ≤3.05 V para entradas externas.
-6. A2/D16 es digital 1-Wire y no debe volver a materializarse como divisor NTC/ADC.
-7. El esquemático debe mantener ERC = 0 antes de incorporarse a `main`.
+1. `CO2_ADC` y `TEMP_ADC` están prohibidas como nets activas.
+2. A3, A4 y D9 permanecen DNP/Reserva.
+3. Ningún BNC, `MPX5700AP`, `SN6501`, `AMC1301` o `750315371` pertenece a la BOM base Z1.
+4. Cambios de valores, MPN, footprint o nets requieren actualizar contrato, BOM, netlist, KiCad y CI en el mismo PR.
+5. Placement/routing no pueden comenzar a reinterpretar silenciosamente este contrato.
+6. ERC debe permanecer en cero antes de integrar a `main`.
