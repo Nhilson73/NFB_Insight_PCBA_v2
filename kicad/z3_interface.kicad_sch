@@ -1060,7 +1060,7 @@
     (uuid "27ed4bdb-1e33-5f86-808f-6a40cf539ce0")
     (property "Reference" "F_ACT" (at 114.3 124.46 0) (effects (font (size 1 1))))
     (property "Value" "1.5A 125V Slo-Blo Nano2" (at 114.3 127 0) (effects (font (size 0.9 0.9))))
-    (property "Footprint" "Fuse:Fuse_2410_6125Metric" (at 114.3 129.54 0) (effects (font (size 0.8 0.8)) (hide yes)))
+    (property "Footprint" "NFB:Littelfuse_0454_NANO2" (at 114.3 129.54 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (property "Datasheet" "~" (at 114.3 127 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (property "MPN" "045401.5MR" (at 114.3 132.08 0) (effects (font (size 0.8 0.8)) (hide yes)))
     (pin "1" (uuid "5a626dd8-6a20-5830-bd6e-78d555a65c05"))

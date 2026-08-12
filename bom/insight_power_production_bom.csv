@@ -12,7 +12,7 @@ ENTRADA_PROTECCION,C_EFUSE_ITIMER,1,capacitor,2.2nF 50V X7R,GRM155R71H222KA01D,C
 ENTRADA_PROTECCION,C_IN_BULK,1,capacitor,100uF 25V,EEEFK1E101P,Capacitor_SMD:CP_Elec_8x6.2,POPULATE,"Bulk después del eFuse, antes del split estrella."
 SPLIT_ESTRELLA,NT_HOST,1,net_tie,NET_TIE_2,PCB_FEATURE,NetTie:NetTie-2_SMD_Pad0.5mm,PCB_FEATURE,Net-tie físico para estrella 12V_PROTECTED→12V_HOST_VIN.
 SPLIT_ESTRELLA,NT_LOGIC,1,net_tie,NET_TIE_2,PCB_FEATURE,NetTie:NetTie-2_SMD_Pad0.5mm,PCB_FEATURE,Net-tie físico para estrella 12V_PROTECTED→12V_LOGIC.
-SPLIT_ESTRELLA,F_ACT,1,fuse,1.5A 125V Slo-Blo Nano2,045401.5MR,Fuse:Fuse_2410_6125Metric,POPULATE,1.5 A Slo-Blo; validar inrush real pump+solenoide en HIL.
+SPLIT_ESTRELLA,F_ACT,1,fuse,1.5A 125V Slo-Blo Nano2,045401.5MR,NFB:Littelfuse_0454_NANO2,POPULATE,1.5 A Slo-Blo; validar inrush real pump+solenoide en HIL.
 BUCK_5V,U_5V,1,buck_module,TPSM33625 5V/2.5A,TPSM33625RDNR,NFB:TI_RDN0011A_TPSM33625,POPULATE,RDN0011A cerrado PR13 contra TI qfnd871/4226623-F; SMD mask preferida y stencil 0.125 mm.
 BUCK_5V,R_5V_EN_PD,1,resistor,100k 1%,Vishay CRCW0402 / 100k / 1%,Resistor_SMD:R_0402_1005Metric,POPULATE,Mantiene EN bajo con UNO Q/IOREF ausente.
 BUCK_5V,C_5V_IN_4U7,1,capacitor,4.7uF 50V X7R,C3225X7R1H475K250AB,Capacitor_SMD:C_1210_3225Metric,POPULATE,Capacitor de entrada principal del TPSM.
