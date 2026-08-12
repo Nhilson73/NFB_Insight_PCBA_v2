@@ -1,9 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "product": "NFB Insight PCBA v2",
-  "status": "FROZEN_Z4_NETLIST_PR12",
+  "status": "FROZEN_Z4_NETLIST_PR12_FOOTPRINTS_CLOSED_PR13",
   "contract_source": "hardware/z4_actuator_contract.json",
   "power_source": "hardware/power_production_netlist.json",
+  "footprint_audit_source": "hardware/footprint_audit.json",
   "placement_in_scope": false,
   "routing_in_scope": false,
   "uno_q_interface": {
@@ -15,7 +16,7 @@
     "13":"PUMP_CURRENT_ADC"
   },
   "components": [
-    {"ref":"U_PUMP_DRV","value":"DRV8242H-Q1","mpn":"DRV8242HQRHLRQ1","footprint":"PENDING_VENDOR_CAD_AUDIT_RHL20","population":"POPULATE","pins":{"1":"PUMP_SR_CFG","2":"GND","3":"PUMP_DIR_DRV","4":"PUMP_PWM_DRV","5":"GND","6":"12V_ACT","7":"PUMP_OUT1","8":"PUMP_OUT1","9":"GND","10":"GND","11":"GND","12":"GND","13":"PUMP_OUT2","14":"PUMP_OUT2","15":"12V_ACT","16":"3V3_RAIL","17":"PUMP_CURRENT_ADC","18":"ACT_FAULT_N","19":"GND","20":"GND"}},
+    {"ref":"U_PUMP_DRV","value":"DRV8242H-Q1","mpn":"DRV8242HQRHLRQ1","footprint":"NFB:TI_RHL0020B_DRV8242","population":"POPULATE","pins":{"1":"PUMP_SR_CFG","2":"GND","3":"PUMP_DIR_DRV","4":"PUMP_PWM_DRV","5":"GND","6":"12V_ACT","7":"PUMP_OUT1","8":"PUMP_OUT1","9":"GND","10":"GND","11":"GND","12":"GND","13":"PUMP_OUT2","14":"PUMP_OUT2","15":"12V_ACT","16":"3V3_RAIL","17":"PUMP_CURRENT_ADC","18":"ACT_FAULT_N","19":"GND","20":"GND","21":"GND"}},
     {"ref":"R_PUMP_SR","value":"22k","mpn":"CRCW040222K0FKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"PUMP_SR_CFG","2":"GND"}},
     {"ref":"C_PUMP_VM","value":"100nF 50V X7R","mpn":"C1608X7R1H104K080AA","footprint":"Capacitor_SMD:C_0603_1608Metric","population":"POPULATE","pins":{"1":"12V_ACT","2":"GND"}},
     {"ref":"C_PUMP_BULK","value":"22uF 25V X7R","mpn":"GRM32ER71E226KE15L","footprint":"Capacitor_SMD:C_1210_3225Metric","population":"POPULATE","pins":{"1":"12V_ACT","2":"GND"}},
@@ -30,7 +31,7 @@
     {"ref":"TP_PUMP_OUT1","value":"TESTPOINT","mpn":"PCB_FEATURE","footprint":"TestPoint:TestPoint_Pad_D1.5mm","population":"PCB_FEATURE","pins":{"1":"PUMP_OUT1"}},
     {"ref":"TP_PUMP_OUT2","value":"TESTPOINT","mpn":"PCB_FEATURE","footprint":"TestPoint:TestPoint_Pad_D1.5mm","population":"PCB_FEATURE","pins":{"1":"PUMP_OUT2"}},
 
-    {"ref":"U_CO2_DRV","value":"TPS1HC120C-Q1","mpn":"TPS1HC120CQDYCRQ1","footprint":"PENDING_VENDOR_CAD_AUDIT_DYC8","population":"POPULATE","pins":{"1":"ACT_FAULT_N","2":"CO2_ILIM","3":"GND","4":"CO2_EN_DRV","5":"CO2_OPENLOAD_N","6":"GND","7":"CO2_SOL_POS","8":"12V_ACT"}},
+    {"ref":"U_CO2_DRV","value":"TPS1HC120C-Q1","mpn":"TPS1HC120CQDYCRQ1","footprint":"NFB:TI_DYC0008A_TPS1HC120","population":"POPULATE","pins":{"1":"ACT_FAULT_N","2":"CO2_ILIM","3":"GND","4":"CO2_EN_DRV","5":"CO2_OPENLOAD_N","6":"GND","7":"CO2_SOL_POS","8":"12V_ACT"}},
     {"ref":"R_CO2_ILIM","value":"27k 1%","mpn":"CRCW040227K0FKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"CO2_ILIM","2":"GND"}},
     {"ref":"C_CO2_DRV","value":"100nF 50V X7R","mpn":"C1608X7R1H104K080AA","footprint":"Capacitor_SMD:C_0603_1608Metric","population":"POPULATE","pins":{"1":"12V_ACT","2":"GND"}},
     {"ref":"R_CO2_EN_SER","value":"100R","mpn":"CRCW0402100RFKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"CO2_SOL_CTL","2":"CO2_EN_DRV"}},
@@ -40,12 +41,12 @@
     {"ref":"J_CO2_SOL","value":"MSTBA 2,5/2-G-5,08","mpn":"1757242","footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled","population":"POPULATE","pins":{"1":"CO2_SOL_POS","2":"GND"}},
     {"ref":"TP_CO2_SOL_POS","value":"TESTPOINT","mpn":"PCB_FEATURE","footprint":"TestPoint:TestPoint_Pad_D1.5mm","population":"PCB_FEATURE","pins":{"1":"CO2_SOL_POS"}},
 
-    {"ref":"U_CHILLER","value":"PhotoMOS GE DIP4 1 Form A","mpn":"AQY212EHAX","footprint":"PENDING_PANASONIC_CAD_AUDIT_DIP4_SMD","population":"POPULATE","pins":{"1":"CHILLER_LED_A","2":"CHILLER_LED_K","3":"CHILLER_CONTACT_A","4":"CHILLER_CONTACT_B"}},
+    {"ref":"U_CHILLER","value":"PhotoMOS GE DIP4 1 Form A","mpn":"AQY212EHAX","footprint":"NFB:Panasonic_AQY212EHAX_DIP4_SMD","population":"POPULATE","pins":{"1":"CHILLER_LED_A","2":"CHILLER_LED_K","3":"CHILLER_CONTACT_A","4":"CHILLER_CONTACT_B"}},
     {"ref":"Q_CHILLER","value":"2N7002","mpn":"2N7002,215","footprint":"Package_TO_SOT_SMD:SOT-23","population":"POPULATE","pins":{"1":"CHILLER_GATE","2":"GND","3":"CHILLER_LED_K"}},
     {"ref":"R_CH_LED","value":"360R 1%","mpn":"CRCW0402360RFKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"3V3_RAIL","2":"CHILLER_LED_A"}},
     {"ref":"R_CH_GATE","value":"1k","mpn":"CRCW04021K00FKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"CHILLER_CTL","2":"CHILLER_GATE"}},
     {"ref":"R_CH_GATE_PD","value":"100k","mpn":"CRCW0402100KFKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"CHILLER_GATE","2":"GND"}},
-    {"ref":"J_CHILLER_CTL","value":"MSTBA 2,5/2-G-5,08","mpn":"1757242","footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled","population":"POPULATE","pins":{"1":"CHILLER_CONTACT_A","2":"CHILLER_CONTACT_B"}},
+    {"ref":"J_CHILLER_CTL","value":"MSTBA 2,5/2-G-5.08","mpn":"1757242","footprint":"TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled","population":"POPULATE","pins":{"1":"CHILLER_CONTACT_A","2":"CHILLER_CONTACT_B"}},
 
     {"ref":"R_ACT_FAULT_PU","value":"10k","mpn":"CRCW040210K0FKED","footprint":"Resistor_SMD:R_0402_1005Metric","population":"POPULATE","pins":{"1":"3V3_RAIL","2":"ACT_FAULT_N"}},
     {"ref":"TP_ACT_FAULT","value":"TESTPOINT","mpn":"PCB_FEATURE","footprint":"TestPoint:TestPoint_Pad_D1.0mm","population":"PCB_FEATURE","pins":{"1":"ACT_FAULT_N"}}
@@ -53,7 +54,7 @@
   "nets": [
     {"name":"12V_ACT","nodes":["U_PUMP_DRV.6","U_PUMP_DRV.15","C_PUMP_VM.1","C_PUMP_BULK.1","U_CO2_DRV.8","C_CO2_DRV.1"]},
     {"name":"3V3_RAIL","nodes":["U_PUMP_DRV.16","R_CO2_OPENLOAD_PU.1","R_CH_LED.1","R_ACT_FAULT_PU.1"]},
-    {"name":"GND","nodes":["U_PUMP_DRV.2","U_PUMP_DRV.5","U_PUMP_DRV.9","U_PUMP_DRV.10","U_PUMP_DRV.11","U_PUMP_DRV.12","U_PUMP_DRV.19","U_PUMP_DRV.20","R_PUMP_SR.2","C_PUMP_VM.2","C_PUMP_BULK.2","R_PUMP_PWM_PD.2","R_PUMP_DIR_PD.2","R_PUMP_IPROPI.2","C_PUMP_IPROPI.2","U_CO2_DRV.3","U_CO2_DRV.6","R_CO2_ILIM.2","C_CO2_DRV.2","R_CO2_EN_PD.2","J_CO2_SOL.2","Q_CHILLER.2","R_CH_GATE_PD.2"]},
+    {"name":"GND","nodes":["U_PUMP_DRV.2","U_PUMP_DRV.5","U_PUMP_DRV.9","U_PUMP_DRV.10","U_PUMP_DRV.11","U_PUMP_DRV.12","U_PUMP_DRV.19","U_PUMP_DRV.20","U_PUMP_DRV.21","R_PUMP_SR.2","C_PUMP_VM.2","C_PUMP_BULK.2","R_PUMP_PWM_PD.2","R_PUMP_DIR_PD.2","R_PUMP_IPROPI.2","C_PUMP_IPROPI.2","U_CO2_DRV.3","U_CO2_DRV.6","R_CO2_ILIM.2","C_CO2_DRV.2","R_CO2_EN_PD.2","J_CO2_SOL.2","Q_CHILLER.2","R_CH_GATE_PD.2"]},
     {"name":"PUMP_SR_CFG","nodes":["U_PUMP_DRV.1","R_PUMP_SR.1"]},
     {"name":"PUMP_PWM","nodes":["J_UNOQ.20","R_PUMP_PWM_SER.1"]},
     {"name":"PUMP_PWM_DRV","nodes":["R_PUMP_PWM_SER.2","R_PUMP_PWM_PD.1","U_PUMP_DRV.4"]},
@@ -76,5 +77,5 @@
     {"name":"ACT_FAULT_N","nodes":["J_UNOQ.25","U_PUMP_DRV.18","U_CO2_DRV.1","R_ACT_FAULT_PU.2","TP_ACT_FAULT.1"]}
   ],
   "forbidden_production_tokens":["IR2104","IRLZ44N","HF46F","PC817","CO2_PWM","RELAY_HV"],
-  "open_placement_gates":["U_PUMP_DRV RHL20 CAD audit","U_CO2_DRV DYC8 CAD audit","U_CHILLER Panasonic DIP4 SMD CAD audit"]
+  "open_placement_gates":[]
 }
