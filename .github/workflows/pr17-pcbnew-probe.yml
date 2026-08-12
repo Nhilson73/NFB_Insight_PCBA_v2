@@ -1,9 +1,10 @@
-name: PR17 DRC CLI probe
+name: PR17 footprint geometry probe
 
 on:
   push:
     branches: [agent/pr17-production-placement]
     paths:
+      - 'tools/probe_placement_footprints.py'
       - '.github/workflows/pr17-pcbnew-probe.yml'
 
 jobs:
@@ -14,10 +15,7 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: Confirmar ausencia pcbnew Python
-        continue-on-error: true
-        run: python3 -c 'import pcbnew; print(pcbnew.GetBuildVersion())'
-      - name: Probe DRC CLI options
+      - name: Inventariar footprints/courtyards
+        run: python3 tools/probe_placement_footprints.py
+      - name: Confirmar DRC CLI disponible
         run: kicad-cli pcb drc --help
-      - name: Probe PCB CLI
-        run: kicad-cli pcb --help
