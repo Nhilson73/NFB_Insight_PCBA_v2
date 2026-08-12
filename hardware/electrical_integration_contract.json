@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "ELECTRICAL_INTEGRATION_BASELINE_PR11",
+  "decision_date": "2026-08-12",
+  "sources": {
+    "pin_contract": "hardware/insight_pin_contract.json",
+    "z1": "hardware/z1_production_netlist.json",
+    "z2": "hardware/z2_production_netlist.json",
+    "power": "hardware/power_production_netlist.json",
+    "footprints": "hardware/footprint_audit.json"
+  },
+  "scope": {
+    "z1_z2_power_cross_domain_connectivity": true,
+    "hierarchical_kicad_contract": true,
+    "actuators": false,
+    "placement": false,
+    "routing": false
+  },
+  "shared_nets": [
+    {"net":"GND","domains":["Z0_UNO_Q","Z1","Z2","Z3_POWER"],"policy":"single continuous reference plane; Z4 dirty returns join at power/star region"},
+    {"net":"3V3_RAIL","producer":"Z3_POWER/U_3V3","consumers":["Z1","Z2"],"host_power_tie_forbidden":"J_UNOQ.4"},
+    {"net":"5V_RAIL","producer":"Z3_POWER/U_5V","consumers":["Z1","Z2"],"host_power_tie_forbidden":"J_UNOQ.5"},
+    {"net":"I2C_SDA","domains":["Z0_UNO_Q","Z1_MPR","Z2_DFR1103"],"uno_q_pad":31},
+    {"net":"I2C_SCL","domains":["Z0_UNO_Q","Z1_MPR","Z2_DFR1103"],"uno_q_pad":32},
+    {"net":"UNO_IOREF_3V3","producer":"Z0_UNO_Q/J_UNOQ.2","consumer":"Z3_POWER/U_5V_EN","direction":"HOST_TO_SHIELD_ONLY"},
+    {"net":"12V_HOST_VIN","producer":"Z3_POWER/NT_HOST","consumer":"Z0_UNO_Q/J_UNOQ.8","direction":"SHIELD_TO_HOST_POWER"}
+  ],
+  "uno_q_signal_ownership": [
+    {"net":"PH_ADC","pad":9,"owner":"Z1"},
+    {"net":"ORP_ADC","pad":10,"owner":"Z1"},
+    {"net":"TEMP_1WIRE","pad":11,"owner":"Z1"},
+    {"net":"DO_ADC","pad":14,"owner":"Z1"},
+    {"net":"HMI_RX","pad":15,"owner":"Z2"},
+    {"net":"HMI_TX","pad":16,"owner":"Z2"},
+    {"net":"HX711_DOUT","pad":17,"owner":"Z2"},
+    {"net":"HX711_SCK","pad":18,"owner":"Z2"},
+    {"net":"MCU_WDI","pad":19,"owner":"Z2"},
+    {"net":"LED_STATUS","pad":28,"owner":"Z2"},
+    {"net":"I2C_SDA","pad":31,"owner":"SHARED_Z1_Z2"},
+    {"net":"I2C_SCL","pad":32,"owner":"SHARED_Z1_Z2"}
+  ],
+  "power_sequence_contract": [
+    "12V_IN_RAW -> input protection -> 12V_PROTECTED",
+    "12V_PROTECTED -> 12V_HOST_VIN -> J_UNOQ.8 VIN",
+    "J_UNOQ.2 UNO_IOREF_3V3 -> U_5V enable path",
+    "U_5V -> 5V_RAIL and 5V_PGOOD",
+    "5V_PGOOD -> U_3V3 enable",
+    "U_3V3 -> 3V3_RAIL",
+    "Z1/Z2 loads energize from shield-local rails only"
+  ],
+  "hard_prohibitions": [
+    "No J_UNOQ.4 on 3V3_RAIL",
+    "No J_UNOQ.5 on 5V_RAIL",
+    "Never drive UNO_IOREF_3V3 from shield",
+    "No CO2_ADC/A4 active net",
+    "No A3 humidity channel",
+    "No D9 proportional CO2 PWM",
+    "No power placement while a required footprint audit is open",
+    "No routing before hierarchical integration and actuator contract are closed"
+  ],
+  "i2c_address_map": [
+    {"address":"0x28","device":"MPRLS0030PA00002A","domain":"Z1"},
+    {"address":"0x66","device":"DFR1103","domain":"Z2"}
+  ],
+  "open_gates": [
+    "TPS259470A RPW0010A production footprint closure",
+    "TPSM33625 RDN-11 vendor CAD footprint closure",
+    "Z4 actuator production schematic/netlist",
+    "final hierarchical EDA root with all production symbols",
+    "placement and routing"
+  ]
+}
