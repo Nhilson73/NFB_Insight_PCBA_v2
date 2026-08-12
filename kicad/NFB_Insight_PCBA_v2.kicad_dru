@@ -1,0 +1,10 @@
+(version 1)
+
+# TPSM33625 RDN0011A usa el land pattern SMD preferido de TI 4226623/F.
+# La separación mínima cobre-cobre interna del encapsulado es 0.125 mm.
+# Esta excepción aplica EXCLUSIVAMENTE entre objetos del propio U_5V;
+# cualquier conexión/ruta externa conserva las reglas globales del board.
+(rule "TPSM33625_RDN_internal_pad_clearance"
+  (condition "A.Reference == 'U_5V' && B.Reference == 'U_5V'")
+  (constraint clearance (min 0.125mm))
+)
