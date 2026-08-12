@@ -16,6 +16,7 @@ on:
       - 'hardware/placement_readiness_contract.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/placement_plan_probe.json'
+      - 'hardware/placement_drc_contract.json'
       - 'hardware/insight_pin_contract.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
