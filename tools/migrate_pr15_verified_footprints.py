@@ -19,6 +19,8 @@ TXU_OLD = "Package_MSOP:VSSOP-8_2x3.1mm_P0.65mm"
 TXU_NEW = "NFB:TI_DCU0008A_TXU0202"
 PHX_OLD = "TerminalBlock_Phoenix:PhoenixContact_MSTBA-G_02x5.08mm_Angled"
 PHX_NEW = "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"
+FUSE_OLD = "Fuse:Fuse_2410_6125Metric"
+FUSE_NEW = "NFB:Littelfuse_0454_NANO2"
 
 JSON_TARGETS = {
     ROOT / "hardware" / "z2_production_netlist.json": {
@@ -26,6 +28,7 @@ JSON_TARGETS = {
     },
     ROOT / "hardware" / "power_production_netlist.json": {
         "J_PWR_IN": (PHX_OLD, PHX_NEW),
+        "F_ACT": (FUSE_OLD, FUSE_NEW),
     },
     ROOT / "hardware" / "z4_production_netlist.json": {
         "J_PUMP": (PHX_OLD, PHX_NEW),
@@ -40,6 +43,7 @@ CSV_TARGETS = {
     },
     ROOT / "bom" / "insight_power_production_bom.csv": {
         "J_PWR_IN": (PHX_OLD, PHX_NEW),
+        "F_ACT": (FUSE_OLD, FUSE_NEW),
     },
     ROOT / "bom" / "insight_z4_production_bom.csv": {
         "J_PUMP": (PHX_OLD, PHX_NEW),
