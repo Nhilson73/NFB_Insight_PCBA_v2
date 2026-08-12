@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "PREPLACEMENT_READINESS_PR16",
+  "decision_date": "2026-08-12",
+  "placement_allowed_after_pr16": true,
+  "routing_allowed_after_pr16": false,
+  "arduino_uno_q_primary_snapshot": {
+    "repository": "arduino/docs-content",
+    "commit": "24445a32e249d410c1e4359bdc99d8c0dcb17bd2",
+    "files": [
+      "content/hardware/02.uno/boards/uno-q/product.md",
+      "content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+      "content/hardware/02.uno/boards/uno-q/tech-specs.yml"
+    ],
+    "verified_facts": {
+      "sku_family": ["ABX00162", "ABX00173"],
+      "wireless_module": "WCBN3536A / Qualcomm WCN3980",
+      "antenna": "shared PCB antenna",
+      "host_certifications_include": ["CE/RED", "RoHS", "REACH", "WEEE"],
+      "shield_carrier_expansion_supported": true
+    }
+  },
+  "rf_policy": {
+    "primary_source_numeric_antenna_keepout_found": false,
+    "numeric_antenna_keepout_mm": null,
+    "policy": "DO_NOT_INVENT_NUMERIC_RF_KEEPOUT",
+    "host_envelope_is_no_nfb_production_placement": true,
+    "host_envelope_mm": {"x_min": 0.0, "x_max": 53.34, "y_min": 0.0, "y_max": 68.58},
+    "nfb_board_extension_begins_x_mm": 53.34,
+    "adjacent_zone": "Z1_SENSORS_QUIET",
+    "high_noise_power_min_x_mm": 145.0,
+    "high_noise_actuator_min_x_mm": 180.0,
+    "derived_separation_from_host_xmax_to_z3_mm": 91.66,
+    "derived_separation_from_host_xmax_to_z4_mm": 126.66,
+    "enclosure_rule": "No conductive enclosure, cable shield, bracket or stacked PCB may intrude over the UNO Q RF/antenna region until enclosure 3D/RF validation.",
+    "note": "The 91.66/126.66 mm values are NFB zone-separation consequences, not Arduino antenna keepout specifications. No unsupported RF clearance number is claimed."
+  },
+  "mechanical": {
+    "board_height_mm": 68.58,
+    "board_width_mm_current": 220.0,
+    "board_width_status": "PROVISIONAL_UNTIL_PLACEMENT",
+    "growth_direction": "+X",
+    "field_io_edge_y_mm": 0.0,
+    "field_io_direction": "-Y",
+    "uno_q_rotation": "+90deg_CCW",
+    "usb_c_exit": "-Y",
+    "uno_q_holes_mm": [
+      [50.80, 13.97],
+      [45.72, 66.04],
+      [17.78, 66.04],
+      [2.54, 15.24]
+    ],
+    "host_access_policy": "No NFB production footprint may occupy Z0; this preserves USB-C, power button, JCTL, JSPI/SPI2, QWIIC and host service access without inventing unverified local keepout dimensions."
+  },
+  "zone_guides": {
+    "status": "PLACEMENT_GUIDES_ADJUSTABLE_WIDTH_ORDER_FIXED",
+    "Z0": {"x_min": 0.0, "x_max": 53.34, "class": "HOST_IMMUTABLE"},
+    "Z1": {"x_min": 53.34, "x_max": 105.0, "class": "SENSORS_QUIET"},
+    "Z2": {"x_min": 105.0, "x_max": 145.0, "class": "DIGITAL_LOW_NOISE"},
+    "Z3": {"x_min": 145.0, "x_max": 180.0, "class": "POWER"},
+    "Z4": {"x_min": 180.0, "x_max": 220.0, "class": "ACTUATORS_DIRTY"},
+    "order_fixed": ["Z0", "Z1", "Z2", "Z3", "Z4"],
+    "boundary_adjustment_rule": "PR17 may increase board width or shift Z1-Z4 internal boundaries only toward +X as required by real courtyards; zone order and Z0 boundary remain immutable."
+  },
+  "layer_intent": {
+    "layers": 4,
+    "F.Cu": "components + critical/local signals",
+    "In1.Cu": "CONTINUOUS_GND_REFERENCE_NO_SIGNAL_ROUTING",
+    "In2.Cu": "power distribution; preserve quiet return geometry",
+    "B.Cu": "secondary/low-speed signals",
+    "ground_plane_rule": "In1.Cu must remain a continuous GND reference except unavoidable antipad/through-hole clearances; autorouting signals on In1.Cu is forbidden."
+  },
+  "field_io_sequence_left_to_right": [
+    {"order": 1, "zone": "Z1", "ref": "J_PH", "role": "pH conditioned module", "orientation": "-Y"},
+    {"order": 2, "zone": "Z1", "ref": "J_ORP", "role": "ORP conditioned module", "orientation": "-Y"},
+    {"order": 3, "zone": "Z1", "ref": "J_TEMP", "role": "DS18B20", "orientation": "-Y"},
+    {"order": 4, "zone": "Z1", "ref": "U_CO2", "role": "CO2 pressure long port", "orientation": "VERTICAL_PORT_NEAR_FIELD_EDGE"},
+    {"order": 5, "zone": "Z1", "ref": "J_DO", "role": "DO conditioned module", "orientation": "-Y"},
+    {"order": 6, "zone": "Z2", "ref": "J_LOADCELL", "role": "load cell", "orientation": "-Y"},
+    {"order": 7, "zone": "Z2", "ref": "J_GNSS_RTC", "role": "DFR1103 GNSS+RTC", "orientation": "-Y"},
+    {"order": 8, "zone": "Z2", "ref": "J_HMI", "role": "HMI UART", "orientation": "-Y"},
+    {"order": 9, "zone": "Z3", "ref": "J_PWR_IN", "role": "12V input", "orientation": "-Y"},
+    {"order": 10, "zone": "Z4", "ref": "J_PUMP", "role": "pump H-bridge output", "orientation": "-Y"},
+    {"order": 11, "zone": "Z4", "ref": "J_CO2_SOL", "role": "CO2 solenoid output", "orientation": "-Y"},
+    {"order": 12, "zone": "Z4", "ref": "J_CHILLER_CTL", "role": "isolated chiller dry contact", "orientation": "-Y"}
+  ],
+  "field_io_footprints": {
+    "J_PH": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+    "J_ORP": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+    "J_TEMP": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+    "U_CO2": "NFB:Honeywell_MPR_LongPort_12Pad",
+    "J_DO": "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal",
+    "J_LOADCELL": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_4-G-5,08_1x04_P5.08mm_Horizontal",
+    "J_GNSS_RTC": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+    "J_HMI": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+    "J_PWR_IN": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+    "J_PUMP": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+    "J_CO2_SOL": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal",
+    "J_CHILLER_CTL": "Connector_Phoenix_MSTB:PhoenixContact_MSTBA_2,5_2-G-5,08_1x02_P5.08mm_Horizontal"
+  },
+  "placement_rules": {
+    "production_footprints_inside_Z0": "FORBIDDEN",
+    "connectors_field_edge_first_row": true,
+    "esd_and_input_protection_immediately_behind_field_connectors": true,
+    "analog_conditioning_stays_in_Z1": true,
+    "loadcell_hx711_cluster_stays_on_Z1_SIDE_OF_Z2": true,
+    "hmi_stays_on_Z3_SIDE_OF_Z2": true,
+    "power_entry_tvs_efuse_cluster_stays_in_Z3": true,
+    "buck_switching_loop_stays_in_Z3": true,
+    "actuator_drivers_and_local_bulk_stay_in_Z4": true,
+    "actuator_connectors_stay_at_field_edge": true,
+    "chiller_contact_clearance_policy": "SELV <=48V ONLY; NO MAINS",
+    "pump_current_adc_keep_away_from_switch_nodes": true,
+    "high_current_returns_must_not_cross_Z1_Z2": true,
+    "exact_xy_coordinates_frozen_in_pr16": false
+  },
+  "preplacement_blockers": [],
+  "deferred_non_blocking_validation": [
+    "UNO Q exact antenna-local numeric clearance was not published in the reviewed Arduino GitHub text; do not invent it. Enclosure/stacking RF validation remains required.",
+    "Final board width remains provisional until actual courtyard-based placement.",
+    "3D assembly review and enclosure collision review occur after PR17 placement.",
+    "HIL/thermal and EMC pre-scan remain post-routing validation gates."
+  ],
+  "next_gate": "PR17 may introduce production XY placement only if this contract, full hierarchy ERC=0/0, mechanical DRC and field-connector footprint parity remain green. Routing remains forbidden."
+}
