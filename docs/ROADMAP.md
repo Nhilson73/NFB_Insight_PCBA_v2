@@ -81,31 +81,43 @@
 - [x] GND común Z0–Z4; 3V3/5V locales excluyen Z0.
 - [x] I²C Z0/Z1/Z2; `12V_ACT` Z3/Z4; controles/diagnóstico Z0/Z4.
 - [x] Gate `tools/validate_root_eda.py` + workflow root.
-- [x] Mantener `zone_internal_component_symbols=false`: no duplicar manualmente >100 refs.
-- [x] Congelar deuda ERC intencional de interfaz: exactamente 125 `label_dangling`, cero tipos inesperados y sin bajar severidades KiCad.
-- [ ] CI PR #14 totalmente verde y merge.
+- [x] Mantener `zone_internal_component_symbols=false` en PR #14 para no duplicar manualmente >100 refs.
+- [x] Congelar deuda ERC transitoria exacta de 125 `label_dangling`, sin relajar severidades.
+- [x] CI PR #14 verde y mergeado en `main`.
 
 ### PR #15 — materialización interna de símbolos de producción
-- [ ] Crear/generar símbolos y conectividad interna Z1 desde `z1_production_netlist.json` + BOM.
-- [ ] Crear/generar símbolos y conectividad interna Z2 desde `z2_production_netlist.json` + BOM.
-- [ ] Crear/generar símbolos y conectividad interna Z3 desde `power_production_netlist.json` + BOM.
-- [ ] Crear/generar símbolos y conectividad interna Z4 desde `z4_production_netlist.json` + BOM.
-- [ ] Paridad refs/pines/nets/footprints JSON↔KiCad.
-- [ ] Eliminar completamente la deuda ERC PR #14.
-- [ ] ERC = 0 del hierarchy completo.
-- [ ] Mantener placement/routing fuera de alcance hasta cerrar paridad.
+- [x] Generar Z0 desde `insight_pin_contract.json`.
+- [x] Generar símbolos y conectividad interna Z1 desde `z1_production_netlist.json` + BOM.
+- [x] Generar símbolos y conectividad interna Z2 desde `z2_production_netlist.json` + BOM.
+- [x] Generar símbolos y conectividad interna Z3 desde `power_production_netlist.json` + BOM.
+- [x] Generar símbolos y conectividad interna Z4 desde `z4_production_netlist.json` + BOM.
+- [x] Paridad refs/pines/nets/footprints JSON↔BOM↔KiCad reproducible.
+- [x] Librería `NFB_GEN` registrada; labels internos con alcance local.
+- [x] Cerrar footprints detectados durante ERC: TXU0202/DCU0008A, Phoenix 1757242 y Littelfuse 045401.5MR.
+- [x] Eliminar completamente la deuda ERC PR #14.
+- [x] KiCad 10.0.5 hierarchy completo: **ERC = 0 errores / 0 warnings**.
+- [x] `root_eda_contract.json` schema 3 exige `ZERO_VIOLATIONS_REQUIRED_PR15`.
+- [x] Placement/routing permanecen bloqueados.
 
 ## Fase 4 — Placement
 
-- [ ] Z0 UNO Q bloqueado + keepout RF confirmado.
+### Gate pre-placement
+- [ ] Keepout RF/antena del UNO Q confirmado contra fuente oficial.
+- [ ] Keepouts mecánicos definitivos CAD/STEP/enclosure.
 - [x] MPR + cinco footprints críticos PR #13 cerrados.
-- [ ] Todos los símbolos internos de producción materializados y paridad EDA cerrada.
+- [x] Símbolos internos de producción materializados y paridad EDA cerrada en PR #15.
 - [ ] Auditar footprints restantes de riesgo antes de colocarlos.
-- [ ] Z1/Z2 conectores hacia `Y=0/-Y`.
-- [ ] Z3 loops de potencia mínimos.
+
+### Placement físico
+- [ ] Z0 UNO Q bloqueado en `(0,0)`.
+- [ ] Z1/Z2 conectores de campo hacia `Y=0/-Y`.
+- [ ] Front-ends sensibles inmediatamente detrás de conectores de sensor.
+- [ ] Z3 loops de potencia mínimos y nodo SW confinado.
 - [ ] Z4 drivers/conectores/retornos sucios junto al borde de campo.
+- [ ] `PUMP_CURRENT_ADC` alejado de switching.
 - [ ] PhotoMOS SELV deliberado; nunca mains.
-- [ ] Revisión 3D y ancho final.
+- [ ] Test points accesibles con enclosure.
+- [ ] Revisión 3D y congelación del ancho final.
 
 ## Fase 5 — Routing
 
