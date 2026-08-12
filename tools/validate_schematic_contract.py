@@ -37,7 +37,9 @@ def main():
         nets={x["name"]:set(x["nodes"]) for x in nz["nets"]}
         if "J_UNOQ.4" in nets.get("3V3_RAIL",set()) or "J_UNOQ.5" in nets.get("5V_RAIL",set()): fail(f"{name} back-feed host")
     rooteda=json.loads(ROOTEDA.read_text(encoding="utf-8"))
-    if rooteda.get("status")!="ROOT_EDA_INTERZONE_BASELINE_PR14" or rooteda["scope"].get("placement") or rooteda["scope"].get("routing"): fail("root EDA PR14/scope incorrecto")
+    if rooteda.get("schema_version")!=2 or rooteda.get("status")!="ROOT_EDA_INTERZONE_BASELINE_PR14" or rooteda["scope"].get("placement") or rooteda["scope"].get("routing"): fail("root EDA PR14/schema/scope incorrecto")
+    erc=rooteda.get("erc_interzone_policy",{})
+    if erc.get("mode")!="BOUNDED_INTENTIONAL_INTERFACE_DEBT_PR14" or erc.get("expected_violation_type")!="label_dangling" or erc.get("expected_violation_count")!=125 or erc.get("unexpected_violation_count_allowed")!=0: fail("política ERC PR14 incorrecta")
     if rooteda["interzone_nets"].get("GND")!=["Z0","Z1","Z2","Z3","Z4"]: fail("GND root no incluye host")
     if "Z0" in rooteda["interzone_nets"]["3V3_RAIL"] or "Z0" in rooteda["interzone_nets"]["5V_RAIL"]: fail("rails locales root incluyen host")
     pcb=PCB.read_text(encoding="utf-8"); physical={int(x) for x in re.findall(r'\(pad "(\d+)" thru_hole',pcb)}
@@ -52,5 +54,6 @@ def main():
         if marker not in z2sch: fail(f"Z2 contract sin {marker}")
     print("OK: contrato global + root EDA inter-zona PR14 verificado")
     print("- Z0 participa en GND, no en 3V3/5V locales; A4/D10 Z4 preservados")
+    print("- deuda ERC PR14 explícita: 125 label_dangling, 0 tipos inesperados; PR15 debe llegar a 0")
     return 0
 if __name__=="__main__": raise SystemExit(main())
