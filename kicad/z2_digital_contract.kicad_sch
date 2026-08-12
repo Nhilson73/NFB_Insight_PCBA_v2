@@ -1,45 +1,45 @@
 (kicad_sch
   (version 20250114)
   (generator "nfb_pr7_contract")
-  (generator_version "1.0")
+  (generator_version "1.1")
   (uuid "7f2cc8a4-93d9-4ea2-8c45-8429d652d2a7")
   (paper "A3")
   (title_block
     (title "NFB Insight PCBA v2 — Z2 Digital / Bajo Ruido")
     (date "2026-08-11")
-    (rev "0.7.0")
+    (rev "0.9.0")
     (company "Cafelium SRL / Nebula Ecosystem")
-    (comment 1 "PR #7 — contrato Z2 gobernado por hardware/z2_production_netlist.json")
+    (comment 1 "PR #7 Z2 preservado; frontera de potencia corregida por PR #9")
     (comment 2 "DFR1103 0x66 | HX711 | TXU0202DCUR | TPS3823-30DBVR")
-    (comment 3 "Placement/routing fuera de alcance")
-    (comment 4 "Integración jerárquica Z1+Z2 posterior")
+    (comment 3 "5V_RAIL/3V3_RAIL son locales al shield; no J_UNOQ.4/.5")
+    (comment 4 "Placement/routing fuera de alcance")
   )
   (lib_symbols)
-  (text "PR #7 — Z2 DIGITAL / BAJO RUIDO\nFuente de verdad: hardware/z2_production_netlist.json\nContrato: hardware/z2_digital_contract.json\nBOM: bom/insight_z2_production_bom.csv"
+  (text "PR #7 — Z2 DIGITAL / BAJO RUIDO / POWER CORRECTION PR #9\nFuente de verdad: hardware/z2_production_netlist.json\nContrato: hardware/z2_digital_contract.json\nPotencia: hardware/power_architecture_contract.json"
     (exclude_from_sim no)
     (at 38.1 35.56 0)
     (effects (font (size 2 2)) (justify left bottom))
     (uuid "31dfed8f-a8fc-44e7-9c9b-c9fb64b83015")
   )
-  (text "I2C GLOBAL\nD20/D21 = I2C_SDA/I2C_SCL | pull-ups 4.7k a 3V3\nMPRLS0030PA00002A = 0x28 (Z1) | DFR1103 GNSS+RTC = 0x66 (Z2)\n0x42 y 0x68 legacy supersedidos. ESD individual PESD3V3U1UL a GND en cable externo."
+  (text "I2C GLOBAL\nD20/D21 = I2C_SDA/I2C_SCL | pull-ups 4.7k a 3V3_RAIL LOCAL\nMPRLS0030PA00002A = 0x28 (Z1) | DFR1103 GNSS+RTC = 0x66 (Z2)\n0x42 y 0x68 legacy supersedidos. ESD individual PESD3V3U1UL a GND en cable externo."
     (exclude_from_sim no)
     (at 38.1 76.2 0)
     (effects (font (size 1.4 1.4)) (justify left bottom))
     (uuid "167c1afd-1e23-47f1-a32d-fdfdd2f695fe")
   )
-  (text "HX711 / CELDA DE CARGA\nU_HX 3.3V, RATE=0/10SPS, gain A=128.\nDOUT=D2/HX711_DOUT | PD_SCK=D3/HX711_SCK | XI=GND oscilador interno.\nJ_LOADCELL: E+=3V3, E-=GND, A+=LOAD_A_POS, A-=LOAD_A_NEG."
+  (text "HX711 / CELDA DE CARGA\nU_HX 3.3V LOCAL, RATE=0/10SPS, gain A=128.\nDOUT=D2/HX711_DOUT | PD_SCK=D3/HX711_SCK | XI=GND oscilador interno.\nJ_LOADCELL: E+=3V3_RAIL, E-=GND, A+=LOAD_A_POS, A-=LOAD_A_NEG."
     (exclude_from_sim no)
     (at 38.1 121.92 0)
     (effects (font (size 1.4 1.4)) (justify left bottom))
     (uuid "e748d061-5e06-40bf-8ddf-84e20cc0469f")
   )
-  (text "HMI UART\nTXU0202DCUR: HMI_TX 3.3V -> HMI_FIELD_RX 5V; HMI_FIELD_TX 5V -> HMI_RX 3.3V.\nJ_HMI = 5V/GND/RX/TX. ESD individual PESD5V0U1UL a GND por línea."
+  (text "HMI UART\nTXU0202DCUR: HMI_TX 3.3V -> HMI_FIELD_RX 5V; HMI_FIELD_TX 5V -> HMI_RX 3.3V.\nJ_HMI = 5V_RAIL LOCAL/GND/RX/TX. ESD individual PESD5V0U1UL a GND por línea."
     (exclude_from_sim no)
     (at 38.1 162.56 0)
     (effects (font (size 1.4 1.4)) (justify left bottom))
     (uuid "46256677-d697-4db9-bf8c-61994763a163")
   )
-  (text "WATCHDOG / ESTADO\nTPS3823-30DBVR: RESET=MCU_NRST, WDI=D4/MCU_WDI, MR_n pull-up 10k, VDD=3V3.\nTimeout contractual 1.6s; feed firmware 400ms. D13/LED_STATUS usa LED integrado UNO Q + TP."
+  (text "WATCHDOG / ESTADO\nTPS3823-30DBVR: RESET=MCU_NRST, WDI=D4/MCU_WDI, MR_n pull-up 10k, VDD=3V3_RAIL LOCAL.\nTimeout contractual 1.6s; feed firmware 400ms. D13/LED_STATUS usa LED integrado UNO Q + TP."
     (exclude_from_sim no)
     (at 38.1 198.12 0)
     (effects (font (size 1.4 1.4)) (justify left bottom))
