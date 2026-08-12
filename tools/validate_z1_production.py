@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate Z1: preserva sensores PR6, potencia PR9, audit PR11/12 y reasignación A4 PR12."""
+"""Gate Z1: preserva sensores PR6, potencia PR9, cierre físico PR13 y reasignación A4 PR12."""
 from __future__ import annotations
 import csv, json, math, re
 from pathlib import Path
@@ -15,10 +15,10 @@ def main():
     if n.get("schema_version")!=2 or n.get("power_source_contract")!="hardware/power_architecture_contract.json": fail("netlist Z1 no refleja potencia PR9")
     if p.get("schema_version")!=6: fail("pin contract no es schema v6")
     if power.get("status")!="POWER_ARCHITECTURE_BASELINE_PR9": fail("contrato potencia no es PR9")
-    if audit.get("status")!="FOOTPRINT_AUDIT_EXTENDED_PR12": fail("audit footprints no es extensión PR12")
+    if audit.get("schema_version")!=3 or audit.get("status")!="FOOTPRINT_AUDIT_CLOSED_PR13": fail("audit footprints no es cierre PR13")
     if z4.get("status")!="Z4_PRODUCTION_BASELINE_PR12": fail("Z4 no es PR12")
     aud={x["id"]:x for x in audit["audits"]}; mpr_a=aud.get("MPR_LONG_PORT_12PAD",{})
-    if mpr_a.get("status")!="CLOSED_PRIMARY_DATASHEET" or mpr_a.get("placement_allowed") is not True or mpr_a.get("verified_geometry",{}).get("recommended_layout_outer_span_mm")!=4.20: fail("MPR audit PR11 no cerrado")
+    if mpr_a.get("status")!="CLOSED_PRIMARY_DATASHEET" or mpr_a.get("placement_allowed") is not True or mpr_a.get("verified_geometry",{}).get("recommended_layout_outer_span_mm")!=4.20: fail("MPR audit no cerrado")
     ch={x["id"]:x for x in s["channels"]}
     if set(ch)!={"PH","ORP","TEMP","CO2","DO"}: fail("canales Z1 incorrectos")
     co2=ch["CO2"]
@@ -27,7 +27,7 @@ def main():
     if float(co2["pressure"]["max_kpa"])<=180 or not close(co2["pressure"]["max_kpa"],expected_kpa,1e-7): fail("rango MPR incorrecto")
     if co2["legacy"]["status"]!="REMOVED_FROM_PRODUCTION": fail("MPX5700 no retirado")
     pins={int(x["pad"]):x for x in p["pins"]}
-    if pins[13].get("net")!="PUMP_CURRENT_ADC" or pins[13].get("status")!="ACTIVE_ANALOG_DIAGNOSTIC": fail("A4 debe ser PUMP_CURRENT_ADC en PR12")
+    if pins[13].get("net")!="PUMP_CURRENT_ADC" or pins[13].get("status")!="ACTIVE_ANALOG_DIAGNOSTIC": fail("A4 debe ser PUMP_CURRENT_ADC")
     if pins[31].get("net")!="I2C_SDA" or pins[32].get("net")!="I2C_SCL": fail("bus I2C incorrecto")
     if pins[4].get("net") is not None or pins[5].get("net") is not None: fail("rails locales unidos al host")
     if "CO2_ADC" in {x.get("net") for x in p["pins"]}: fail("CO2_ADC reapareció")
@@ -53,6 +53,6 @@ def main():
     if pads!=set(range(1,13)): fail("footprint MPR incompleto")
     for marker in ('(at 1.27 1.775)','(at -1.775 -1.27)','HONEYWELL 32332628 ISSUE L FIG.10'):
         if marker not in fp: fail(f"MPR sin {marker}")
-    print("OK: Z1 preservado; A4 liberado de CO2 y reutilizado por Z4 como PUMP_CURRENT_ADC")
+    print("OK: Z1 preservado bajo cierre físico PR13; A4=PUMP_CURRENT_ADC y CO2 sigue I2C")
     return 0
 if __name__=="__main__": raise SystemExit(main())
