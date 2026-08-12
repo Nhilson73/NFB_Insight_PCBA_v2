@@ -41,13 +41,13 @@ def main():
     inter={k:set(v) for k,v in c["interzone_nets"].items()}
     forbidden={"CO2_ADC","TEMP_ADC","HUM_ADC","CO2_PWM","CO2_FLOW_PWM","RS485_IRQ_RSVD"}
     if forbidden & set(inter): fail(f"nets prohibidas en root: {sorted(forbidden & set(inter))}")
-    # Z0 debe ser exactamente los endpoints activos únicos del pin contract, incluido GND común.
+    # Z0 = endpoints funcionales activos del pin contract + referencia GND común.
     active_host={x.get("net") for x in pin["pins"] if str(x.get("status","")).startswith("ACTIVE") and x.get("net")}
+    if any(x.get("net")=="GND" for x in pin["pins"]): active_host.add("GND")
     z0={net for net,zones in inter.items() if "Z0" in zones}
-    if active_host!=z0: fail(f"Z0 root != endpoints activos pin contract; falta={sorted(active_host-z0)} sobra={sorted(z0-active_host)}")
+    if active_host!=z0: fail(f"Z0 root != endpoints activos pin contract + GND; falta={sorted(active_host-z0)} sobra={sorted(z0-active_host)}")
     if "GND" not in z0: fail("UNO Q debe participar en GND común")
     if "3V3_RAIL" in z0 or "5V_RAIL" in z0: fail("host no puede alimentar rails locales")
-    # Cada child sheet debe exponer exactamente las nets que el contrato le asigna.
     for zid,s in sheets.items():
         expected={net for net,zones in inter.items() if zid in zones}
         text=(ROOT/s["file"]).read_text(encoding="utf-8")
@@ -63,11 +63,9 @@ def main():
         if label_counts[net]!=expected: fail(f"root local-label count {net}={label_counts[net]} esperado {expected}")
     extra_pins=set(pin_counts)-set(inter); extra_labels=set(label_counts)-set(inter)
     if extra_pins or extra_labels: fail(f"root tiene nets no contractuales pins={sorted(extra_pins)} labels={sorted(extra_labels)}")
-    # Shared-bus ownership sanity.
     if inter["I2C_SDA"]!={"Z0","Z1","Z2"} or inter["I2C_SCL"]!={"Z0","Z1","Z2"}: fail("I2C root ownership cambió")
     if inter["GND"]!={"Z0","Z1","Z2","Z3","Z4"}: fail("GND debe abarcar Z0..Z4")
     if inter["3V3_RAIL"]!={"Z1","Z2","Z3","Z4"} or inter["5V_RAIL"]!={"Z1","Z2","Z3"}: fail("rails locales tienen ownership incorrecto")
-    # Root PR14 no debe introducir production footprints al PCB.
     pcb=PCB.read_text(encoding="utf-8")
     refs=[]
     for nz in (z1,z2,power,z4): refs.extend(x["ref"] for x in nz["components"])
