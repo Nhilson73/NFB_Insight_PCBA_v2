@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   eco:
@@ -24,37 +24,32 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Compilar herramientas
-        run: |
-          python3 -m py_compile tools/generate_pr17_placement_manifest.py tools/apply_z3_buck_placement_eco.py tools/apply_z2_loadcell_tp_eco.py tools/validate_z2_loadcell_tp_eco.py tools/materialize_pr17_pcb.py tools/validate_pr17_placement.py
-      - name: Regenerar base PR17 + ECO PR22
+      - name: Regenerar base + ECOs
         run: |
           python3 tools/generate_pr17_placement_manifest.py
           python3 tools/apply_z3_buck_placement_eco.py
           cp hardware/placement_manifest.json /tmp/base_pr22.json
-      - name: Aplicar ECO PR24
-        run: python3 tools/apply_z2_loadcell_tp_eco.py
-      - name: Validar alcance 2 refs
-        run: python3 tools/validate_z2_loadcell_tp_eco.py /tmp/base_pr22.json
-      - name: Materializar PCB y validar placement
+          python3 tools/apply_z2_loadcell_tp_eco.py
+          python3 tools/validate_z2_loadcell_tp_eco.py /tmp/base_pr22.json
+      - name: Materializar y validar
         run: |
           python3 tools/materialize_pr17_pcb.py
           python3 tools/validate_pr17_placement.py
-      - name: DRC físico probe
-        run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr24_drc.json --severity-all
           cp /tmp/pr24_drc.json hardware/pr24_eco_drc.json
-          python3 - <<'PY'
-          import json,collections
-          d=json.load(open('/tmp/pr24_drc.json',encoding='utf-8')); v=d.get('violations',[]); u=d.get('unconnected_items',[])
-          sev=collections.Counter(x.get('severity','?') for x in v); typ=collections.Counter(x.get('type','?') for x in v)
-          print('SEVERITIES',dict(sev)); print('TYPES',dict(typ)); print('UNCONNECTED',len(u))
-          forbidden={'clearance','shorting_items','courtyards_overlap','footprint_type_mismatch','board_edge_clearance','hole_clearance','drill_out_of_range','track_width','via_diameter','connection_width'}
-          if sev.get('error',0): raise SystemExit('ERROR: DRC errors='+str(sev['error']))
-          if forbidden & set(typ): raise SystemExit('ERROR: physical violation types='+str(sorted(forbidden & set(typ))))
-          if set(typ)-{'silk_edge_clearance','silk_over_copper','silk_overlap','text_height'}: raise SystemExit('ERROR: new warning types='+str(sorted(set(typ)-{'silk_edge_clearance','silk_over_copper','silk_overlap','text_height'})))
-          if len(u)!=250: raise SystemExit('ERROR: unconnected changed='+str(len(u)))
-          PY
+          python3 tools/validate_pr17_drc.py /tmp/pr24_drc.json
+      - name: Persistir manifest y PCB verificados
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hardware/placement_manifest.json kicad/NFB_Insight_PCBA_v2.kicad_pcb
+          if git diff --cached --quiet; then
+            echo "Artefactos ya persistidos."
+          else
+            git commit -m "placement: persistir ECO Z2 load-cell verificado"
+            git push origin HEAD:agent/pr24-z2-loadcell-tp-eco
+          fi
       - name: Guardar artefactos
         if: always()
         uses: actions/upload-artifact@v4
