@@ -6,17 +6,28 @@ on:
     paths:
       - 'kicad/**'
       - 'hardware/placement_manifest.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'tools/validate_mechanical.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/mechanical-kicad.yml'
   pull_request:
     branches: [main]
     paths:
       - 'kicad/**'
       - 'hardware/placement_manifest.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'tools/validate_mechanical.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/mechanical-kicad.yml'
+
+permissions:
+  contents: read
 
 jobs:
   mechanical:
@@ -25,28 +36,33 @@ jobs:
     container:
       image: kicad/kicad:10.0.5
       options: --user root
-
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
-      - name: Validar coordenadas mecánicas
+      - name: Validar fase real de routing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from tools.validate_routing_phase import assert_authorized_phase
+          text=Path('kicad/NFB_Insight_PCBA_v2.kicad_pcb').read_text(encoding='utf-8')
+          print('FASE_REAL',assert_authorized_phase(text,'mechanical gate'))
+          PY
+      - name: Validar coordenadas mecánicas reales
         run: python3 tools/validate_mechanical.py
-
       - name: Inicializar librerías globales KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-
-      - name: Parsear board y exigir DRC físico 0
+      - name: Preparar vista efímera placement-only PR17
+        run: python3 tools/prepare_legacy_placement_view.py
+      - name: Exigir DRC histórico de placement PR17/PR24
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
             --format json \
             --output /tmp/drc_mechanical.json \
             --severity-all
           python3 tools/validate_pr17_drc.py /tmp/drc_mechanical.json
-
       - name: Mostrar resumen DRC
         if: always()
         run: |
@@ -58,7 +74,6 @@ jobs:
           print('unconnected_items=',len(p.get('unconnected_items',[])))
           PY
           fi
-
       - name: Guardar reporte DRC
         if: always()
         uses: actions/upload-artifact@v4

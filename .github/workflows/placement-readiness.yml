@@ -10,6 +10,8 @@ on:
       - 'docs/ROADMAP.md'
       - 'hardware/placement_readiness_contract.json'
       - 'hardware/placement_manifest.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
@@ -22,6 +24,8 @@ on:
       - 'tools/migrate_pr16_loadcell_connector.py'
       - 'tools/validate_placement_readiness.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/placement-readiness.yml'
   push:
     branches: [main]
@@ -32,6 +36,8 @@ on:
       - 'docs/ROADMAP.md'
       - 'hardware/placement_readiness_contract.json'
       - 'hardware/placement_manifest.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
@@ -44,7 +50,12 @@ on:
       - 'tools/migrate_pr16_loadcell_connector.py'
       - 'tools/validate_placement_readiness.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/placement-readiness.yml'
+
+permissions:
+  contents: read
 
 jobs:
   readiness:
@@ -55,20 +66,30 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
+      - name: Validar fase real de routing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from tools.validate_routing_phase import assert_authorized_phase
+          text=Path('kicad/NFB_Insight_PCBA_v2.kicad_pcb').read_text(encoding='utf-8')
+          print('FASE_REAL',assert_authorized_phase(text,'pre-placement gate'))
+          PY
       - name: Validar migración de J_LOADCELL
         run: python3 tools/migrate_pr16_loadcell_connector.py --check
       - name: Verificar hierarchy determinista PR15
         run: python3 tools/normalize_pr15_schematics.py --check
-      - name: Validar contrato pre-placement y transición PR17
-        run: python3 tools/validate_placement_readiness.py
       - name: Inicializar librerías KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Preparar vista efímera placement-only PR16/PR17
+        run: python3 tools/prepare_legacy_placement_view.py
+      - name: Validar contrato pre-placement y transición PR17
+        run: python3 tools/validate_placement_readiness.py
       - name: Exigir ERC hierarchy 0/0
         run: kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/erc_pr16.rpt --severity-all --exit-code-violations
-      - name: Exigir DRC físico 0 y deuda unconnected acotada PR17
+      - name: Exigir DRC histórico de placement PR17/PR24
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
             --format json \
