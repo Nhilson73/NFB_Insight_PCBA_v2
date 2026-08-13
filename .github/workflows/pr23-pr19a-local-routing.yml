@@ -6,33 +6,15 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'tools/pr19a_router_core.py'
-      - 'tools/materialize_pr19a_local.py'
-      - 'tools/materialize_pr19a_local_v3.py'
-      - 'tools/materialize_pr19a_local_v4.py'
-      - 'tools/materialize_pr19a_local_v5.py'
-      - 'tools/materialize_pr19a_local_v6.py'
-      - 'tools/materialize_pr19a_local_v7.py'
-      - 'tools/materialize_pr19a_local_v8.py'
-      - 'tools/materialize_pr19a_local_v9.py'
-      - 'tools/materialize_pr19a_local_v10.py'
-      - 'tools/materialize_pr19a_local_v11.py'
-      - 'tools/materialize_pr19a_local_v12.py'
-      - 'tools/materialize_pr19a_local_v13.py'
-      - 'tools/materialize_pr19a_local_v14.py'
-      - 'tools/materialize_pr19a_local_v15.py'
-      - 'tools/materialize_pr19a_local_v16.py'
-      - 'tools/materialize_pr19a_local_v17.py'
-      - 'tools/materialize_pr19a_local_v18.py'
-      - 'tools/materialize_pr19a_local_v19.py'
-      - 'tools/validate_pr19a_local.py'
-      - 'hardware/pr19a_route_overrides_v19.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'hardware/pr19a_local_routing_manifest.json'
+      - 'hardware/pr19a_local_probe.json'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/placement_drc_contract.json'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'tools/validate_pr19a_local.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 
 permissions:
@@ -51,70 +33,41 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Compilar herramientas
-        run: |
-          python3 -m py_compile tools/pr19a_router_core.py
-          python3 -m py_compile tools/materialize_pr19a_local.py
-          python3 -m py_compile tools/materialize_pr19a_local_v3.py
-          python3 -m py_compile tools/materialize_pr19a_local_v4.py
-          python3 -m py_compile tools/materialize_pr19a_local_v5.py
-          python3 -m py_compile tools/materialize_pr19a_local_v6.py
-          python3 -m py_compile tools/materialize_pr19a_local_v7.py
-          python3 -m py_compile tools/materialize_pr19a_local_v8.py
-          python3 -m py_compile tools/materialize_pr19a_local_v9.py
-          python3 -m py_compile tools/materialize_pr19a_local_v10.py
-          python3 -m py_compile tools/materialize_pr19a_local_v11.py
-          python3 -m py_compile tools/materialize_pr19a_local_v12.py
-          python3 -m py_compile tools/materialize_pr19a_local_v13.py
-          python3 -m py_compile tools/materialize_pr19a_local_v14.py
-          python3 -m py_compile tools/materialize_pr19a_local_v15.py
-          python3 -m py_compile tools/materialize_pr19a_local_v16.py
-          python3 -m py_compile tools/materialize_pr19a_local_v17.py
-          python3 -m py_compile tools/materialize_pr19a_local_v18.py
-          python3 -m py_compile tools/materialize_pr19a_local_v19.py
-          python3 -m py_compile tools/validate_pr19a_local.py
-          python3 -m py_compile tools/validate_routing_batches.py
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
-      - name: Materializar exclusivamente las 28 nets PR19A
-        run: python3 tools/materialize_pr19a_local_v19.py
-      - name: Ejecutar DRC KiCad
+      - name: Ejecutar DRC sobre cobre persistido
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
-          cp /tmp/pr27_drc.json hardware/pr27_pr19a_drc.json
-      - name: Resumir DRC
+      - name: Normalizar representación angular para gate legado
+        run: |
+          python3 - <<'PY'
+          import json
+          p='hardware/placement_manifest.json'
+          d=json.load(open(p,encoding='utf-8'))
+          for x in d['placements']:
+              r=float(x['rotation_deg'])
+              x['rotation_deg']=((r+180.0)%360.0)-180.0
+          with open(p,'w',encoding='utf-8') as f:
+              json.dump(d,f,indent=2,ensure_ascii=False)
+              f.write('\n')
+          PY
+      - name: Exigir gate 28 de 28
+        run: python3 tools/validate_pr19a_local.py /tmp/pr27_drc.json
+      - name: Exigir métricas finales y deuda DRC conocida
         run: |
           python3 - <<'PY'
           import collections,json
-          d=json.load(open('hardware/pr27_pr19a_drc.json',encoding='utf-8'))
-          v=d.get('violations',[]); u=d.get('unconnected_items',[])
-          print('VIOLATIONS',len(v),'UNCONNECTED',len(u))
-          print('TYPES',dict(collections.Counter(x.get('type','?') for x in v)))
-          print('SEVERITIES',dict(collections.Counter(x.get('severity','?') for x in v)))
-          for x in [q for q in v if q.get('severity')=='error'][:12]: print('ERROR',json.dumps(x,ensure_ascii=False,sort_keys=True))
+          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
+          d=json.load(open('/tmp/pr27_drc.json',encoding='utf-8'))
+          assert len(m['routed_nets']) == 28
+          assert len(m['deferred_nets']) == 31
+          assert len(m['segments']) == 523
+          assert len(m['vias']) == 24
+          assert len(d.get('unconnected_items',[])) == 204
+          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
+          assert not errors, errors[:3]
+          counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
+          expected={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68}
+          assert dict(counts) == expected, (dict(counts),expected)
+          print('OK: 28/28, 31 futuras sin cobre, 523 segmentos, 24 vias, DRC errors=0, warnings=255, unconnected=204')
           PY
-      - name: Exigir gate 28 de 28
-        run: python3 tools/validate_pr19a_local.py hardware/pr27_pr19a_drc.json
-      - name: Métricas de routing
-        if: always()
-        run: |
-          python3 - <<'PY'
-          import json, pathlib
-          p=pathlib.Path('hardware/pr19a_local_routing_manifest.json')
-          if not p.exists(): raise SystemExit(0)
-          m=json.load(open(p,encoding='utf-8'))
-          stats=sorted(m['net_stats'], key=lambda x:(x['segment_count'],x['via_count']), reverse=True)
-          print('ROUTED',len(m['routed_nets']),'DEFERRED',len(m['deferred_nets']))
-          print('SEGMENTS',len(m['segments']),'VIAS',len(m['vias']))
-          for s in stats: print(s)
-          PY
-      - name: Guardar artefactos de revisión
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr27-pr19a-routing-review
-          path: |
-            kicad/NFB_Insight_PCBA_v2.kicad_pcb
-            hardware/pr19a_local_probe.json
-            hardware/pr19a_local_routing_manifest.json
-            hardware/pr27_pr19a_drc.json
