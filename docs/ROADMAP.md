@@ -6,7 +6,7 @@
 - [x] Jerarquía en `docs/SOURCE_OF_TRUTH.md`.
 - [x] No inventar land patterns ni keepouts RF no publicados.
 - [x] README se actualiza cuando cambia arquitectura, BOM, compliance o estado.
-- [x] JSON/BOM permanecen como autoridad eléctrica; KiCad generado es reproducible.
+- [x] JSON/BOM permanecen como autoridad eléctrica; KiCad generado es reproducible semánticamente.
 
 ## Fase 0 — Arquitectura
 
@@ -21,8 +21,8 @@
 - [x] DRC/validación mecánica automática.
 - [x] PR #16: Z0 completo congelado como host envelope sin footprints NFB.
 - [x] PR #16: fuente Arduino revalidada; no se inventa antenna keepout numérico ausente de fuente primaria.
-- [ ] Revisión 3D/enclosure y región RF del host después del placement.
-- [ ] Ancho final después de courtyards/3D.
+- [x] PR #17: ancho final de placement congelado en `242.34 mm` por courtyards reales.
+- [ ] Revisión 3D/enclosure y región RF del host después del routing preliminar.
 
 ## Fase 2 — Arquitectura eléctrica Insight
 
@@ -100,29 +100,50 @@
 - [x] Congelar reglas ESD/analog/HX711/HMI/power/actuator proximity.
 - [x] `hardware/placement_readiness_contract.json` + CI.
 - [x] Mantener production placement=0 y routing=0 durante PR16.
-- [ ] Full CI PR #16 + merge.
+- [x] Full CI PR #16 + merge.
 
 ### PR #17 — placement físico
-- [ ] Colocar Z1 FIELD I/O y front-ends por courtyards reales.
-- [ ] Colocar Z2 load-cell/GNSS/HMI respetando gradiente quiet→power.
-- [ ] Colocar Z3 power-entry/eFuse/buck/LDO con loops mínimos.
-- [ ] Colocar Z4 drivers/bulk/conectores junto al FIELD I/O EDGE.
-- [ ] Mantener Z0 inmutable y libre de production footprints NFB.
-- [ ] Ajustar ancho exclusivamente hacia +X si lo requieren los courtyards.
-- [ ] Test points accesibles.
-- [ ] DRC placement/courtyard = 0.
-- [ ] Revisión 3D preliminar y congelación del ancho final.
-- [ ] **Routing continúa prohibido.**
+- [x] Colocar Z1 FIELD I/O y front-ends por courtyards reales.
+- [x] Colocar Z2 load-cell/GNSS/HMI respetando gradiente quiet→power.
+- [x] Colocar Z3 power-entry/eFuse/buck/LDO con loops de placement compactos.
+- [x] Colocar Z4 drivers/bulk/conectores junto al FIELD I/O EDGE.
+- [x] Mantener Z0 inmutable y libre de production footprints NFB.
+- [x] Ajustar ancho exclusivamente hacia +X: `242.34 mm` final de placement.
+- [x] Test points accesibles en banda superior.
+- [x] Courtyard overlaps = 0; sin shorts/clearance físicos de placement.
+- [x] Corrección Honeywell MPR y regla local TPSM33625 verificadas.
+- [x] **Routing continuó prohibido: 0 tracks / 0 vías / 0 zones.**
+- [x] PR #17 mergeado; layout revisado visualmente antes de seguir.
+- [ ] Revisión 3D/enclosure/RF del conjunto físico.
 
 ## Fase 5 — Routing
 
-- [ ] Aplicar netclasses reales.
-- [x] Intent congelado: `In1.Cu` = GND continuo.
-- [ ] No cruzar región RF protegida del host.
-- [ ] SW buck confinado Z3.
-- [ ] `PUMP_CURRENT_ADC` lejos de switching.
-- [ ] Retornos `12V_ACT` a estrella sin atravesar Z1/Z2.
-- [ ] DRC=0; 0 desconectados inesperados.
+### PR #18 — routing readiness / contrato de cobre
+- [x] Congelar board y placement PR17: `242.34 × 68.58 mm`.
+- [x] Clasificar exactamente 59/59 nets de producción una sola vez.
+- [x] Mantener mínimos de potencia PR10 sin debilitarlos.
+- [x] `In1.Cu` = GND continuo; signal routing prohibido.
+- [x] `In2.Cu` reservado a distribución de potencia/retornos controlados.
+- [x] Congelar analógica sensible: pH/ORP/DO, load-cell/HX711 y `PUMP_CURRENT_ADC`.
+- [x] Congelar dirty nets: `12V_ACT`, `PUMP_OUT1/2`, `CO2_SOL_POS`.
+- [x] Separación contractual sensitive↔dirty ≥ `1.00 mm` en recorridos paralelos.
+- [x] Chiller dry-contact: SELV ≤48 V / NO MAINS / sin tie a GND.
+- [x] Prohibir `SW`, `CO2_ADC`, `TEMP_ADC`, `HUM_ADC`, `CO2_PWM`, `CO2_FLOW_PWM`, `RS485_IRQ_RSVD`.
+- [x] CI PR18 exige 0 tracks / 0 vías / 0 copper zones.
+- [ ] Full CI PR #18 + merge.
+
+### PR #19 — routing físico de producción
+- [ ] Aplicar clases/anchos/clearances PR18.
+- [ ] Rutear power-entry/eFuse/buck/LDO localmente en Z3.
+- [ ] Rutear `12V_ACT` y salidas de actuadores confinadas Z3/Z4.
+- [ ] Rutear Z1 front-end con trayectos mínimos antes de acondicionamiento.
+- [ ] Rutear load-cell/HX711 quieto y HMI/I²C/low-speed en corredor controlado.
+- [ ] Rutear `PUMP_CURRENT_ADC` por corredor silencioso Z4→Z0, lejos de Z3 switching.
+- [ ] Mantener `In1.Cu` sin pistas y como referencia GND continua.
+- [ ] Añadir distribución `In2.Cu`/stitching sin crear retornos por Z1/Z2.
+- [ ] No cruzar región RF del host con loops ruidosos; escapes Z0 mínimos.
+- [ ] DRC de cobre = 0; unconnected = 0 esperado al cierre.
+- [ ] Revisar retorno/EMC y preparar revisión 3D/RF posterior.
 
 ## Fase 6 — Fabricación / compliance
 
