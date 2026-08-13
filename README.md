@@ -113,12 +113,42 @@ Política de merge: **ALL_OR_NOTHING por lote**. No se mergea progreso parcial d
 
 La calidad de routing se evalúa también por longitud, segmentos, vías y cambios de dirección. Una ruta meandriforme no se acepta únicamente porque pase conectividad.
 
+## ECOs de placement previos al routing
+
+El routing experimental reveló dos microtopologías que convenía corregir antes de persistir cobre:
+
+- **PR22 / Z3 TPSM33625:** mueve únicamente cinco pasivos críticos (`C_5V_IN_4U7`, `C_5V_IN_100N`, `C_5V_VCC`, `R_5V_FBT`, `R_5V_FBB`) con `U_5V` fijo. DRC físico = 0.
+- **PR24 / Z2 HX711:** mueve únicamente `TP_LOAD_A_POS` y `TP_LOAD_A_NEG` cerca de `U_HX` para mantener el par principal `J_LOADCELL → U_HX` quieto y los testpoint stubs cortos. DRC físico = 0.
+
+Los ECOs posteriores a PR17 deben ser mínimos, reproducibles, contractuales y mergearse antes de reiniciar el lote de routing afectado.
+
+## Tooling KiCad y memoria operativa
+
+Antes de escribir o ejecutar scripts `pcbnew` / `kicad-cli`, leer:
+
+- **`docs/KICAD_TOOLING_NOTES.md`** — gotchas verificados de KiCad 10.0.5 y reglas de tooling;
+- **`docs/ROUTING_KNOWLEDGE_BASE.md`** — decisiones de ingeniería y lecciones de routing;
+- `hardware/routing_contract.json` y `hardware/routing_batches_contract.json` — autoridad machine-readable del cobre;
+- `hardware/placement_manifest.json` — placement vigente + cadena ECO.
+
+Reglas operativas destacadas:
+
+- el triplete `.kicad_pcb + .kicad_pro + .kicad_dru` debe conservar el mismo basename en cualquier sandbox DRC;
+- `.kicad_pro` contiene preferencias de proyecto; `.kicad_dru` puede imponer reglas efectivas diferentes;
+- courtyard real se obtiene de las capas `*.Courtyard`, no de `footprint.GetBoundingBox()`;
+- pad-shapes con el mismo `ref.pin` son un solo endpoint eléctrico lógico;
+- equivalencia de PCB regenerado es semántica porque `pcbnew` puede regenerar UUIDs;
+- workflows finales de validación son read-only para evitar bucles de auto-commit;
+- KiCad DRC es la autoridad física final.
+
+El repo donor `Nhilson73/nebula_qshield_pcb` aporta aprendizaje de tooling, **no geometría ni cobre** para NFB Insight.
+
 ## RF / enclosure
 
 La fuente primaria Arduino revisada no publicó un antenna keepout numérico textual. NFB no inventa una distancia. Z0 permanece libre de footprints NFB y, durante routing, solo se permiten escapes mínimos hacia/desde `J_UNOQ`; la revisión final de cobre/enclosure/stacking/RF sigue siendo un gate de release.
 
 ## Estado actual
 
-PR #17 dejó el placement físico mergeado y revisado visualmente, con board `242.34 × 68.58 mm`. PR #18 congeló el contrato de routing. PR #19 experimental fue cerrado sin merge.
+PR17 dejó el placement físico mergeado y revisado visualmente. PR18 congeló el contrato de routing. PR19/21/23 fueron laboratorios de routing cerrados sin merge. PR22 y PR24 corrigieron únicamente micro-islas de placement con DRC físico = 0.
 
-**Siguiente checkpoint de producción: lote local de 28/28 nets bajo la estrategia incremental documentada.**
+**Siguiente checkpoint de producción: PR19A limpio, lote local 28/28, construido sobre el `main` post-PR24 y bajo las notas de tooling versionadas.**

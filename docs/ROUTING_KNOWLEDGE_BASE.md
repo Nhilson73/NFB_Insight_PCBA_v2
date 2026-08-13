@@ -12,12 +12,14 @@ La jerarquía de autoridad para routing es:
 
 1. `hardware/routing_contract.json` — reglas eléctricas, netclasses, capas, anchos y clearances congelados en PR18.
 2. `hardware/routing_batches_contract.json` — partición de las 59 nets en lotes de cierre incremental.
-3. `hardware/placement_manifest.json` — placement PR17 congelado.
+3. `hardware/placement_manifest.json` — placement PR17 + cadena ECO vigente.
 4. JSON/BOM de Z1/Z2/Z3/Z4 — conectividad y footprints de producción.
-5. KiCad 10.0.5 + DRC — autoridad física final para cobre.
-6. Este documento — narrativa, rationale y lecciones aprendidas.
+5. `kicad/NFB_Insight_PCBA_v2.kicad_dru` — reglas custom efectivas de KiCad.
+6. KiCad 10.0.5 + DRC — autoridad física final para cobre.
+7. `docs/KICAD_TOOLING_NOTES.md` — reglas técnicas de tooling.
+8. Este documento — narrativa, rationale y lecciones aprendidas.
 
-Ningún router, script o optimización puede debilitar los contratos anteriores para obtener un resultado “verde”.
+Ningún router, script u optimización puede debilitar los contratos anteriores para obtener un resultado “verde”.
 
 ## Geometría congelada
 
@@ -31,7 +33,7 @@ Ningún router, script o optimización puede debilitar los contratos anteriores 
 - Z4: `198.34 → 242.34 mm`.
 - `Y=0` = FIELD I/O EDGE.
 - Cables hacia `-Y`.
-- Placement PR17: congelado; routing no puede mover footprints ni alterar outline.
+- Placement global PR17 permanece congelado; solo se permiten ECOs locales contractuales y mergeados antes de reiniciar routing.
 
 ## Política de capas
 
@@ -45,8 +47,6 @@ Ningún router, script o optimización puede debilitar los contratos anteriores 
 La partición es exhaustiva y mutuamente excluyente:
 
 ### PR19A — 28 nets locales
-
-Objetivo: cerrar primero las redes que no necesitan corredor inter-zona significativo.
 
 `FIELD_ANALOG_LOCAL`:
 - `PH_FIELD_SIG`
@@ -86,7 +86,7 @@ Objetivo: cerrar primero las redes que no necesitan corredor inter-zona signific
 - `HMI_FIELD_TX`
 - `WDT_MR_N`
 
-**Gate de merge PR19A:** 28/28 conectadas; 0 nets fuera del lote tocadas; 0 shorts; 0 errores nuevos de clearance/courtyard; placement/outline sin cambios; `In1.Cu` sin signal tracks.
+**Gate de merge PR19A:** 28/28 conectadas; 0 nets fuera del lote tocadas; 0 shorts; 0 errores nuevos de clearance/courtyard; placement/outline fuera de scope sin cambios; `In1.Cu` sin signal tracks.
 
 ### PR19B — 4 nets analógicas inter-zona
 
@@ -140,7 +140,7 @@ Este lote usa F.Cu/In2.Cu según `routing_contract.json`; debe preservar la estr
 
 - `GND`
 
-Aunque es una sola net, el probe de routing identificó **83 endpoints**. Se trata como lote independiente porque define el plano continuo de `In1.Cu`, stitching y la calidad de los retornos analógicos/digitales/potencia.
+Aunque es una sola net, el probe experimental identificó **83 endpoints**. Se trata como lote independiente porque define el plano continuo de `In1.Cu`, stitching y la calidad de los retornos analógicos/digitales/potencia.
 
 ## Lecciones del PR #19 experimental
 
@@ -156,6 +156,63 @@ Hallazgos principales:
 6. `In1.Cu` no se usa como vía de escape de routing; queda reservado al plano GND.
 7. Los rails multipunto (`3V3_RAIL` y `5V_RAIL`) no deben forzarse como pistas improvisadas alrededor de encapsulados finos; pertenecen al lote de potencia.
 
+## Lecciones PR21–PR24: routing como detector de placement
+
+Los PR21 y PR23 fueron cerrados sin merge porque el routing reveló problemas locales de placement que era mejor corregir antes de persistir cobre.
+
+### PR22 — TPSM33625
+
+Trigger: `5V_FB` y `5V_VCC` podían rutearse individualmente pero se bloqueaban mutuamente con el packing geométrico original.
+
+Corrección: ECO mínimo de 5 pasivos alrededor de `U_5V`, manteniendo `U_5V` fijo. Resultado: DRC físico 0.
+
+Regla preventiva: componentes de bypass, feedback y programación deben formar **micro-islas por función eléctrica**, no solo quedar “dentro de Z3”.
+
+### PR23/PR24 — HX711 load-cell
+
+Trigger: `LOAD_A_NEG` llegó a cerrar con ~198 segmentos, ~97.8 mm y 4 vías, mientras `LOAD_A_POS` se bloqueaba; ambos TP estaban en la banda superior lejos de `U_HX`.
+
+Corrección: PR24 movió únicamente `TP_LOAD_A_POS` y `TP_LOAD_A_NEG` junto al HX711. Resultado: 2 refs movidas / 117 intactas, courtyard 0, DRC físico 0 y menor deuda de silk.
+
+Regla preventiva: para entradas diferenciales de muy bajo nivel, el camino principal `J_LOADCELL → U_HX` es la topología prioritaria; los testpoints deben ser ramas secundarias cortas.
+
+## Lecciones de tooling KiCad transferidas y verificadas
+
+Detalle completo: `docs/KICAD_TOOLING_NOTES.md`.
+
+Reglas que afectan directamente PR19A:
+
+1. **Sandbox DRC = triplete de basename.** Una copia temporal del `.kicad_pcb` debe tener `.kicad_pro` y `.kicad_dru` homónimos al lado.
+2. **`.kicad_pro` no define por sí solo el mínimo legal.** Las reglas custom de `.kicad_dru` pueden imponer límites/overrides distintos.
+3. **Courtyard real por layer.** `footprint.GetBoundingBox()` no sustituye `F.Courtyard/B.Courtyard`.
+4. **Pad-shapes duplicados se colapsan por `ref.pin` para conectividad**, pero siguen siendo obstáculos geométricos.
+5. **Margen positivo en clearance propio.** Nunca hacer un planner ligeramente permisivo esperando que DRC “perdone”.
+6. **PCB regenerado se compara semánticamente**, porque `pcbnew` puede generar UUIDs nuevos.
+7. **CI final read-only.** No dejar auto-commits recurrentes sobre un artefacto no byte-estable.
+8. **Gates históricos composicionales.** Cada ECO valida su delta y después reproduce la cadena vigente completa.
+9. **`unconnected_item` no implica automáticamente una pista.** Con zones futuras, distinguir endpoints reales de islas/artefactos `Zone↔Zone`.
+
+## Topología multipunto y endpoints lógicos
+
+No imponer MST geométrico ciegamente.
+
+- `5V_VCC`: bypass y strap RT→VCC tienen roles distintos; el árbol debe reflejar la función eléctrica.
+- eFuse: ITIMER/UVLO/OVLO/ILM/DVDT se priorizan por confinamiento y conectividad del divisor/programación.
+- footprints compuestos: varios pad-shapes con mismo número físico son un solo endpoint eléctrico.
+- `LOAD_A_POS/NEG`: par principal acoplado; TP como stubs cortos.
+
+## Micro-rutas y neckdown
+
+Si una rejilla no representa un corredor que físicamente sí existe:
+
+1. medir el corredor exacto;
+2. usar waypoint/micro-ruta solo para ese caso;
+3. mantener reglas globales intactas;
+4. limitar cualquier neckdown por net/región;
+5. DRC obligatorio.
+
+No bajar resolución o clearance global para resolver una sola garganta.
+
 ## Criterio de merge por lote
 
 Un lote solo puede mergearse si cumple simultáneamente:
@@ -165,7 +222,7 @@ Un lote solo puede mergearse si cumple simultáneamente:
 - 0 shorts.
 - 0 errores nuevos de clearance físico.
 - 0 courtyard collisions nuevas.
-- placement PR17 byte/semánticamente equivalente en XY/rotación/footprint.
+- placement semánticamente equivalente fuera de ECO aprobado.
 - outline y dimensiones congelados.
 - `In1.Cu` sin signal tracks hasta PR20B.
 - cualquier warning/deuda restante está tipificado, contado y documentado; nunca se usa una exclusión genérica para ocultar violaciones de cobre.
@@ -183,7 +240,7 @@ Además de DRC, cada lote debe registrar:
 - capa(s) utilizadas;
 - número de cambios de dirección;
 - desviación respecto al corredor previsto;
-- proximity de nets sensibles vs. dirty nets.
+- proximidad de nets sensibles vs. dirty nets.
 
 Los umbrales concretos pueden evolucionar, pero la tendencia debe favorecer rutas simples y auditables. Una ruta con cientos de pequeños segmentos no se acepta solo porque sea eléctricamente conectada.
 
