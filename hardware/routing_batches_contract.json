@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "status": "INCREMENTAL_ROUTING_BATCHES_FROZEN",
+  "product": "NFB Insight PCBA v2",
+  "source_contract": "hardware/routing_contract.json",
+  "total_production_nets": 59,
+  "strategy": "divide_y_venceras",
+  "invariants": {
+    "placement_changes_allowed": false,
+    "board_geometry_changes_allowed": false,
+    "netlist_changes_allowed": false,
+    "in1_signal_routing_allowed_before_pr20b": false,
+    "batch_merge_policy": "ALL_OR_NOTHING",
+    "unexpected_routed_nets_allowed": 0,
+    "new_shorts_allowed": 0,
+    "new_clearance_errors_allowed": 0,
+    "new_courtyard_errors_allowed": 0
+  },
+  "batches": [
+    {
+      "id": "PR19A",
+      "name": "routing_local",
+      "expected_net_count": 28,
+      "nets": [
+        "PH_FIELD_SIG", "ORP_FIELD_SIG", "DO_FIELD_SIG",
+        "5V_VCC", "5V_FB", "5V_PGOOD",
+        "EFUSE_ILM", "EFUSE_ITIMER", "EFUSE_DVDT", "EFUSE_EN_UVLO", "EFUSE_OVLO",
+        "CO2_ILIM", "PUMP_SR_CFG",
+        "HX_VBG", "LOAD_A_NEG", "LOAD_A_POS",
+        "CHILLER_CONTACT_A", "CHILLER_CONTACT_B",
+        "CO2_OPENLOAD_N", "CO2_EN_DRV",
+        "PUMP_DIR_DRV", "PUMP_PWM_DRV",
+        "CHILLER_GATE", "CHILLER_LED_A", "CHILLER_LED_K",
+        "HMI_FIELD_RX", "HMI_FIELD_TX", "WDT_MR_N"
+      ],
+      "preferred_scope": "LOCAL_ONLY",
+      "merge_gate": "28/28_CONNECTED"
+    },
+    {
+      "id": "PR19B",
+      "name": "analog_interzone",
+      "expected_net_count": 4,
+      "nets": ["PH_ADC", "ORP_ADC", "DO_ADC", "PUMP_CURRENT_ADC"],
+      "preferred_scope": "SENSITIVE_INTERZONE",
+      "merge_gate": "4/4_CONNECTED_AND_VISUALLY_REVIEWED"
+    },
+    {
+      "id": "PR19C",
+      "name": "digital_control_interzone",
+      "expected_net_count": 16,
+      "nets": [
+        "ACT_FAULT_N", "CHILLER_CTL", "CO2_SOL_CTL",
+        "HMI_RX", "HMI_TX", "HX711_DOUT", "HX711_SCK",
+        "I2C_SCL", "I2C_SDA", "LED_STATUS", "MCU_NRST", "MCU_WDI",
+        "PUMP_DIR", "PUMP_PWM", "TEMP_1WIRE", "UNO_IOREF_3V3"
+      ],
+      "preferred_scope": "LOW_SPEED_LONG_HAUL",
+      "merge_gate": "16/16_CONNECTED_AND_GEOMETRY_REVIEWED"
+    },
+    {
+      "id": "PR20A",
+      "name": "power_and_actuator_outputs",
+      "expected_net_count": 10,
+      "nets": [
+        "12V_IN_RAW", "12V_PROTECTED", "12V_HOST_VIN", "12V_LOGIC", "12V_ACT",
+        "5V_RAIL", "3V3_RAIL",
+        "PUMP_OUT1", "PUMP_OUT2", "CO2_SOL_POS"
+      ],
+      "preferred_scope": "POWER_FCU_IN2_AND_Z3_Z4",
+      "merge_gate": "10/10_CONNECTED_AND_CURRENT_PATH_REVIEWED"
+    },
+    {
+      "id": "PR20B",
+      "name": "ground_plane_and_stitching",
+      "expected_net_count": 1,
+      "nets": ["GND"],
+      "known_endpoint_count_from_pr19_probe": 83,
+      "preferred_scope": "IN1_CONTINUOUS_GND_PLUS_STITCHING",
+      "merge_gate": "GND_CONNECTED_AND_RETURN_PATH_REVIEWED"
+    }
+  ],
+  "partition_checks": {
+    "expected_batch_counts": [28, 4, 16, 10, 1],
+    "expected_sum": 59,
+    "duplicates_allowed": 0,
+    "missing_nets_allowed": 0
+  },
+  "knowledge_base": "docs/ROUTING_KNOWLEDGE_BASE.md"
+}
