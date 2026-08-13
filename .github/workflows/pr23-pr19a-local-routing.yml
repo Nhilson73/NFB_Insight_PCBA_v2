@@ -14,6 +14,7 @@ on:
       - 'tools/materialize_pr19a_local_v6.py'
       - 'tools/materialize_pr19a_local_v7.py'
       - 'tools/materialize_pr19a_local_v8.py'
+      - 'tools/materialize_pr19a_local_v9.py'
       - 'tools/validate_pr19a_local.py'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
@@ -49,12 +50,13 @@ jobs:
           python3 -m py_compile tools/materialize_pr19a_local_v6.py
           python3 -m py_compile tools/materialize_pr19a_local_v7.py
           python3 -m py_compile tools/materialize_pr19a_local_v8.py
+          python3 -m py_compile tools/materialize_pr19a_local_v9.py
           python3 -m py_compile tools/validate_pr19a_local.py
           python3 -m py_compile tools/validate_routing_batches.py
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
       - name: Materializar exclusivamente las 28 nets PR19A
-        run: python3 tools/materialize_pr19a_local_v8.py
+        run: python3 tools/materialize_pr19a_local_v9.py
       - name: Ejecutar DRC KiCad
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr23_drc.json --severity-all
