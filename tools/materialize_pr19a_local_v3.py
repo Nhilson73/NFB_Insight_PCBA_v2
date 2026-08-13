@@ -23,6 +23,12 @@ impl.VIA_COST = 14.0
 FINE_PITCH_REFS = {"U_5V", "U_EFUSE", "U_CO2_DRV", "U_HX"}
 MIN_ESCAPE_MM = 0.85
 
+# RDN0011A: pads 9/10/11 están en el borde inferior del módulo. La salida
+# perpendicular -Y evita pasar entre pads adyacentes antes de aplicar el
+# clearance normal de CONTROL_SENSITIVE.
+U5V_BOTTOM_ESCAPE_MM = 1.60
+U5V_BOTTOM_PADS = {"9", "10", "11"}
+
 
 class RouterPR19APhysical(impl.RouterPR19A):
     def __init__(self, board, placement, contract, probe, batch):
@@ -76,15 +82,23 @@ class RouterPR19APhysical(impl.RouterPR19A):
         return False
 
     def _escape_endpoint(self, net: str, ep: dict) -> dict:
-        # Regla primaria ya aprendida para el DYC0008A.
-        if ep.get("ref") == "U_CO2_DRV" and (net, str(ep.get("pad"))) in {
+        ref = ep.get("ref")
+        pin = str(ep.get("pad"))
+
+        # TPSM33625 / RDN0011A: pads 9/10/11 salen perpendicularmente por -Y.
+        if ref == "U_5V" and pin in U5V_BOTTOM_PADS:
+            out = dict(ep)
+            out["y_mm"] = float(out["y_mm"]) - U5V_BOTTOM_ESCAPE_MM
+            return out
+
+        # DYC0008A: pins 4/5 comparten garganta inferior; escape -Y explícito.
+        if ref == "U_CO2_DRV" and (net, pin) in {
             ("CO2_OPENLOAD_N", "5"), ("CO2_EN_DRV", "4")
         }:
             out = dict(ep)
             out["y_mm"] = float(out["y_mm"]) - 0.90
             return out
 
-        ref = ep.get("ref")
         if ref not in FINE_PITCH_REFS or ref not in self._placement_by_ref:
             return ep
 
@@ -101,16 +115,13 @@ class RouterPR19APhysical(impl.RouterPR19A):
         elif abs(dy) > 1e-6:
             out["y_mm"] = py + math.copysign(distance, dy)
         else:
-            # Caso patológico: no inventar dirección; dejar endpoint original.
             return ep
         return out
 
     def _mark_track(self, net, layer, cells, halo=2):
-        # 0.50 mm de exclusión de centro a centro para el siguiente routing.
         return super()._mark_track(net, layer, cells, halo=2)
 
     def _mark_via(self, net, ix, iy, halo=3):
-        # 0.75 mm alrededor de una vía de señal mínima.
         return super()._mark_via(net, ix, iy, halo=3)
 
 
