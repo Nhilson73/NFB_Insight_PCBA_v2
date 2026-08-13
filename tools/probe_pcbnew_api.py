@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""PR17 probe de la API pcbnew en KiCad 10.0.5.
+"""Probe de la API pcbnew en KiCad 10.0.5.
 
-No modifica archivos. Verifica carga, placement y asignación de nets en memoria
-antes de materializar el PCB de producción.
+No modifica archivos. Verifica carga, placement y asignación de nets en memoria.
+El probe es fase-aware: puede ejecutarse sobre un PCB ya rutado y exige que sus
+operaciones de prueba no alteren el número de tracks/vías preexistentes.
 """
 from __future__ import annotations
 from pathlib import Path
@@ -31,6 +32,9 @@ def main() -> int:
     print("KICAD_BUILD", pcbnew.GetBuildVersion())
     board = pcbnew.LoadBoard(str(BOARD))
     print("BOARD_FOOTPRINTS", len(list(board.GetFootprints())))
+    tracks_before = len(list(board.GetTracks()))
+    zones_before = len(list(board.Zones()))
+    print("BOARD_COPPER_BEFORE", tracks_before, zones_before)
 
     loaded = {}
     for ref, lib, name in CASES:
@@ -49,7 +53,6 @@ def main() -> int:
         if not hasattr(pcbnew, symbol):
             raise SystemExit(f"pcbnew sin API requerida: {symbol}")
 
-    # Ensayo in-memory de las operaciones exactas que usará el materializador PR17.
     fp = loaded["J_PWR_IN"]
     fp.SetReference("J_PROBE")
     fp.SetValue("PROBE")
@@ -71,10 +74,14 @@ def main() -> int:
     )
     if first_pad.GetNetname() != "__PR17_PROBE_NET__":
         raise SystemExit("SetNet no preservó net de prueba")
-    if len(list(board.GetTracks())) != 0:
-        raise SystemExit("probe introdujo tracks inesperados")
+    tracks_after = len(list(board.GetTracks()))
+    zones_after = len(list(board.Zones()))
+    if tracks_after != tracks_before:
+        raise SystemExit(f"probe alteró tracks/vías: antes={tracks_before} después={tracks_after}")
+    if zones_after != zones_before:
+        raise SystemExit(f"probe alteró zones: antes={zones_before} después={zones_after}")
 
-    print("OK: pcbnew API disponible para placement+nets deterministas PR17")
+    print("OK: pcbnew API disponible; probe no altera cobre preexistente")
     return 0
 
 

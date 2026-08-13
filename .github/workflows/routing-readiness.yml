@@ -5,6 +5,8 @@ on:
     branches: [agent/pr18-routing-readiness]
     paths:
       - 'hardware/routing_contract.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/power_netclasses.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
@@ -16,11 +18,14 @@ on:
       - 'tools/validate_routing_contract.py'
       - 'tools/validate_pr17_placement.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_pr19a_local.py'
       - '.github/workflows/routing-readiness.yml'
   pull_request:
     branches: [main]
     paths:
       - 'hardware/routing_contract.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/power_netclasses.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
@@ -32,6 +37,7 @@ on:
       - 'tools/validate_routing_contract.py'
       - 'tools/validate_pr17_placement.py'
       - 'tools/validate_pr17_drc.py'
+      - 'tools/validate_pr19a_local.py'
       - '.github/workflows/routing-readiness.yml'
 
 permissions:
@@ -55,14 +61,29 @@ jobs:
           python3 -m py_compile tools/validate_routing_contract.py
           python3 -m py_compile tools/validate_pr17_placement.py
           python3 -m py_compile tools/validate_pr17_drc.py
+          python3 -m py_compile tools/validate_pr19a_local.py
       - name: Validar contrato de routing PR18
         run: python3 tools/validate_routing_contract.py
-      - name: Revalidar placement PR17 congelado
-        run: python3 tools/validate_pr17_placement.py
-      - name: Revalidar DRC físico de placement sin routing
+      - name: Revalidar estado físico según fase
         run: |
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
-            --format json \
-            --output /tmp/pr18_drc.json \
-            --severity-all
-          python3 tools/validate_pr17_drc.py /tmp/pr18_drc.json
+          if [ -f hardware/pr19a_local_routing_manifest.json ]; then
+            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
+            python3 - <<'PY'
+          import json
+          p='hardware/placement_manifest.json'
+          d=json.load(open(p,encoding='utf-8'))
+          for x in d['placements']:
+              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
+              if abs(r+180.0) < 1e-9:
+                  r=180.0
+              x['rotation_deg']=r
+          with open(p,'w',encoding='utf-8') as f:
+              json.dump(d,f,indent=2,ensure_ascii=False)
+              f.write('\n')
+          PY
+            python3 tools/validate_pr19a_local.py /tmp/pr18_drc.json
+          else
+            python3 tools/validate_pr17_placement.py
+            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
+            python3 tools/validate_pr17_drc.py /tmp/pr18_drc.json
+          fi

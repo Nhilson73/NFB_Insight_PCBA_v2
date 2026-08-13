@@ -15,6 +15,8 @@ on:
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
       - 'hardware/z4_production_netlist.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'bom/insight_power_production_bom.csv'
       - 'bom/insight_z4_production_bom.csv'
       - 'kicad/integration_contract.kicad_sch'
@@ -22,6 +24,8 @@ on:
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
       - 'tools/validate_footprint_audit.py'
       - 'tools/validate_electrical_integration.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/integration-footprints.yml'
   push:
     branches: [main]
@@ -37,6 +41,8 @@ on:
       - 'hardware/z2_production_netlist.json'
       - 'hardware/power_production_netlist.json'
       - 'hardware/z4_production_netlist.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/pr19a_local_routing_manifest.json'
       - 'bom/insight_power_production_bom.csv'
       - 'bom/insight_z4_production_bom.csv'
       - 'kicad/integration_contract.kicad_sch'
@@ -44,7 +50,12 @@ on:
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
       - 'tools/validate_footprint_audit.py'
       - 'tools/validate_electrical_integration.py'
+      - 'tools/validate_routing_phase.py'
+      - 'tools/prepare_legacy_placement_view.py'
       - '.github/workflows/integration-footprints.yml'
+
+permissions:
+  contents: read
 
 jobs:
   audit-integration:
@@ -56,6 +67,16 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+      - name: Validar fase de routing real antes de vista histórica
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from tools.validate_routing_phase import assert_authorized_phase
+          text=Path('kicad/NFB_Insight_PCBA_v2.kicad_pcb').read_text(encoding='utf-8')
+          print('FASE_REAL',assert_authorized_phase(text,'footprint audit'))
+          PY
+      - name: Preparar vista efímera placement-only PR13/PR17
+        run: python3 tools/prepare_legacy_placement_view.py
       - name: Validar cierre de footprints PR13
         run: python3 tools/validate_footprint_audit.py
       - name: Validar integración eléctrica

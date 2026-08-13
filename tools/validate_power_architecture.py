@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Valida arquitectura PR9/PR10 bajo contrato UNO Q schema v6 PR12 y placement PR17."""
+"""Valida arquitectura PR9/PR10 bajo contrato UNO Q y routing incremental gobernado."""
 from __future__ import annotations
 import json, math, re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"
+POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"; ROUTING_BATCHES=ROOT/"hardware"/"routing_batches_contract.json"; PR19A_MANIFEST=ROOT/"hardware"/"pr19a_local_routing_manifest.json"
 ARDUINO_SNAPSHOT="196feda03787005572a059f030677b8a1de9bcd2"
 def fail(m): raise SystemExit("ERROR: "+m)
 def main():
@@ -54,7 +54,29 @@ def main():
             fail("placement de potencia presente sin gate PR17 válido")
         refs={x["ref"] for x in pm.get("placements",[])}
         if not set(placed_power)<=refs: fail(f"placement de potencia no trazado en manifest PR17: {sorted(set(placed_power)-refs)}")
-        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17: potencia tiene cobre/routing prematuro")
+
+        has_copper=bool(re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M))
+        if has_copper:
+            # Desde PR19A el PCB ya puede contener cobre. La autoridad de scope pasa
+            # al contrato incremental: este gate de potencia exige evidencia machine-
+            # readable de un lote permitido y, sobre todo, que ninguna net de potencia
+            # futura haya sido adelantada.
+            if not ROUTING_BATCHES.exists() or not PR19A_MANIFEST.exists():
+                fail("cobre presente sin contrato/manifest de routing incremental")
+            rb=json.loads(ROUTING_BATCHES.read_text(encoding="utf-8"))
+            rm=json.loads(PR19A_MANIFEST.read_text(encoding="utf-8"))
+            batches={x["id"]:x for x in rb.get("batches",[])}
+            if set(batches)!={"PR19A","PR19B","PR19C","PR20A","PR20B"}:
+                fail("partición de routing incompleta o inesperada")
+            allowed=set(batches["PR19A"]["nets"])
+            routed=set(rm.get("routed_nets",[]))
+            if rm.get("status")!="LOCAL_ROUTING_PR19A" or routed!=allowed or len(routed)!=28:
+                fail("cobre presente pero manifest PR19A no prueba lote 28/28")
+            future_power=set(batches["PR20A"]["nets"]) | set(batches["PR20B"]["nets"])
+            if routed & future_power:
+                fail(f"routing prematuro de potencia/GND: {sorted(routed & future_power)}")
+            if any(n in routed for n in ("12V_IN_RAW","12V_PROTECTED","12V_HOST_VIN","12V_LOGIC","12V_ACT","5V_RAIL","3V3_RAIL","PUMP_OUT1","PUMP_OUT2","CO2_SOL_POS","GND")):
+                fail("PR19A adelantó net de potencia")
 
     src=SOURCES.read_text(encoding="utf-8")
     for m in ("https://github.com/Arduino","arduino/docs-content","Regla de conflicto"):
@@ -65,6 +87,6 @@ def main():
     if "Fuente primaria UNO Q" not in readme: fail("README perdió jerarquía de fuentes")
     required_road=("PR #9","PR #10","potencia de producción","12 V protegido → VIN UNO Q","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR")
     if any(m not in road for m in required_road): fail("roadmap no preserva arquitectura PR9/PR10")
-    print("OK: arquitectura potencia PR9/10 preservada; placement PR17 permitido solo sin routing")
+    print("OK: arquitectura potencia PR9/10 preservada; routing incremental presente sin adelantar potencia/GND")
     return 0
 if __name__=="__main__": raise SystemExit(main())

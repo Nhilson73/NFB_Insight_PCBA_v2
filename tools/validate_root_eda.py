@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida root EDA PR15 y su transición de placement únicamente bajo PR17."""
+"""Valida root EDA PR15 y su transición de placement/routing gobernada."""
 from __future__ import annotations
 
 import json
@@ -8,6 +8,7 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from validate_routing_phase import assert_authorized_phase
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "hardware" / "root_eda_contract.json"
@@ -25,23 +26,15 @@ MIGRATOR = ROOT / "tools" / "migrate_pr15_verified_footprints.py"
 GENLIB = ROOT / "kicad" / "lib" / "nfb_generated.kicad_sym"
 PLACEMENT = ROOT / "hardware" / "placement_manifest.json"
 
-
-def fail(msg: str) -> None:
-    raise SystemExit("ERROR: " + msg)
-
-
+def fail(msg: str) -> None: raise SystemExit("ERROR: " + msg)
 def labels(text: str, kind: str) -> list[str]:
     if kind == "hier": return re.findall(r'\(hierarchical_label "([^"]+)"', text)
     if kind == "local": return re.findall(r'\(label "([^"]+)"', text)
     if kind == "pin": return re.findall(r'\(pin "([^"]+)"\s+(?:input|output|bidirectional|tri_state|passive)', text)
     raise ValueError(kind)
-
-
 def run_check(path: Path) -> None:
     cp = subprocess.run([sys.executable, str(path), "--check"], cwd=ROOT, text=True, capture_output=True)
     if cp.returncode: fail(f"{path.name} --check falló:\n{cp.stdout}{cp.stderr}".rstrip())
-
-
 def component_map(*netlists: dict) -> dict[str, dict]:
     result = {}
     for data in netlists:
@@ -50,8 +43,6 @@ def component_map(*netlists: dict) -> dict[str, dict]:
             if ref in result: fail(f"referencia duplicada entre zonas: {ref}")
             result[ref]=comp
     return result
-
-
 def materialization_fixes(material: dict) -> dict[str, tuple[str, str]]:
     result={}
     for item in material.get("footprint_link_closures", []):
@@ -61,7 +52,6 @@ def materialization_fixes(material: dict) -> dict[str, tuple[str, str]]:
             if ref in result: fail(f"closure duplicado en eda_materialization_contract: {ref}")
             result[ref]=(item["mpn"],item["footprint"])
     return result
-
 
 def main() -> int:
     required=(CONTRACT,MATERIAL,PIN,Z1,Z2,POWER,Z4,AUDIT,PCB,ROOTSCH,NORMALIZER,MIGRATOR,GENLIB)
@@ -123,16 +113,16 @@ def main() -> int:
         comp=comps.get(ref)
         if comp is None or comp.get("mpn")!=mpn or comp.get("footprint")!=footprint: fail(f"{ref}: corrección PR15 diverge")
     pcb=PCB.read_text(encoding="utf-8"); production_refs=[comp["ref"] for data in (z1,z2,power,z4) for comp in data["components"]]; placed=[ref for ref in production_refs if f'"{ref}"' in pcb]
+    phase=assert_authorized_phase(pcb,"root EDA")
     if placed:
         if not PLACEMENT.exists(): fail(f"PR15 detecta placement sin manifest PR17: {placed[:10]}")
         pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
         if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False: fail("placement posterior a PR15 sin gate PR17 válido")
         pmap={x["ref"]:x for x in pm.get("placements",[])}
         if set(pmap)!=set(production_refs) or set(placed)!=set(production_refs): fail("paridad placement PR17 != refs de producción PR15")
-        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17 introdujo routing/cobre antes de siguiente fase")
     print("OK: root EDA PR15 materializado y reproducible")
     print(f"- {len(inter)} nets inter-zona / 5 sheets / JSON-BOM-KiCad parity")
-    print(f"- placement posterior PR17={len(placed)} refs trazadas; routing=0; ERC contractual PR15=0/0")
+    print(f"- placement posterior PR17={len(placed)} refs trazadas; fase={phase}; ERC contractual PR15=0/0")
     return 0
 
 if __name__ == "__main__": raise SystemExit(main())
