@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""PR19A v15: v14 + micro-ruta local para PUMP_DIR_DRV.
+"""PR19A v15: compatibility launcher para la cadena de routing PR27.
 
-También actúa como launcher de v16 cuando se ejecuta directamente. Al ser
-importado por v16 expone RouterPR19AV15 sin recursión.
+La clase histórica v15 se conserva para que v16/v17 puedan importarla. Cuando
+este archivo se ejecuta directamente desde CI, carga la versión más reciente
+v17 y materializa sobre el baseline del pull request.
 """
 from __future__ import annotations
 
@@ -31,28 +32,20 @@ class RouterPR19AV15(v14.RouterPR19AV14):
     def _materialize_path(self, net, cls, clsinfo, path, start_ep, goal_ep):
         if not self._is_pump_dir_edge(net, start_ep, goal_ep):
             return super()._materialize_path(net, cls, clsinfo, path, start_ep, goal_ep)
-
         if _key(start_ep) == ("U_PUMP_DRV", "3"):
             u, r = start_ep, goal_ep
         else:
             u, r = goal_ep, start_ep
-
         width = float(clsinfo["track_width_mm_min"])
         corridor_x = float(u["x_mm"]) - PUMP_DIR_ESCAPE_X_MM
-        points = [
-            (float(u["x_mm"]), float(u["y_mm"])),
-            (corridor_x, float(u["y_mm"])),
-            (corridor_x, float(r["y_mm"])),
-            (float(r["x_mm"]), float(r["y_mm"])),
-        ]
-        print("MICROROUTE PUMP_DIR_DRV", points)
-        for a, b in zip(points, points[1:]):
-            self._add_track(net, pcbnew.F_Cu, width, a, b)
-            self._mark_continuous_segment_v14(net, a, b)
+        points = [(float(u["x_mm"]),float(u["y_mm"])),(corridor_x,float(u["y_mm"])),(corridor_x,float(r["y_mm"])),(float(r["x_mm"]),float(r["y_mm"]))]
+        for a,b in zip(points,points[1:]):
+            self._add_track(net,pcbnew.F_Cu,width,a,b)
+            self._mark_continuous_segment_v14(net,a,b)
 
 
-impl.RouterPR19A = RouterPR19AV15
+impl.RouterPR19A=RouterPR19AV15
 
-if __name__ == "__main__":
-    import materialize_pr19a_local_v16  # instala RouterPR19AV16 sobre impl
+if __name__=="__main__":
+    import materialize_pr19a_local_v17  # instala RouterPR19AV17
     raise SystemExit(impl.main())
