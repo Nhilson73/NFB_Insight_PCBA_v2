@@ -46,16 +46,39 @@ Antes de añadir cualquier excepción adicional, PR23 debe intentar primero reso
 
 KiCad soporta reglas custom por net/footprint y reglas de neckdown acotadas dentro de un courtyard; esa capacidad solo se utilizará si la topología estrella por sí sola no basta.
 
-## Evidencia inicial tras ECO PR22
+## Micro-ruta RT y límite de resolución del planner
 
-El primer run de PR23 sobre el placement corregido ya consiguió:
+Después del ECO PR22 existía un corredor físico válido para el strap `RT→VCC`, pero el ancho disponible para la **centrolinea** de la pista no coincidía con la rejilla A* de `0.25 mm`. Reducir la rejilla de todo el board habría multiplicado la complejidad del algoritmo sin aportar valor al resto del lote.
 
-- `DO_FIELD_SIG` ruteada;
-- `ORP_FIELD_SIG` ruteada;
-- `PH_FIELD_SIG` ruteada;
-- `5V_FB` ruteada en **9 segmentos, 4.56 mm y 0 vías**.
+PR23 resolvió únicamente esa arista con una micro-ruta continua determinista en F.Cu, sin vías. El resultado observado fue `5V_VCC = 9 segmentos / 11.388 mm / 0 vías`. El resto de la net y del board sigue bajo el planner estándar y el DRC completo de KiCad.
 
-Esto confirma que el ECO de placement Z3 eliminó la congestión principal del lazo FB. El bloqueo siguiente se aisló a la selección del árbol de `5V_VCC`, no a `5V_FB`.
+**Regla derivada:** cuando una garganta válida es menor que la resolución de la rejilla, no se degrada globalmente todo el router; se puede usar una micro-ruta local explícita si está acotada, documentada y validada por DRC.
+
+## Hallazgo: pad-shape no equivale a endpoint eléctrico
+
+El footprint `TI_RPW0010A_TPS259470A` usa pads compuestos: algunos pines (`1`, `7`, `10`) están construidos con más de un shape SMD que comparte **el mismo número de pad**. Esos shapes sirven para reproducir el land pattern físico, pero eléctricamente KiCad los interpreta como un solo pin.
+
+El router inicial trataba cada shape como un endpoint independiente. Eso hacía que un MST intentara crear cobre adicional entre partes que ya pertenecen al mismo pin y elevaba artificialmente la congestión de `EFUSE_EN_UVLO`, `EFUSE_DVDT` y `EFUSE_ITIMER`.
+
+PR23 v10 separa dos conceptos:
+
+- **ocupación física:** todos los shapes continúan presentes y bloquean espacio según clearance;
+- **conectividad lógica:** el árbol usa un solo endpoint por `(referencia, número de pin)`; para `U_EFUSE` se selecciona el shape exterior como breakout.
+
+**Regla derivada:** en footprints compuestos, el router debe deduplicar endpoints por pin lógico sin eliminar ningún shape de la geometría física ni del DRC.
+
+## Evidencia incremental tras ECO PR22
+
+El routing limpio ya consiguió, entre otras, las siguientes redes antes del cierre del lote:
+
+- `DO_FIELD_SIG`, `ORP_FIELD_SIG`, `PH_FIELD_SIG`;
+- `5V_FB`: **9 segmentos / 4.56 mm / 0 vías**;
+- `5V_VCC`: **9 segmentos / 11.388 mm / 0 vías**;
+- `5V_PGOOD`: conectada, aunque su geometría todavía debe simplificarse antes del merge;
+- `EFUSE_ITIMER`: **15 segmentos / 7.79 mm / 0 vías**;
+- `EFUSE_ILM` y `EFUSE_DVDT`: conectadas.
+
+Esto demuestra que la estrategia de resolver primero las sub-islas más confinadas está desplazando el bloqueo hacia las nets menos críticas, en vez de ocultarlo mediante reducción de reglas.
 
 ## Estado
 
@@ -65,4 +88,4 @@ PR23 permanece abierto y **no es mergeable por criterio de ingeniería** hasta q
 - no exista cobre de lotes futuros;
 - DRC físico no presente shorts/clearance/courtyard nuevos;
 - `In1.Cu` permanezca sin signal routing;
-- la calidad geométrica del lote sea revisada.
+- la calidad geométrica del lote sea revisada, especialmente rutas largas/fragmentadas como `5V_PGOOD`.
