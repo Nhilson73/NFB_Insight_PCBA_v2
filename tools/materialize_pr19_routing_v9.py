@@ -23,12 +23,10 @@ class RouterV9(v8.RouterV8):
         if net == "CO2_OPENLOAD_N":
             if s.get("ref") == "U_CO2_DRV" and str(s.get("pad")) == "5":
                 s = dict(s)
-                s["y_mm"] = float(s["y_mm"]) + ESCAPE_MM
-                # La función se reutiliza en ambos sentidos; +Y cuando el pin es start
-                # mantiene el waypoint fuera del pad sin alterar el endpoint real.
+                s["y_mm"] = float(s["y_mm"]) - ESCAPE_MM
             if g.get("ref") == "U_CO2_DRV" and str(g.get("pad")) == "5":
                 g = dict(g)
-                g["y_mm"] = float(g["y_mm"]) + ESCAPE_MM
+                g["y_mm"] = float(g["y_mm"]) - ESCAPE_MM
         return super()._astar(net, cls, s, g, xmin, xmax)
 
 
