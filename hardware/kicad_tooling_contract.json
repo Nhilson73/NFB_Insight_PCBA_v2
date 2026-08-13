@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "status": "KICAD_TOOLING_GOVERNANCE_PR25",
+  "kicad_reference_version": "10.0.5",
+  "canonical_project_basename": "NFB_Insight_PCBA_v2",
+  "canonical_files": {
+    "pcb": "kicad/NFB_Insight_PCBA_v2.kicad_pcb",
+    "project": "kicad/NFB_Insight_PCBA_v2.kicad_pro",
+    "design_rules": "kicad/NFB_Insight_PCBA_v2.kicad_dru"
+  },
+  "sandbox_policy": {
+    "require_same_basename_triplet": true,
+    "missing_project_or_dru_is_invalid_test": true
+  },
+  "drc_policy": {
+    "authority": "KICAD_CLI",
+    "custom_rules_authoritative_over_router_assumptions": true,
+    "custom_geometry_margin_must_be_positive": true,
+    "allow_global_clearance_relaxation": false
+  },
+  "pcbnew_policy": {
+    "via_getwidth_requires_layer": true,
+    "courtyard_source": "GRAPHICAL_ITEMS_COURTYARD_LAYERS",
+    "footprint_bounding_box_is_not_courtyard": true,
+    "electrical_endpoint_identity": "REFERENCE_PLUS_PAD_NUMBER",
+    "semantic_pcb_equivalence": true,
+    "byte_stable_uuid_required": false
+  },
+  "ci_policy": {
+    "final_validation_read_only": true,
+    "allow_recurring_bot_autocommit": false,
+    "historical_gates_must_be_compositional": true
+  },
+  "routing_policy": {
+    "batch_contract": "hardware/routing_batches_contract.json",
+    "all_or_nothing_per_batch": true,
+    "in1_signal_routing_forbidden": true,
+    "quality_metrics_required": [
+      "length_mm",
+      "segments",
+      "vias",
+      "layers",
+      "direction_changes"
+    ]
+  },
+  "donor_policy": {
+    "repository": "Nhilson73/nebula_qshield_pcb",
+    "inherit_tooling_lessons": true,
+    "inherit_geometry": false,
+    "inherit_placement": false,
+    "inherit_routing": false,
+    "inherit_copper": false,
+    "inherit_netclasses_verbatim": false
+  }
+}
