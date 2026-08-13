@@ -19,7 +19,7 @@ on:
       - '.github/workflows/z3-buck-placement-eco.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   eco:
@@ -59,7 +59,10 @@ jobs:
       - name: Validar alcance exacto del ECO
         run: python3 tools/validate_z3_buck_placement_eco.py /tmp/placement_base_pr17.json
 
-      - name: Materializar PCB desde PR16 + manifest ECO
+      - name: Verificar manifest ECO reproducible
+        run: git diff --exit-code -- hardware/placement_manifest.json
+
+      - name: Materializar PCB temporalmente desde PR16 + manifest ECO
         run: python3 tools/materialize_pr17_pcb.py
 
       - name: Validar placement semántico y courtyards
@@ -85,22 +88,10 @@ jobs:
           for ref in e['scope']['moved_refs_only']:
               x=by[ref]
               print(ref,x['x_mm'],x['y_mm'],x['rotation_deg'],x['courtyard_global_mm'])
+          print('PCB equivalence: semantic XY/rot/LIB_ID/nets/DRC; pcbnew UUIDs are not byte-stable.')
           PY
 
-      - name: Persistir manifest y PCB verificados
-        if: github.event_name == 'push'
-        run: |
-          if git diff --quiet -- hardware/placement_manifest.json kicad/NFB_Insight_PCBA_v2.kicad_pcb; then
-            echo "Artefactos ECO ya reproducibles; sin commit."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add hardware/placement_manifest.json kicad/NFB_Insight_PCBA_v2.kicad_pcb
-            git commit -m "placement: persistir ECO Z3 TPSM33625 verificado"
-            git push origin HEAD:agent/pr22-z3-buck-placement-eco
-          fi
-
-      - name: Guardar artefactos ECO
+      - name: Guardar artefactos ECO de revisión
         if: always()
         uses: actions/upload-artifact@v4
         with:
