@@ -1784,34 +1784,36 @@
       "zone": "Z2",
       "block": "TESTPOINTS",
       "role": "testpoint",
-      "x_mm": 133.665,
-      "y_mm": 58.025,
+      "x_mm": 112.75,
+      "y_mm": 29.3,
       "rotation_deg": 0.0,
       "courtyard_global_mm": [
-        132.64,
-        57.0,
-        134.69,
-        59.05
+        111.725,
+        28.275,
+        113.775,
+        30.325
       ],
       "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR24_Z2_LOADCELL_TP"
     },
     {
       "ref": "TP_LOAD_A_POS",
       "zone": "Z2",
       "block": "TESTPOINTS",
       "role": "testpoint",
-      "x_mm": 130.815,
-      "y_mm": 58.025,
+      "x_mm": 110.25,
+      "y_mm": 29.3,
       "rotation_deg": 0.0,
       "courtyard_global_mm": [
-        129.79,
-        57.0,
-        131.84,
-        59.05
+        109.225,
+        28.275,
+        111.275,
+        30.325
       ],
       "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR24_Z2_LOADCELL_TP"
     },
     {
       "ref": "TP_NRST",
@@ -2086,7 +2088,7 @@
       "bbox_source": "F.CrtYd"
     }
   ],
-  "eco_revision": 1,
+  "eco_revision": 2,
   "eco_revisions": [
     {
       "id": "PR22_Z3_BUCK",
@@ -2099,6 +2101,15 @@
         "R_5V_FBT"
       ],
       "reason": "TI TPSM33625 layout-critical VCC/FB/VIN proximity"
+    },
+    {
+      "id": "PR24_Z2_LOADCELL_TP",
+      "contract": "hardware/z2_loadcell_tp_placement_eco.json",
+      "moved_refs": [
+        "TP_LOAD_A_NEG",
+        "TP_LOAD_A_POS"
+      ],
+      "reason": "Short raw load-cell test branches near HX711; preserve coupled quiet J_LOADCELL->U_HX path."
     }
   ]
 }
