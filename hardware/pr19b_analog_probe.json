@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "status": "PR19B_ANALOG_PROBE",
+  "baseline": {
+    "segments": 523,
+    "vias": 24,
+    "zones": 0
+  },
+  "endpoints": {
+    "PH_ADC": [
+      {
+        "ref": "R_PH",
+        "pad": "2",
+        "x_mm": 58.255,
+        "y_mm": 16.995
+      },
+      {
+        "ref": "C_PH",
+        "pad": "1",
+        "x_mm": 59.955,
+        "y_mm": 16.985
+      },
+      {
+        "ref": "J_UNOQ",
+        "pad": "9",
+        "x_mm": 50.8,
+        "y_mm": 50.8
+      }
+    ],
+    "ORP_ADC": [
+      {
+        "ref": "R_ORP_BOT",
+        "pad": "1",
+        "x_mm": 69.145,
+        "y_mm": 16.995
+      },
+      {
+        "ref": "R_ORP_TOP",
+        "pad": "2",
+        "x_mm": 67.455,
+        "y_mm": 16.995
+      },
+      {
+        "ref": "D_ORP",
+        "pad": "1",
+        "x_mm": 71.885,
+        "y_mm": 17.125
+      },
+      {
+        "ref": "C_ORP",
+        "pad": "1",
+        "x_mm": 74.315,
+        "y_mm": 16.985
+      },
+      {
+        "ref": "J_UNOQ",
+        "pad": "10",
+        "x_mm": 50.8,
+        "y_mm": 53.34
+      }
+    ],
+    "DO_ADC": [
+      {
+        "ref": "R_DO",
+        "pad": "2",
+        "x_mm": 101.78,
+        "y_mm": 16.995
+      },
+      {
+        "ref": "C_DO",
+        "pad": "1",
+        "x_mm": 103.48,
+        "y_mm": 16.985
+      },
+      {
+        "ref": "J_UNOQ",
+        "pad": "14",
+        "x_mm": 50.8,
+        "y_mm": 63.5
+      }
+    ],
+    "PUMP_CURRENT_ADC": [
+      {
+        "ref": "C_PUMP_IPROPI",
+        "pad": "1",
+        "x_mm": 202.505,
+        "y_mm": 24.725
+      },
+      {
+        "ref": "U_PUMP_DRV",
+        "pad": "17",
+        "x_mm": 212.325,
+        "y_mm": 18.325
+      },
+      {
+        "ref": "R_PUMP_IPROPI",
+        "pad": "1",
+        "x_mm": 199.785,
+        "y_mm": 24.735
+      },
+      {
+        "ref": "J_UNOQ",
+        "pad": "13",
+        "x_mm": 50.8,
+        "y_mm": 60.96
+      },
+      {
+        "ref": "TP_PUMP_CURRENT",
+        "pad": "1",
+        "x_mm": 200.365,
+        "y_mm": 58.025
+      }
+    ]
+  }
+}
