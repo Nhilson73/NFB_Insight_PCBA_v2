@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate PR18: congela reglas de routing antes de materializar cobre."""
+"""Gate PR18: congela las reglas y verifica routing posterior contra lotes autorizados."""
 from __future__ import annotations
 
 import json
@@ -12,6 +12,8 @@ CONTRACT = ROOT / "hardware" / "routing_contract.json"
 PLACEMENT = ROOT / "hardware" / "placement_manifest.json"
 POWER_BASELINE = ROOT / "hardware" / "power_netclasses.json"
 PCB = ROOT / "kicad" / "NFB_Insight_PCBA_v2.kicad_pcb"
+BATCHES = ROOT / "hardware" / "routing_batches_contract.json"
+PR19A_MANIFEST = ROOT / "hardware" / "pr19a_local_routing_manifest.json"
 NETLISTS = [
     ROOT / "hardware" / "z1_production_netlist.json",
     ROOT / "hardware" / "z2_production_netlist.json",
@@ -56,7 +58,7 @@ def main() -> int:
     if scope.get("routing_allowed_in_pr18") is not False:
         fail("PR18 debe mantener routing_allowed_in_pr18=false")
     if scope.get("routing_allowed_after_pr18_merge") is not True:
-        fail("PR18 debe habilitar routing únicamente para el PR siguiente")
+        fail("PR18 debe habilitar routing únicamente después de su merge")
     for key in ("placement_changes_allowed", "board_geometry_changes_allowed", "netlist_changes_allowed"):
         if scope.get(key) is not False:
             fail(f"PR18 no puede habilitar {key}")
@@ -71,7 +73,7 @@ def main() -> int:
     if board.get("origin_mm") != frozen.get("origin_mm"):
         fail("origen PR17 no preservado")
     if p.get("policies", {}).get("routing_allowed") is not False:
-        fail("placement_manifest PR17 debe seguir prohibiendo routing")
+        fail("placement_manifest PR17 histórico debe preservar routing_allowed=false")
 
     production_nets = collect_production_nets()
     expected_count = int(scope.get("expected_production_net_count", -1))
@@ -115,7 +117,6 @@ def main() -> int:
     if present_forbidden:
         fail(f"nets prohibidas reaparecieron: {present_forbidden}")
 
-    # Las clases heredadas de PR10 siguen siendo mínimos, nunca se debilitan.
     base_by_name = {item["name"]: item for item in baseline.get("classes", [])}
     for name in ("PWR_INPUT_5A", "PWR_12V_BRANCH", "PWR_5V", "PWR_3V3"):
         old = base_by_name.get(name)
@@ -150,15 +151,34 @@ def main() -> int:
         "vias": len(re.findall(r"(?m)^\s*\(via\b", pcb_text)),
         "zones": len(re.findall(r"(?m)^\s*\(zone\b", pcb_text)),
     }
-    expected_zero = {
+    pre_routing = {
         "tracks": int(scope.get("expected_tracks_pr18", -1)),
         "vias": int(scope.get("expected_vias_pr18", -1)),
         "zones": int(scope.get("expected_copper_zones_pr18", -1)),
     }
-    if counts != expected_zero:
-        fail(f"PR18 no puede materializar cobre: actual={counts}, esperado={expected_zero}")
+    if PR19A_MANIFEST.exists():
+        rb = load(BATCHES)
+        rm = load(PR19A_MANIFEST)
+        batches = {x["id"]: x for x in rb.get("batches", [])}
+        if set(batches) != {"PR19A", "PR19B", "PR19C", "PR20A", "PR20B"}:
+            fail("partición incremental de routing inválida")
+        allowed = set(batches["PR19A"]["nets"])
+        routed = set(rm.get("routed_nets", []))
+        deferred = set(rm.get("deferred_nets", []))
+        if rm.get("status") != "LOCAL_ROUTING_PR19A" or routed != allowed or len(routed) != 28:
+            fail("manifest PR19A no acredita 28/28")
+        if deferred != (production_nets - allowed) or len(deferred) != 31:
+            fail("manifest PR19A no preserva exactamente las 31 nets futuras")
+        expected_now = {
+            "tracks": len(rm.get("segments", [])),
+            "vias": len(rm.get("vias", [])),
+            "zones": 0,
+        }
+        if counts != expected_now:
+            fail(f"PCB no coincide con manifest PR19A: actual={counts}, esperado={expected_now}")
+    elif counts != pre_routing:
+        fail(f"cobre presente sin manifest de lote autorizado: actual={counts}, esperado PR18={pre_routing}")
 
-    # Invariantes de riesgo alto.
     if set(class_by_name["ANALOG_SENSITIVE"]["nets"]) != {
         "PH_ADC", "ORP_ADC", "DO_ADC", "LOAD_A_POS", "LOAD_A_NEG", "HX_VBG", "PUMP_CURRENT_ADC"
     }:
@@ -168,13 +188,12 @@ def main() -> int:
     if set(class_by_name["CHILLER_DRY_CONTACT"]["nets"]) != {"CHILLER_CONTACT_A", "CHILLER_CONTACT_B"}:
         fail("frontera dry-contact cambió")
 
-    print("OK: routing readiness PR18 verificado")
+    print("OK: routing readiness PR18 preservado y fase posterior gobernada")
     print(f"- production nets: {len(production_nets)}/{expected_count}, cobertura exacta y única")
     print(f"- routing classes: {len(classes)}")
     print("- In1.Cu = GND continuo; signal routing prohibido")
-    print("- board/placement PR17 congelados: 242.34 x 68.58 mm")
-    print("- tracks/vías/zones PR18 = 0/0/0")
-    print("- PR19 queda habilitado para materializar routing bajo este contrato")
+    print("- board/placement congelados: 242.34 x 68.58 mm")
+    print(f"- cobre actual: tracks={counts['tracks']} vias={counts['vias']} zones={counts['zones']}")
     return 0
 
 
