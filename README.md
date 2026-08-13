@@ -128,7 +128,7 @@ Política de merge: **ALL_OR_NOTHING por lote**. No se mergea progreso parcial d
 
 La calidad de routing se evalúa también por longitud, segmentos, vías y cambios de dirección. Una ruta meandriforme no se acepta únicamente porque pase conectividad.
 
-## PR19A — 28 nets locales / PR #27
+## PR19A — 28 nets locales / PR #28
 
 El primer lote físico de producción queda materializado y persistido sobre el placement post-PR22/post-PR24.
 
@@ -161,6 +161,6 @@ La fuente primaria Arduino revisada no publicó un antenna keepout numérico tex
 
 ## Estado actual
 
-Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó las notas/contratos de tooling KiCad. **PR27 completa PR19A con 28/28 nets locales, 523 segmentos, 24 vías y DRC físico 0 errores.**
+Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó las notas/contratos de tooling KiCad. **PR28 completa PR19A con 28/28 nets locales, 523 segmentos, 24 vías y DRC físico 0 errores.**
 
 **Siguiente checkpoint de producción: PR19B — 4 nets analógicas long-haul (`PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`).**
