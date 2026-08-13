@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "status": "PR19A_LOCAL_ROUTING_PROBE",
+  "batch": "PR19A",
+  "net_count": 28,
+  "routes": [
+    {
+      "net": "PH_FIELD_SIG",
+      "class": "FIELD_ANALOG_LOCAL",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z1"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "ORP_FIELD_SIG",
+      "class": "FIELD_ANALOG_LOCAL",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z1"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "DO_FIELD_SIG",
+      "class": "FIELD_ANALOG_LOCAL",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z1"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "5V_VCC",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "5V_FB",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "5V_PGOOD",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 4,
+      "physical_pad_shape_count": 4
+    },
+    {
+      "net": "EFUSE_ILM",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "EFUSE_ITIMER",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "EFUSE_DVDT",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "EFUSE_EN_UVLO",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 4
+    },
+    {
+      "net": "EFUSE_OVLO",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z3"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "CO2_ILIM",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "PUMP_SR_CFG",
+      "class": "CONTROL_SENSITIVE",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "HX_VBG",
+      "class": "ANALOG_SENSITIVE",
+      "mode": "LOCAL_F_QUIET",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "LOAD_A_NEG",
+      "class": "ANALOG_SENSITIVE",
+      "mode": "LOCAL_F_QUIET",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "LOAD_A_POS",
+      "class": "ANALOG_SENSITIVE",
+      "mode": "LOCAL_F_QUIET",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "CHILLER_CONTACT_A",
+      "class": "CHILLER_DRY_CONTACT",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "CHILLER_CONTACT_B",
+      "class": "CHILLER_DRY_CONTACT",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "CO2_OPENLOAD_N",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "CO2_EN_DRV",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "PUMP_DIR_DRV",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "PUMP_PWM_DRV",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "CHILLER_GATE",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "CHILLER_LED_A",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "CHILLER_LED_K",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z4"
+      ],
+      "endpoint_count": 2,
+      "physical_pad_shape_count": 2
+    },
+    {
+      "net": "HMI_FIELD_RX",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "HMI_FIELD_TX",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    },
+    {
+      "net": "WDT_MR_N",
+      "class": "DIGITAL_LOW_SPEED",
+      "mode": "LOCAL_F",
+      "zones": [
+        "Z2"
+      ],
+      "endpoint_count": 3,
+      "physical_pad_shape_count": 3
+    }
+  ]
+}
