@@ -8,6 +8,7 @@ on:
     paths:
       - 'tools/probe_pr19_routing.py'
       - 'tools/materialize_pr19_routing.py'
+      - 'tools/materialize_pr19_routing_v2.py'
       - 'tools/validate_pr19_routing.py'
       - 'hardware/routing_contract.json'
       - 'hardware/pr19_routing_probe.json'
@@ -33,7 +34,8 @@ jobs:
       - name: Compilar herramientas PR19
         run: |
           python3 -m py_compile tools/probe_pr19_routing.py
-          if [ -f tools/materialize_pr19_routing.py ]; then python3 -m py_compile tools/materialize_pr19_routing.py; fi
+          python3 -m py_compile tools/materialize_pr19_routing.py
+          python3 -m py_compile tools/materialize_pr19_routing_v2.py
           if [ -f tools/validate_pr19_routing.py ]; then python3 -m py_compile tools/validate_pr19_routing.py; fi
       - name: Inventariar endpoints y canales
         run: python3 tools/probe_pr19_routing.py
@@ -47,9 +49,8 @@ jobs:
           for r in p['routes']:
               print(r['net'], r['class'], r['mode'], r.get('trunk_y_mm','-'), r['zones'], r['endpoint_count'])
           PY
-      - name: Materializar routing si existe generador
-        run: |
-          if [ -f tools/materialize_pr19_routing.py ]; then python3 tools/materialize_pr19_routing.py; fi
+      - name: Materializar routing de señal
+        run: python3 tools/materialize_pr19_routing_v2.py
       - name: DRC PR19 si existe validador
         run: |
           if [ -f tools/validate_pr19_routing.py ]; then
