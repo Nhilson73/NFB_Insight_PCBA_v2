@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   eco:
@@ -38,18 +38,8 @@ jobs:
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr24_drc.json --severity-all
           cp /tmp/pr24_drc.json hardware/pr24_eco_drc.json
           python3 tools/validate_pr17_drc.py /tmp/pr24_drc.json
-      - name: Persistir manifest y PCB verificados
-        if: github.event_name == 'push'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add hardware/placement_manifest.json kicad/NFB_Insight_PCBA_v2.kicad_pcb
-          if git diff --cached --quiet; then
-            echo "Artefactos ya persistidos."
-          else
-            git commit -m "placement: persistir ECO Z2 load-cell verificado"
-            git push origin HEAD:agent/pr24-z2-loadcell-tp-eco
-          fi
+      - name: Confirmar modo solo lectura
+        run: echo "PR24 valida semánticamente; CI no escribe en la rama."
       - name: Guardar artefactos
         if: always()
         uses: actions/upload-artifact@v4
