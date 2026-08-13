@@ -30,10 +30,10 @@
     "Do not solve a poor micro-placement by relaxing DRC or by adding arbitrary layer changes."
   ],
   "targets": {
-    "C_5V_IN_4U7": {"x_mm": 184.60, "y_mm": 19.075, "rotation_deg": 0.0, "role": "VIN bulk ceramic adjacent to U_5V island"},
-    "C_5V_IN_100N": {"x_mm": 188.95, "y_mm": 19.075, "rotation_deg": 0.0, "role": "high-frequency VIN bypass closest to U_5V VIN side"},
-    "R_5V_FBT": {"x_mm": 190.55, "y_mm": 15.60, "rotation_deg": 0.0, "role": "feedback top resistor in compact FB island"},
-    "R_5V_FBB": {"x_mm": 192.75, "y_mm": 15.60, "rotation_deg": 0.0, "role": "feedback bottom resistor immediately below FB/GND edge"},
+    "C_5V_IN_4U7": {"x_mm": 184.60, "y_mm": 19.075, "rotation_deg": 180.0, "role": "VIN bulk ceramic adjacent to U_5V island; VIN pad faces module"},
+    "C_5V_IN_100N": {"x_mm": 188.95, "y_mm": 19.075, "rotation_deg": 180.0, "role": "high-frequency VIN bypass closest to U_5V VIN side; VIN pad faces module"},
+    "R_5V_FBT": {"x_mm": 191.60, "y_mm": 15.39, "rotation_deg": 90.0, "role": "feedback top resistor vertical below FB edge"},
+    "R_5V_FBB": {"x_mm": 193.00, "y_mm": 15.39, "rotation_deg": 270.0, "role": "feedback bottom resistor vertical below FB/GND edge"},
     "C_5V_VCC": {"x_mm": 195.30, "y_mm": 15.60, "rotation_deg": 0.0, "role": "VCC bypass immediately below VCC/GND edge"}
   },
   "acceptance": {
