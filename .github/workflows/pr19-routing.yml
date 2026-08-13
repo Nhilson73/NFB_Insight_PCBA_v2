@@ -8,7 +8,6 @@ on:
     paths:
       - 'tools/probe_pr19_routing.py'
       - 'tools/materialize_pr19_routing.py'
-      - 'tools/materialize_pr19_routing_v2.py'
       - 'tools/materialize_pr19_routing_v3.py'
       - 'tools/validate_pr19_routing.py'
       - 'hardware/routing_contract.json'
@@ -52,9 +51,16 @@ jobs:
           PY
       - name: Materializar routing de señal
         run: python3 tools/materialize_pr19_routing_v3.py
-      - name: DRC PR19 si existe validador
+      - name: Ejecutar DRC y resumir
         run: |
-          if [ -f tools/validate_pr19_routing.py ]; then
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19_drc.json --severity-all
-            python3 tools/validate_pr19_routing.py /tmp/pr19_drc.json
-          fi
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19_drc.json --severity-all
+          python3 - <<'PY'
+          import json, collections
+          r=json.load(open('/tmp/pr19_drc.json',encoding='utf-8'))
+          v=r.get('violations',[]); u=r.get('unconnected_items',[])
+          print('DRC_TYPES',dict(collections.Counter(x.get('type','?') for x in v)))
+          print('DRC_SEVERITIES',dict(collections.Counter(x.get('severity','?') for x in v)))
+          print('UNCONNECTED',len(u))
+          for item in u[:20]: print('UC',json.dumps(item,ensure_ascii=False,sort_keys=True))
+          PY
+          if [ -f tools/validate_pr19_routing.py ]; then python3 tools/validate_pr19_routing.py /tmp/pr19_drc.json; fi
