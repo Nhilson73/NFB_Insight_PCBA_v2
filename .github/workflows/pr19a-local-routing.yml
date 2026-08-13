@@ -1,0 +1,78 @@
+name: PR19A routing local 28 nets
+
+on:
+  push:
+    branches: [agent/pr19a-local-routing-final]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pr19a_router_core.py'
+      - 'tools/materialize_pr19a_local.py'
+      - 'tools/validate_pr19a_local.py'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/routing_contract.json'
+      - 'hardware/placement_manifest.json'
+      - 'hardware/placement_drc_contract.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - '.github/workflows/pr19a-local-routing.yml'
+
+jobs:
+  local-routing:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inicializar librerías KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Compilar herramientas
+        run: |
+          python3 -m py_compile tools/pr19a_router_core.py
+          python3 -m py_compile tools/materialize_pr19a_local.py
+          python3 -m py_compile tools/validate_pr19a_local.py
+          python3 -m py_compile tools/validate_routing_batches.py
+
+      - name: Validar partición 28+4+16+10+1
+        run: python3 tools/validate_routing_batches.py
+
+      - name: Materializar únicamente PR19A
+        run: python3 tools/materialize_pr19a_local.py
+
+      - name: Ejecutar DRC KiCad
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --format json \
+            --output /tmp/pr19a_drc.json \
+            --severity-all
+          cp /tmp/pr19a_drc.json hardware/pr19a_drc.json
+
+      - name: Validar gate 28 de 28
+        run: python3 tools/validate_pr19a_local.py hardware/pr19a_drc.json
+
+      - name: Resumen geométrico
+        run: |
+          python3 - <<'PY'
+          import json
+          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
+          stats=sorted(m['net_stats'], key=lambda x:(x['segment_count'],x['via_count']), reverse=True)
+          print('ROUTED',len(m['routed_nets']),'DEFERRED',len(m['deferred_nets']))
+          print('SEGMENTS',len(m['segments']),'VIAS',len(m['vias']))
+          for s in stats:
+              print(s['net'], 'zone='+s['zone'], 'seg='+str(s['segment_count']), 'vias='+str(s['via_count']), 'len='+str(s['length_mm']))
+          PY
+
+      - name: Guardar artefactos de revisión
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr19a-routing-review
+          path: |
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb
+            hardware/pr19a_local_probe.json
+            hardware/pr19a_local_routing_manifest.json
+            hardware/pr19a_drc.json
