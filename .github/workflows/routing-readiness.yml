@@ -1,0 +1,68 @@
+name: PR18 routing readiness
+
+on:
+  push:
+    branches: [agent/pr18-routing-readiness]
+    paths:
+      - 'hardware/routing_contract.json'
+      - 'hardware/power_netclasses.json'
+      - 'hardware/placement_manifest.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'tools/validate_routing_contract.py'
+      - 'tools/validate_pr17_placement.py'
+      - 'tools/validate_pr17_drc.py'
+      - '.github/workflows/routing-readiness.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/routing_contract.json'
+      - 'hardware/power_netclasses.json'
+      - 'hardware/placement_manifest.json'
+      - 'hardware/z1_production_netlist.json'
+      - 'hardware/z2_production_netlist.json'
+      - 'hardware/power_production_netlist.json'
+      - 'hardware/z4_production_netlist.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - 'tools/validate_routing_contract.py'
+      - 'tools/validate_pr17_placement.py'
+      - 'tools/validate_pr17_drc.py'
+      - '.github/workflows/routing-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  routing-readiness:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inicializar librerías KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Compilar validadores
+        run: |
+          python3 -m py_compile tools/validate_routing_contract.py
+          python3 -m py_compile tools/validate_pr17_placement.py
+          python3 -m py_compile tools/validate_pr17_drc.py
+      - name: Validar contrato de routing PR18
+        run: python3 tools/validate_routing_contract.py
+      - name: Revalidar placement PR17 congelado
+        run: python3 tools/validate_pr17_placement.py
+      - name: Revalidar DRC físico de placement sin routing
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --format json \
+            --output /tmp/pr18_drc.json \
+            --severity-all
+          python3 tools/validate_pr17_drc.py /tmp/pr18_drc.json
