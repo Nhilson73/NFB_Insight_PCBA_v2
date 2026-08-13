@@ -1,8 +1,10 @@
-# PR23 / PR19A — notas de routing local
+# PR27 / PR19A — notas de routing local
 
 ## Alcance
 
-PR23 materializa únicamente las **28 nets locales** definidas en `hardware/routing_batches_contract.json`. La política es `ALL_OR_NOTHING`: 28/28 o no merge.
+PR27 materializa únicamente las **28 nets locales** definidas en `hardware/routing_batches_contract.json`. La política es `ALL_OR_NOTHING`: 28/28 o no merge.
+
+El baseline autoritativo es el merge virtual `main` post-PR24/post-PR25/PR26 + rama PR27. Los runs `push` de la rama histórica no son evidencia de aceptación porque no incorporan los ECO de `main`; para aceptación se usan runs `pull_request` y, al final, el PCB persistido sobre el `main` vigente.
 
 ## Hallazgo: `5V_VCC` no debe tratarse como MST geométrico genérico
 
@@ -12,80 +14,112 @@ PR23 materializa únicamente las **28 nets locales** definidas en `hardware/rout
 - `C_5V_VCC.1` = bypass local de VCC;
 - `U_5V.11` = `RT` en la variante TPSM33625RDNR.
 
-La configuración congelada del proyecto es `PIN11_RT_TO_PIN8_VCC`. La documentación primaria de TI para TPSM33625 establece que, en la variante con pin RT, **RT conectado a VCC selecciona 1 MHz**; TI también recomienda 1 MHz para el ejemplo de salida a 5 V usado por la arquitectura del proyecto.
-
-Por tanto, el objetivo físico no es “conectar tres nodos equivalentes con el árbol Manhattan más corto”. La topología intencional es:
-
-1. `C_5V_VCC → U_5V.8` como lazo de bypass VCC crítico y corto;
-2. `C_5V_VCC → U_5V.11` como strap de configuración RT→VCC.
-
-El intento anterior dejaba al MST elegir `C_VCC→pin8` y luego `pin8→pin11`; el segundo tramo quedaba atrapado por la geometría fina del RDN0011A. PR23 v4 congela explícitamente la topología estrella con el capacitor como centro físico.
-
-## Regla derivada
-
-**Las nets multipunto con endpoints de roles eléctricos distintos no se deben optimizar exclusivamente con MST geométrico.** Primero se identifica el nodo físico crítico (bypass, feedback, estrella, terminación, etc.) y después se define el árbol de conexión que preserve esa función.
-
-Ejemplos donde esta regla deberá revisarse en lotes futuros:
-
-- rails multipunto `3V3_RAIL` / `5V_RAIL`;
-- `ACT_FAULT_N` wired-OR;
-- I²C con múltiples dispositivos;
-- GND/retornos y estrella Z3/Z4.
+La configuración congelada del proyecto es `PIN11_RT_TO_PIN8_VCC`. La documentación primaria de TI para TPSM33625 establece que, en la variante con pin RT, **RT conectado a VCC selecciona 1 MHz**. La topología intencional queda `C_VCC→VCC` + `C_VCC→RT`, no un MST genérico.
 
 ## Clearances locales y KiCad
 
-El proyecto ya contiene una regla local para el land pattern RDN0011A porque TI requiere una separación interna de cobre de `0.125 mm` dentro del footprint. Esa regla aplica solo entre objetos del propio `U_5V`; el routing externo conserva los clearances del board.
+La excepción `0.125 mm` del TPSM33625 permanece estrictamente local a la garganta demostrada del encapsulado. No se permite reducir clearance global. KiCad 10.0.5 DRC continúa como autoridad física final.
 
-Antes de añadir cualquier excepción adicional, PR23 debe intentar primero resolver la topología con el clearance normal. Si una garganta del breakout demostrada por DRC requiere neckdown, la excepción deberá ser:
+## Pad-shape no equivale a endpoint eléctrico
 
-- específica a `5V_VCC`;
-- limitada al courtyard de `U_5V`;
-- nunca global;
-- validada por KiCad DRC;
-- documentada aquí y en el `.dru`.
+El footprint `TI_RPW0010A_TPS259470A` usa pads compuestos. Todos los shapes siguen participando como geometría/obstáculos, pero el árbol de conectividad usa un solo endpoint lógico por `(ref,pin)`.
 
-KiCad soporta reglas custom por net/footprint y reglas de neckdown acotadas dentro de un courtyard; esa capacidad solo se utilizará si la topología estrella por sí sola no basta.
+## Resultado autoritativo PR27 — primera materialización 28/28
 
-## Micro-ruta RT y límite de resolución del planner
+Run `pull_request` #57 sobre el merge virtual vigente:
 
-Después del ECO PR22 existía un corredor físico válido para el strap `RT→VCC`, pero el ancho disponible para la **centrolinea** de la pista no coincidía con la rejilla A* de `0.25 mm`. Reducir la rejilla de todo el board habría multiplicado la complejidad del algoritmo sin aportar valor al resto del lote.
+- **28/28 nets materializadas**;
+- `1229` segmentos;
+- `15` vías;
+- `204` unconnected restantes, correspondientes al resto del board/lotes futuros;
+- DRC ejecutado completamente;
+- **60 errores físicos** y 257 warnings.
 
-PR23 resolvió únicamente esa arista con una micro-ruta continua determinista en F.Cu, sin vías. El resultado observado fue `5V_VCC = 9 segmentos / 11.388 mm / 0 vías`. El resto de la net y del board sigue bajo el planner estándar y el DRC completo de KiCad.
+Los errores no están distribuidos aleatoriamente. Se concentran en pocas sub-islas:
 
-**Regla derivada:** cuando una garganta válida es menor que la resolución de la rejilla, no se degrada globalmente todo el router; se puede usar una micro-ruta local explícita si está acotada, documentada y validada por DRC.
+| Dominio | Errores DRC | Causa dominante |
+|---|---:|---|
+| eFuse `OVLO/ILM/DVDT` | 29 | micro-rutas deterministas anteriores cruzan el corredor A* de OVLO |
+| `LOAD_A_POS/NEG` | 11 | vías/rutas del árbol independiente invaden el pin del par opuesto |
+| bomba `DIR/PWM/SR_CFG` | 8 | corredores F.Cu competidores junto a pines 1/3/4 del DRV8242 |
+| CO₂ `ILIM/EN/OPENLOAD` | 6 | vías/escapes digitales interfieren con ILIM |
+| `5V_FB` | 2 | aproximación a FBB demasiado cercana al pad GND |
+| HMI field | 2 | vía TX demasiado próxima al pad RX de TXU0202 |
+| chiller LED | 2 | vía LED_A demasiado próxima al pad 3V3 de R_CH_LED |
 
-## Hallazgo: pad-shape no equivale a endpoint eléctrico
+Tipos totales de error:
 
-El footprint `TI_RPW0010A_TPS259470A` usa pads compuestos: algunos pines (`1`, `7`, `10`) están construidos con más de un shape SMD que comparte **el mismo número de pad**. Esos shapes sirven para reproducir el land pattern físico, pero eléctricamente KiCad los interpreta como un solo pin.
+- `shorting_items`: 19;
+- `tracks_crossing`: 18;
+- `clearance`: 15;
+- `hole_clearance`: 4;
+- `solder_mask_bridge`: 4.
 
-El router inicial trataba cada shape como un endpoint independiente. Eso hacía que un MST intentara crear cobre adicional entre partes que ya pertenecen al mismo pin y elevaba artificialmente la congestión de `EFUSE_EN_UVLO`, `EFUSE_DVDT` y `EFUSE_ITIMER`.
+**Decisión:** no se corrigen 60 errores uno por uno. Se sustituyen las topologías de esas sub-islas por rutas deterministas simples y separadas.
 
-PR23 v10 separa dos conceptos:
+## Plan correctivo por sub-isla
 
-- **ocupación física:** todos los shapes continúan presentes y bloquean espacio según clearance;
-- **conectividad lógica:** el árbol usa un solo endpoint por `(referencia, número de pin)`; para `U_EFUSE` se selecciona el shape exterior como breakout.
+### eFuse
 
-**Regla derivada:** en footprints compuestos, el router debe deduplicar endpoints por pin lógico sin eliminar ningún shape de la geometría física ni del DRC.
+- `EFUSE_OVLO`: corredor izquierdo dedicado entre `U_EFUSE.2` y divisor R2/R3.
+- `EFUSE_DVDT`: corredor exterior derecho en banda inferior-superior propia.
+- `EFUSE_ILM`: corredor exterior aún más a la derecha y banda superior independiente.
+- ITIMER/EN-UVLO se conservan si DRC sigue limpio.
 
-## Evidencia incremental tras ECO PR22
+### Load-cell / HX711
 
-El routing limpio ya consiguió, entre otras, las siguientes redes antes del cierre del lote:
+`LOAD_A_POS/NEG` dejan de ser dos árboles A* independientes. Se tratan como **par quieto**:
 
-- `DO_FIELD_SIG`, `ORP_FIELD_SIG`, `PH_FIELD_SIG`;
-- `5V_FB`: **9 segmentos / 4.56 mm / 0 vías**;
-- `5V_VCC`: **9 segmentos / 11.388 mm / 0 vías**;
-- `5V_PGOOD`: conectada, aunque su geometría todavía debe simplificarse antes del merge;
-- `EFUSE_ITIMER`: **15 segmentos / 7.79 mm / 0 vías**;
-- `EFUSE_ILM` y `EFUSE_DVDT`: conectadas.
+- troncales largas preferentemente B.Cu;
+- escapes cortos F.Cu hacia `U_HX.8/7`;
+- testpoints como ramas secundarias cortas;
+- evitar vías junto a pads NC/HX y evitar cruce entre el par;
+- objetivo ≤2 vías por net y topología paralela/auditable.
 
-Esto demuestra que la estrategia de resolver primero las sub-islas más confinadas está desplazando el bloqueo hacia las nets menos críticas, en vez de ocultarlo mediante reducción de reglas.
+### Bomba
 
-## Estado
+- `PUMP_SR_CFG` recibe corredor F.Cu inferior independiente.
+- `PUMP_DIR_DRV`: breakout corto F.Cu, tramo B.Cu y retorno F.Cu; 2 vías.
+- `PUMP_PWM_DRV`: corredor F.Cu separado.
 
-PR23 permanece abierto y **no es mergeable por criterio de ingeniería** hasta que:
+### CO₂
 
-- las 28/28 nets locales estén conectadas;
-- no exista cobre de lotes futuros;
-- DRC físico no presente shorts/clearance/courtyard nuevos;
-- `In1.Cu` permanezca sin signal routing;
-- la calidad geométrica del lote sea revisada, especialmente rutas largas/fragmentadas como `5V_PGOOD`.
+- `CO2_ILIM` se lleva por corredor superior dedicado.
+- `CO2_EN_DRV` queda en corredor inferior/local F.Cu.
+- `CO2_OPENLOAD_N` usa una rama local F.Cu y el trayecto largo al TP por B.Cu con solo dos vías.
+
+### HMI / chiller / 5V_FB
+
+- `HMI_FIELD_TX`: tramo largo por B.Cu con vía alejada del TXU0202; rama local F.Cu.
+- `CHILLER_LED_A`: F.Cu determinista, sin vía.
+- `5V_FB`: unión corta `U_5V.9 → R_FBB.1 → R_FBT.2`, evitando el pad GND de FBB.
+
+## Calidad geométrica pendiente aun después de DRC
+
+Aunque no generaron los 60 errores, estas rutas son demasiado fragmentadas para aceptar como producción:
+
+- `5V_PGOOD`: 143 segmentos / 69.623 mm;
+- `CO2_OPENLOAD_N`: 106 segmentos / 52.025 mm (se corrige con la topología anterior);
+- `WDT_MR_N`: 100 segmentos / 47.733 mm;
+- `LOAD_A_NEG`: 98 segmentos / 4 vías / 47.985 mm;
+- `LOAD_A_POS`: 91 segmentos / 44.655 mm.
+
+Una vez eliminado DRC físico, `5V_PGOOD` y `WDT_MR_N` deben simplificarse antes de merge aunque el gate formal antiguo de 220 segmentos los tolerase.
+
+## Gate de aceptación
+
+PR27 no se mergea hasta cumplir simultáneamente:
+
+- 28/28 conectadas;
+- 0 nets de los otros 31 nets con cobre;
+- **DRC errors = 0**;
+- 0 shorts/clearance/courtyard/hole-clearance/solder-mask-bridge nuevos;
+- In1.Cu sin signal tracks;
+- sin copper zones;
+- placement/outline/footprints/netlist congelados;
+- rutas excesivamente fragmentadas simplificadas;
+- `.kicad_pcb` final persistido en la rama sobre el `main` vigente;
+- CI final read-only;
+- `README.md` actualizado al estado real antes del merge.
+
+Además, el validador debe comparar orientaciones módulo 360 (`270° ≡ -90°`) para no generar falsos negativos de placement.
