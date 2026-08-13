@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "status": "Z2_LOADCELL_TP_PLACEMENT_ECO_PR24",
+  "product": "NFB Insight PCBA v2",
+  "trigger": "PR23 routing showed LOAD_A_NEG at 198 segments/97.795 mm and LOAD_A_POS unroutable because raw load-cell test points were placed in the generic upper test-point band at Y=58.025 mm.",
+  "authority": {
+    "routing_contract": "hardware/routing_contract.json",
+    "batch_contract": "hardware/routing_batches_contract.json",
+    "placement_base": "hardware/placement_manifest.json",
+    "device_evidence": "HX711 is a precision 24-bit bridge ADC with low-noise PGA and Channel-A full-scale differential input in the tens of millivolts; relocating raw-input test points is an engineering inference, not an explicit manufacturer placement instruction."
+  },
+  "engineering_inference": "For LOAD_A_POS/LOAD_A_NEG, preserve the coupled quiet path from J_LOADCELL to U_HX and keep test-point branches short. The generic upper-band accessibility rule is subordinate to analog signal integrity for these two raw bridge inputs.",
+  "scope": {
+    "zone": "Z2",
+    "outline_change": false,
+    "zone_boundary_change": false,
+    "netlist_change": false,
+    "footprint_change": false,
+    "routing_change": false,
+    "moved_refs_only": ["TP_LOAD_A_POS", "TP_LOAD_A_NEG"]
+  },
+  "targets": {
+    "TP_LOAD_A_POS": {
+      "x_mm": 110.25,
+      "y_mm": 29.30,
+      "rotation_deg": 0.0,
+      "role": "raw load-cell positive test point; short branch above U_HX input side"
+    },
+    "TP_LOAD_A_NEG": {
+      "x_mm": 112.75,
+      "y_mm": 29.30,
+      "rotation_deg": 0.0,
+      "role": "raw load-cell negative test point; short branch above U_HX input side"
+    }
+  },
+  "geometric_intent": {
+    "u_hx_center_mm": [114.115, 21.975],
+    "u_hx_input_pins": {
+      "LOAD_A_NEG": {"pin": "7", "absolute_mm": [111.0275, 25.15]},
+      "LOAD_A_POS": {"pin": "8", "absolute_mm": [111.0275, 26.42]}
+    },
+    "testpoint_courtyard_radius_mm": 1.0,
+    "minimum_gap_to_u_hx_courtyard_mm_target": 0.8,
+    "top_side_access_preserved": true
+  },
+  "acceptance": {
+    "moved_ref_count": 2,
+    "all_other_xy_rotation_unchanged": true,
+    "courtyard_overlap_count": 0,
+    "routing_items": 0,
+    "copper_zones": 0,
+    "drc_errors": 0,
+    "board_width_mm": 242.34,
+    "board_height_mm": 68.58,
+    "in1_signal_routing": false
+  },
+  "routing_restart": "After this ECO is merged, restart PR19A from clean main and route LOAD_A_POS/LOAD_A_NEG as a coupled quiet pair with short test-point branches."
+}
