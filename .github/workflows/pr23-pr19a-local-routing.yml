@@ -45,8 +45,10 @@ jobs:
           p='hardware/placement_manifest.json'
           d=json.load(open(p,encoding='utf-8'))
           for x in d['placements']:
-              r=float(x['rotation_deg'])
-              x['rotation_deg']=((r+180.0)%360.0)-180.0
+              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
+              if abs(r+180.0) < 1e-9:
+                  r=180.0
+              x['rotation_deg']=r
           with open(p,'w',encoding='utf-8') as f:
               json.dump(d,f,indent=2,ensure_ascii=False)
               f.write('\n')
