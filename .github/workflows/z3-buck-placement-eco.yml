@@ -7,9 +7,12 @@ on:
     branches: [main]
     paths:
       - 'hardware/z3_buck_placement_eco.json'
+      - 'hardware/z2_loadcell_tp_placement_eco.json'
       - 'hardware/placement_drc_contract.json'
       - 'tools/apply_z3_buck_placement_eco.py'
       - 'tools/validate_z3_buck_placement_eco.py'
+      - 'tools/apply_z2_loadcell_tp_eco.py'
+      - 'tools/validate_z2_loadcell_tp_eco.py'
       - 'tools/generate_pr17_placement_manifest.py'
       - 'tools/materialize_pr17_pcb.py'
       - 'tools/validate_pr17_placement.py'
@@ -44,6 +47,10 @@ jobs:
           python3 -m py_compile tools/generate_pr17_placement_manifest.py
           python3 -m py_compile tools/apply_z3_buck_placement_eco.py
           python3 -m py_compile tools/validate_z3_buck_placement_eco.py
+          if [ -f hardware/z2_loadcell_tp_placement_eco.json ]; then
+            python3 -m py_compile tools/apply_z2_loadcell_tp_eco.py
+            python3 -m py_compile tools/validate_z2_loadcell_tp_eco.py
+          fi
           python3 -m py_compile tools/materialize_pr17_pcb.py
           python3 -m py_compile tools/validate_pr17_placement.py
           python3 -m py_compile tools/validate_pr17_drc.py
@@ -53,22 +60,29 @@ jobs:
           python3 tools/generate_pr17_placement_manifest.py
           cp hardware/placement_manifest.json /tmp/placement_base_pr17.json
 
-      - name: Aplicar ECO Z3 buck
-        run: python3 tools/apply_z3_buck_placement_eco.py
+      - name: Aplicar y validar ECO Z3 buck contra PR17
+        run: |
+          python3 tools/apply_z3_buck_placement_eco.py
+          python3 tools/validate_z3_buck_placement_eco.py /tmp/placement_base_pr17.json
+          cp hardware/placement_manifest.json /tmp/placement_base_pr22.json
 
-      - name: Validar alcance exacto del ECO
-        run: python3 tools/validate_z3_buck_placement_eco.py /tmp/placement_base_pr17.json
+      - name: Aplicar ECOs posteriores vigentes
+        run: |
+          if [ -f hardware/z2_loadcell_tp_placement_eco.json ]; then
+            python3 tools/apply_z2_loadcell_tp_eco.py
+            python3 tools/validate_z2_loadcell_tp_eco.py /tmp/placement_base_pr22.json
+          fi
 
-      - name: Verificar manifest ECO reproducible
+      - name: Verificar manifest final de la cadena ECO reproducible
         run: git diff --exit-code -- hardware/placement_manifest.json
 
-      - name: Materializar PCB temporalmente desde PR16 + manifest ECO
+      - name: Materializar PCB temporalmente desde PR16 + cadena ECO
         run: python3 tools/materialize_pr17_pcb.py
 
       - name: Validar placement semántico y courtyards
         run: python3 tools/validate_pr17_placement.py
 
-      - name: Ejecutar DRC de placement
+      - name: Ejecutar DRC de placement final
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
             --format json \
@@ -77,7 +91,7 @@ jobs:
           cp /tmp/pr22_eco_drc.json hardware/pr22_eco_drc.json
           python3 tools/validate_pr17_drc.py /tmp/pr22_eco_drc.json
 
-      - name: Resumen ECO
+      - name: Resumen cadena ECO
         run: |
           python3 - <<'PY'
           import json
@@ -85,9 +99,12 @@ jobs:
           e=json.load(open('hardware/z3_buck_placement_eco.json',encoding='utf-8'))
           by={x['ref']:x for x in p['placements']}
           print('BOARD',p['board'])
+          print('PR22_MOVED_REFS')
           for ref in e['scope']['moved_refs_only']:
               x=by[ref]
               print(ref,x['x_mm'],x['y_mm'],x['rotation_deg'],x['courtyard_global_mm'])
+          print('ECO_REVISIONS',p.get('eco_revisions',[]))
+          print('PR22 delta se valida contra PR17; manifest/PCB/DRC se reproducen con la cadena ECO vigente completa.')
           print('PCB equivalence: semantic XY/rot/LIB_ID/nets/DRC; pcbnew UUIDs are not byte-stable.')
           PY
 
