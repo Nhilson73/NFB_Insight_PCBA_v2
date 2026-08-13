@@ -156,6 +156,38 @@ Hallazgos principales:
 6. `In1.Cu` no se usa como vía de escape de routing; queda reservado al plano GND.
 7. Los rails multipunto (`3V3_RAIL` y `5V_RAIL`) no deben forzarse como pistas improvisadas alrededor de encapsulados finos; pertenecen al lote de potencia.
 
+## Aprendizaje PR #21 / PR19A — exclusión física del planner
+
+### Síntoma A — halo pequeño
+
+El primer materializador limpio de PR19A consiguió rutear **28/28 nets**, pero KiCad reportó 345 errores DRC. El primer caso fue `LOAD_A_NEG` cortocircuitando un pad `NC` de `U_HX`.
+
+### Causa raíz A
+
+El planner estaba evaluando principalmente el **centro geométrico de la ruta** sobre una rejilla y usaba un halo de pad demasiado pequeño. Encontrar un camino de centrolinea no garantiza que el ancho real de cobre más el clearance contractual quepan físicamente.
+
+### Síntoma B — halo global grande
+
+Al aumentar el halo global para aproximar ancho + clearance, el planner dejó de encontrar salida para `5V_VCC` desde el pin 11 de `U_5V` (`TPSM33625`).
+
+### Causa raíz B
+
+Una sola exclusión global no representa bien dos escalas geométricas distintas: el routing normal necesita margen físico conservador, mientras los encapsulados de pitch fino requieren una **salida local controlada** desde el pad antes de aplicar ese margen.
+
+### Corrección de diseño del planner
+
+PR19A adopta la siguiente regla:
+
+- el margen frente a pads ajenos depende de la netclass actual: `track_width/2 + clearance`;
+- los IC de pitch fino usan un stub corto dirigido hacia el exterior del encapsulado;
+- después del escape local vuelve a aplicarse la exclusión física completa;
+- el DRC de KiCad no se relaja y sigue siendo la autoridad final;
+- ningún error se transforma en waiver genérico para hacer pasar CI.
+
+### Regla preventiva
+
+**Nunca usar un único halo global como sustituto del DRC.** El planner debe conocer el ancho/clearance de la clase y modelar explícitamente los escapes de pitch fino. Esta regla aplica también a futuros lotes PR19B/PR19C/PR20A.
+
 ## Criterio de merge por lote
 
 Un lote solo puede mergearse si cumple simultáneamente:
