@@ -130,34 +130,36 @@
       "zone": "Z3",
       "block": "BUCK_5V+LDO_3V3",
       "role": "internal",
-      "x_mm": 188.295,
-      "y_mm": 17.255,
-      "rotation_deg": 0.0,
+      "x_mm": 188.95,
+      "y_mm": 19.075,
+      "rotation_deg": 180.0,
       "courtyard_global_mm": [
-        186.79,
-        16.5,
-        189.8,
-        18.01
+        187.445,
+        18.32,
+        190.455,
+        19.83
       ],
       "footprint": "Capacitor_SMD:C_0603_1608Metric",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR22_Z3_BUCK"
     },
     {
       "ref": "C_5V_IN_4U7",
       "zone": "Z3",
       "block": "BUCK_5V+LDO_3V3",
       "role": "internal",
-      "x_mm": 183.665,
-      "y_mm": 18.125,
-      "rotation_deg": 0.0,
+      "x_mm": 184.6,
+      "y_mm": 19.075,
+      "rotation_deg": 180.0,
       "courtyard_global_mm": [
-        181.34,
-        16.5,
-        185.99,
-        19.75
+        182.275,
+        17.45,
+        186.925,
+        20.7
       ],
       "footprint": "Capacitor_SMD:C_1210_3225Metric",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR22_Z3_BUCK"
     },
     {
       "ref": "C_5V_OUT1",
@@ -198,17 +200,18 @@
       "zone": "Z3",
       "block": "BUCK_5V+LDO_3V3",
       "role": "internal",
-      "x_mm": 182.845,
-      "y_mm": 23.005,
+      "x_mm": 195.3,
+      "y_mm": 15.6,
       "rotation_deg": 0.0,
       "courtyard_global_mm": [
-        181.34,
-        22.25,
-        184.35,
-        23.76
+        193.795,
+        14.845,
+        196.805,
+        16.355
       ],
       "footprint": "Capacitor_SMD:C_0603_1608Metric",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR22_Z3_BUCK"
     },
     {
       "ref": "C_CO2",
@@ -946,34 +949,36 @@
       "zone": "Z3",
       "block": "BUCK_5V+LDO_3V3",
       "role": "internal",
-      "x_mm": 188.815,
-      "y_mm": 22.745,
-      "rotation_deg": 0.0,
+      "x_mm": 193.0,
+      "y_mm": 15.39,
+      "rotation_deg": 270.0,
       "courtyard_global_mm": [
-        187.86,
-        22.25,
-        189.77,
-        23.24
+        192.505,
+        14.435,
+        193.495,
+        16.345
       ],
       "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR22_Z3_BUCK"
     },
     {
       "ref": "R_5V_FBT",
       "zone": "Z3",
       "block": "BUCK_5V+LDO_3V3",
       "role": "internal",
-      "x_mm": 186.105,
-      "y_mm": 22.745,
-      "rotation_deg": 0.0,
+      "x_mm": 191.6,
+      "y_mm": 15.39,
+      "rotation_deg": 90.0,
       "courtyard_global_mm": [
-        185.15,
-        22.25,
-        187.06,
-        23.24
+        191.105,
+        14.435,
+        192.095,
+        16.345
       ],
       "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "bbox_source": "F.CrtYd"
+      "bbox_source": "F.CrtYd",
+      "placement_eco": "PR22_Z3_BUCK"
     },
     {
       "ref": "R_5V_PG_PU",
@@ -2079,6 +2084,21 @@
       ],
       "footprint": "Package_TO_SOT_SMD:SOT-23-5",
       "bbox_source": "F.CrtYd"
+    }
+  ],
+  "eco_revision": 1,
+  "eco_revisions": [
+    {
+      "id": "PR22_Z3_BUCK",
+      "contract": "hardware/z3_buck_placement_eco.json",
+      "moved_refs": [
+        "C_5V_IN_100N",
+        "C_5V_IN_4U7",
+        "C_5V_VCC",
+        "R_5V_FBB",
+        "R_5V_FBT"
+      ],
+      "reason": "TI TPSM33625 layout-critical VCC/FB/VIN proximity"
     }
   ]
 }
