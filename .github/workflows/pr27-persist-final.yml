@@ -1,0 +1,60 @@
+name: PR27 persistir cobre final una vez
+
+on:
+  push:
+    branches: [agent/pr23-pr19a-local-routing]
+
+permissions:
+  contents: write
+
+jobs:
+  persist:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - name: Checkout merge virtual PR27
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/27/merge
+          fetch-depth: 0
+      - name: Inicializar KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Materializar y exigir DRC físico cero
+        run: |
+          python3 tools/validate_routing_batches.py
+          python3 tools/materialize_pr19a_local_v19.py
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/pr27_drc.json',encoding='utf-8'))
+          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
+          assert not errors, errors[:3]
+          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
+          assert len(m['routed_nets'])==28
+          assert len(m['segments'])==523
+          assert len(m['vias'])==24
+          assert len(d.get('unconnected_items',[]))==204
+          PY
+          cp kicad/NFB_Insight_PCBA_v2.kicad_pcb /tmp/NFB_Insight_PCBA_v2.kicad_pcb
+          cp hardware/pr19a_local_routing_manifest.json /tmp/pr19a_local_routing_manifest.json
+          cp hardware/pr19a_local_probe.json /tmp/pr19a_local_probe.json
+      - name: Persistir artefactos verificados
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch origin agent/pr23-pr19a-local-routing
+          git checkout -B agent/pr23-pr19a-local-routing origin/agent/pr23-pr19a-local-routing
+          cp /tmp/NFB_Insight_PCBA_v2.kicad_pcb kicad/NFB_Insight_PCBA_v2.kicad_pcb
+          cp /tmp/pr19a_local_routing_manifest.json hardware/pr19a_local_routing_manifest.json
+          cp /tmp/pr19a_local_probe.json hardware/pr19a_local_probe.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add kicad/NFB_Insight_PCBA_v2.kicad_pcb hardware/pr19a_local_routing_manifest.json hardware/pr19a_local_probe.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'routing: persistir cobre PR19A 28/28 validado'
+          git push origin HEAD:agent/pr23-pr19a-local-routing
