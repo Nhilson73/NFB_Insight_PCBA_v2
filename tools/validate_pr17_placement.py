@@ -42,6 +42,16 @@ def near(a: float, b: float, tol: float = TOL) -> bool:
     return abs(a - b) <= tol
 
 
+def angle_near(a: float, b: float, tol: float = TOL) -> bool:
+    """Compara orientaciones físicas módulo 360.
+
+    KiCad puede devolver 270° como -90° al serializar/cargar el PCB; ambas
+    orientaciones son físicamente idénticas y no deben producir falso negativo.
+    """
+    delta = ((float(a) - float(b) + 180.0) % 360.0) - 180.0
+    return abs(delta) <= tol
+
+
 def fpid_text(fp) -> str:
     """Serializa LIB_ID sin depender del overload SWIG de Format() en KiCad 10."""
     fid = fp.GetFPID()
@@ -121,7 +131,7 @@ def main() -> int:
 
     host = fps["J_UNOQ"]
     hp = host.GetPosition()
-    if not (near(mm(hp.x), 0.0) and near(mm(hp.y), 0.0) and near(host.GetOrientationDegrees(), 0.0)):
+    if not (near(mm(hp.x), 0.0) and near(mm(hp.y), 0.0) and angle_near(host.GetOrientationDegrees(), 0.0)):
         fail("J_UNOQ se movió/rotó; Z0 es inmutable")
 
     zone_bounds = manifest["zone_bounds_mm"]
@@ -129,10 +139,15 @@ def main() -> int:
         fp = fps[ref]
         p = placements[ref]
         pos = fp.GetPosition()
-        actual = (mm(pos.x), mm(pos.y), fp.GetOrientationDegrees())
-        expected = (float(p["x_mm"]), float(p["y_mm"]), float(p["rotation_deg"]))
-        if not all(near(a, e) for a, e in zip(actual, expected)):
-            fail(f"{ref}: XY/rot difiere actual={actual} expected={expected}")
+        actual_xy = (mm(pos.x), mm(pos.y))
+        expected_xy = (float(p["x_mm"]), float(p["y_mm"]))
+        actual_rot = fp.GetOrientationDegrees()
+        expected_rot = float(p["rotation_deg"])
+        if not (near(actual_xy[0], expected_xy[0]) and near(actual_xy[1], expected_xy[1]) and angle_near(actual_rot, expected_rot)):
+            fail(
+                f"{ref}: XY/rot difiere actual=({actual_xy[0]}, {actual_xy[1]}, {actual_rot}) "
+                f"expected=({expected_xy[0]}, {expected_xy[1]}, {expected_rot})"
+            )
         actual_fpid = fpid_text(fp)
         if actual_fpid != comp["footprint"]:
             fail(f"{ref}: footprint PCB={actual_fpid} JSON={comp['footprint']}")
@@ -184,7 +199,7 @@ def main() -> int:
         last_x = cx
         if not near(float(c[1]), float(manifest["policies"]["field_courtyard_bottom_margin_mm"]), 0.01):
             fail(f"{ref}: no está en la fila inferior congelada")
-        if ref in FIELD_CONNECTORS and not near(float(p["rotation_deg"]), 0.0):
+        if ref in FIELD_CONNECTORS and not angle_near(float(p["rotation_deg"]), 0.0):
             fail(f"{ref}: side-entry debe mantener orientación 0° hacia -Y")
 
     items = sorted(placements.items())

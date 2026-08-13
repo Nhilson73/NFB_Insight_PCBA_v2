@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Valida DRC PR17 bajo deuda acotada y machine-readable.
+"""Valida DRC de placement bajo deuda acotada y machine-readable.
 
-PR17 es placement-only. Exige cero errores y cero tipos de violación fuera del
-contrato. Las advertencias de serigrafía/rotulación y los unconnected se aceptan
-solo con conteos exactos, bloqueando cualquier crecimiento silencioso de deuda.
+PR17 estableció el baseline placement-only. PR22 puede revisar únicamente los
+conteos de deuda silk/text después de un ECO de placement físicamente limpio.
+En ambos casos se exigen cero errores y cero tipos de violación fuera del
+contrato; el crecimiento silencioso de deuda sigue bloqueado.
 """
 from __future__ import annotations
 
@@ -15,6 +16,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "hardware" / "placement_manifest.json"
 CONTRACT = ROOT / "hardware" / "placement_drc_contract.json"
+ALLOWED_CONTRACTS = {
+    (1, "BOUNDED_PLACEMENT_DRC_DEBT_PR17"),
+    (2, "BOUNDED_PLACEMENT_DRC_DEBT_PR22_ECO"),
+}
 
 
 def fail(msg: str) -> None:
@@ -32,13 +37,20 @@ def main() -> int:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     if manifest.get("status") != "PRODUCTION_PLACEMENT_PR17":
-        fail("manifest no está cerrado como PRODUCTION_PLACEMENT_PR17")
+        fail("manifest no preserva PRODUCTION_PLACEMENT_PR17")
     if manifest.get("policies", {}).get("routing_allowed") is not False:
-        fail("PR17 no puede habilitar routing")
-    if contract.get("schema_version") != 1 or contract.get("status") != "BOUNDED_PLACEMENT_DRC_DEBT_PR17":
-        fail("contrato DRC no está cerrado como PR17")
+        fail("placement baseline no puede habilitar routing")
+    identity = (int(contract.get("schema_version", -1)), str(contract.get("status", "")))
+    if identity not in ALLOWED_CONTRACTS:
+        fail(f"contrato DRC no reconocido: {identity}")
     if contract.get("scope") != "PLACEMENT_ONLY_NO_ROUTING":
-        fail("scope DRC PR17 inesperado")
+        fail("scope DRC placement inesperado")
+    if identity[0] == 2:
+        eco = contract.get("eco_revision", {})
+        if eco.get("id") != "PR22_Z3_BUCK":
+            fail("schema DRC v2 requiere ECO PR22_Z3_BUCK explícito")
+        if contract.get("expected_error_count") != 0:
+            fail("ECO DRC nunca puede aceptar errores físicos")
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
     violations = report.get("violations")
@@ -55,12 +67,13 @@ def main() -> int:
     expected_warnings = int(contract["expected_warning_count"])
     expected_unconnected = int(contract["expected_unconnected_items"])
 
+    print("DRC_CONTRACT", identity)
     print("DRC_TYPE_COUNTS", dict(sorted(type_counts.items())))
     print("DRC_SEVERITY_COUNTS", dict(sorted(severity_counts.items())))
 
     actual_errors = int(severity_counts.get("error", 0))
     if actual_errors != expected_errors:
-        fail(f"errores DRC PR17: actual={actual_errors}, esperado={expected_errors}")
+        fail(f"errores DRC placement: actual={actual_errors}, esperado={expected_errors}")
 
     non_warning = {sev: count for sev, count in severity_counts.items() if sev != "warning" and count}
     if non_warning:
@@ -70,14 +83,14 @@ def main() -> int:
         missing = expected_types - type_counts
         extra = type_counts - expected_types
         fail(
-            "deuda warning PR17 cambió: "
+            "deuda warning placement cambió: "
             f"actual={dict(sorted(type_counts.items()))}; "
             f"esperado={dict(sorted(expected_types.items()))}; "
             f"faltante={dict(missing)}; extra={dict(extra)}"
         )
 
     if sum(type_counts.values()) != expected_warnings:
-        fail(f"warning count PR17: actual={sum(type_counts.values())}, esperado={expected_warnings}")
+        fail(f"warning count placement: actual={sum(type_counts.values())}, esperado={expected_warnings}")
 
     forbidden = set(contract.get("forbidden_violation_types", []))
     forbidden_seen = forbidden & set(type_counts)
@@ -85,9 +98,9 @@ def main() -> int:
         fail(f"tipos físicos/eléctricos prohibidos reaparecieron: {sorted(forbidden_seen)}")
 
     if len(unconnected) != expected_unconnected:
-        fail(f"deuda unconnected PR17 cambió: actual={len(unconnected)}, esperado={expected_unconnected}")
+        fail(f"deuda unconnected placement cambió: actual={len(unconnected)}, esperado={expected_unconnected}")
 
-    print("OK: DRC PR17 dentro de deuda acotada")
+    print("OK: DRC placement dentro de deuda acotada")
     print(f"- errors={actual_errors}; warnings={expected_warnings} exactos y solo de silk/text")
     print(f"- unconnected_items={len(unconnected)} exactos; routing=0")
     print("- sin clearance/short/courtyard ni otros tipos físicos prohibidos")

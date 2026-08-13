@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "status": "BOUNDED_PLACEMENT_DRC_DEBT_PR17",
+  "schema_version": 2,
+  "status": "BOUNDED_PLACEMENT_DRC_DEBT_PR22_ECO",
   "product": "NFB Insight PCBA v2",
   "kicad_version": "10.0.5",
   "scope": "PLACEMENT_ONLY_NO_ROUTING",
@@ -21,11 +21,11 @@
   "expected_error_count": 0,
   "allowed_warning_types_exact": {
     "silk_edge_clearance": 13,
-    "silk_over_copper": 55,
+    "silk_over_copper": 68,
     "silk_overlap": 177,
     "text_height": 1
   },
-  "expected_warning_count": 246,
+  "expected_warning_count": 259,
   "expected_unconnected_items": 250,
   "forbidden_violation_types": [
     "clearance",
@@ -39,9 +39,19 @@
     "via_diameter",
     "connection_width"
   ],
+  "eco_revision": {
+    "id": "PR22_Z3_BUCK",
+    "reason": "Routing PR19A exposed insufficient electrical proximity around TPSM33625; five Z3 passives moved/rotated under TI layout guidance.",
+    "physical_result": "0 DRC errors; 0 short/clearance/courtyard violations; only silk_over_copper increased by 13.",
+    "warning_delta": {
+      "silk_over_copper": 13,
+      "total_warnings": 13
+    },
+    "manufacturing_status": "NOT_RELEASE_ARTWORK; silk debt remains explicitly bounded and must be removed before Gerbers."
+  },
   "interpretation": {
-    "warnings": "Deuda acotada de serigrafía/rotulación aceptada únicamente para revisión de placement PR17; no habilita salidas de fabricación.",
-    "unconnected_items": "Deuda intencional de placement-only: PR17 prohíbe tracks, vías y zonas de cobre.",
+    "warnings": "Deuda acotada de serigrafía/rotulación aceptada únicamente durante placement/routing; no habilita salidas de fabricación.",
+    "unconnected_items": "Deuda intencional de placement-only: antes de routing completo existen 250 conexiones pendientes.",
     "uuid_note": "pcbnew puede regenerar UUIDs al reconstruir footprints; la equivalencia del PCB se valida semánticamente, mientras los JSON derivados sí deben reproducirse sin diff.",
     "zero_errors_required": true
   },

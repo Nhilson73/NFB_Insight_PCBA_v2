@@ -1,0 +1,102 @@
+name: PR22 ECO placement Z3 buck
+
+on:
+  push:
+    branches: [agent/pr22-z3-buck-placement-eco]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/z3_buck_placement_eco.json'
+      - 'hardware/placement_drc_contract.json'
+      - 'tools/apply_z3_buck_placement_eco.py'
+      - 'tools/validate_z3_buck_placement_eco.py'
+      - 'tools/generate_pr17_placement_manifest.py'
+      - 'tools/materialize_pr17_pcb.py'
+      - 'tools/validate_pr17_placement.py'
+      - 'tools/validate_pr17_drc.py'
+      - 'hardware/placement_manifest.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - '.github/workflows/z3-buck-placement-eco.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  eco:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Preparar git y librerías KiCad
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+
+      - name: Compilar herramientas
+        run: |
+          python3 -m py_compile tools/generate_pr17_placement_manifest.py
+          python3 -m py_compile tools/apply_z3_buck_placement_eco.py
+          python3 -m py_compile tools/validate_z3_buck_placement_eco.py
+          python3 -m py_compile tools/materialize_pr17_pcb.py
+          python3 -m py_compile tools/validate_pr17_placement.py
+          python3 -m py_compile tools/validate_pr17_drc.py
+
+      - name: Regenerar placement base PR17
+        run: |
+          python3 tools/generate_pr17_placement_manifest.py
+          cp hardware/placement_manifest.json /tmp/placement_base_pr17.json
+
+      - name: Aplicar ECO Z3 buck
+        run: python3 tools/apply_z3_buck_placement_eco.py
+
+      - name: Validar alcance exacto del ECO
+        run: python3 tools/validate_z3_buck_placement_eco.py /tmp/placement_base_pr17.json
+
+      - name: Verificar manifest ECO reproducible
+        run: git diff --exit-code -- hardware/placement_manifest.json
+
+      - name: Materializar PCB temporalmente desde PR16 + manifest ECO
+        run: python3 tools/materialize_pr17_pcb.py
+
+      - name: Validar placement semántico y courtyards
+        run: python3 tools/validate_pr17_placement.py
+
+      - name: Ejecutar DRC de placement
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            --format json \
+            --output /tmp/pr22_eco_drc.json \
+            --severity-all
+          cp /tmp/pr22_eco_drc.json hardware/pr22_eco_drc.json
+          python3 tools/validate_pr17_drc.py /tmp/pr22_eco_drc.json
+
+      - name: Resumen ECO
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('hardware/placement_manifest.json',encoding='utf-8'))
+          e=json.load(open('hardware/z3_buck_placement_eco.json',encoding='utf-8'))
+          by={x['ref']:x for x in p['placements']}
+          print('BOARD',p['board'])
+          for ref in e['scope']['moved_refs_only']:
+              x=by[ref]
+              print(ref,x['x_mm'],x['y_mm'],x['rotation_deg'],x['courtyard_global_mm'])
+          print('PCB equivalence: semantic XY/rot/LIB_ID/nets/DRC; pcbnew UUIDs are not byte-stable.')
+          PY
+
+      - name: Guardar artefactos ECO de revisión
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr22-z3-buck-placement-eco
+          path: |
+            hardware/placement_manifest.json
+            hardware/pr22_eco_drc.json
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb

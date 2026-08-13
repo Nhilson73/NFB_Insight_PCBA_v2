@@ -9,6 +9,7 @@ on:
       - 'tools/probe_pcbnew_api.py'
       - 'tools/compute_placement_plan.py'
       - 'tools/generate_pr17_placement_manifest.py'
+      - 'tools/apply_z3_buck_placement_eco.py'
       - 'tools/materialize_pr17_pcb.py'
       - 'tools/validate_pr17_placement.py'
       - 'tools/validate_pr17_drc.py'
@@ -17,6 +18,7 @@ on:
       - 'hardware/placement_manifest.json'
       - 'hardware/placement_plan_probe.json'
       - 'hardware/placement_drc_contract.json'
+      - 'hardware/z3_buck_placement_eco.json'
       - 'hardware/insight_pin_contract.json'
       - 'hardware/z1_production_netlist.json'
       - 'hardware/z2_production_netlist.json'
@@ -57,6 +59,7 @@ jobs:
           python3 -m py_compile tools/probe_pcbnew_api.py
           python3 -m py_compile tools/compute_placement_plan.py
           python3 -m py_compile tools/generate_pr17_placement_manifest.py
+          if [ -f hardware/z3_buck_placement_eco.json ]; then python3 -m py_compile tools/apply_z3_buck_placement_eco.py; fi
           python3 -m py_compile tools/materialize_pr17_pcb.py
           python3 -m py_compile tools/validate_pr17_placement.py
           python3 -m py_compile tools/validate_pr17_drc.py
@@ -69,8 +72,12 @@ jobs:
         run: python3 tools/probe_pcbnew_api.py
       - name: Calcular ancho mínimo por courtyards
         run: python3 tools/compute_placement_plan.py
-      - name: Generar manifest XY funcional
-        run: python3 tools/generate_pr17_placement_manifest.py
+      - name: Generar manifest XY funcional + ECO vigente
+        run: |
+          python3 tools/generate_pr17_placement_manifest.py
+          if [ -f hardware/z3_buck_placement_eco.json ]; then
+            python3 tools/apply_z3_buck_placement_eco.py
+          fi
       - name: Verificar JSON reproducibles
         run: git diff --exit-code -- hardware/placement_manifest.json hardware/placement_plan_probe.json
       - name: Materializar PCB temporalmente desde PR16 + manifest
@@ -86,5 +93,5 @@ jobs:
           python3 tools/validate_pr17_drc.py /tmp/pr17_drc.json
       - name: Resumen de salida
         run: |
-          python3 -c "import json; p=json.load(open('hardware/placement_manifest.json',encoding='utf-8')); print('BOARD',p['board']); print('ZONES',p['zone_bounds_mm']); print('REFS',len(p['placements']))"
+          python3 -c "import json; p=json.load(open('hardware/placement_manifest.json',encoding='utf-8')); print('BOARD',p['board']); print('ZONES',p['zone_bounds_mm']); print('REFS',len(p['placements'])); print('ECO',p.get('eco_revisions',[]))"
           echo "KiCad pcbnew puede regenerar UUIDs; la equivalencia PR17 se valida por XY/rot/LIB_ID/nets/DRC, no por bytes del .kicad_pcb."
