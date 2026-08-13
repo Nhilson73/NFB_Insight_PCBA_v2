@@ -8,6 +8,7 @@ on:
     paths:
       - 'tools/pr19a_router_core.py'
       - 'tools/materialize_pr19a_local.py'
+      - 'tools/materialize_pr19a_local_v2.py'
       - 'tools/validate_pr19a_local.py'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
@@ -35,6 +36,7 @@ jobs:
         run: |
           python3 -m py_compile tools/pr19a_router_core.py
           python3 -m py_compile tools/materialize_pr19a_local.py
+          python3 -m py_compile tools/materialize_pr19a_local_v2.py
           python3 -m py_compile tools/validate_pr19a_local.py
           python3 -m py_compile tools/validate_routing_batches.py
 
@@ -42,7 +44,7 @@ jobs:
         run: python3 tools/validate_routing_batches.py
 
       - name: Materializar únicamente PR19A
-        run: python3 tools/materialize_pr19a_local.py
+        run: python3 tools/materialize_pr19a_local_v2.py
 
       - name: Ejecutar DRC KiCad
         run: |
@@ -51,6 +53,20 @@ jobs:
             --output /tmp/pr19a_drc.json \
             --severity-all
           cp /tmp/pr19a_drc.json hardware/pr19a_drc.json
+
+      - name: Resumen DRC antes del gate
+        run: |
+          python3 - <<'PY'
+          import json, collections
+          d=json.load(open('hardware/pr19a_drc.json',encoding='utf-8'))
+          v=d.get('violations',[])
+          u=d.get('unconnected_items',[])
+          print('VIOLATIONS',len(v),'UNCONNECTED',len(u))
+          print('TYPES',dict(collections.Counter(x.get('type','?') for x in v)))
+          print('SEVERITIES',dict(collections.Counter(x.get('severity','?') for x in v)))
+          for x in [q for q in v if q.get('severity')=='error'][:12]:
+              print('ERROR',json.dumps(x,ensure_ascii=False,sort_keys=True))
+          PY
 
       - name: Validar gate 28 de 28
         run: python3 tools/validate_pr19a_local.py hardware/pr19a_drc.json
@@ -68,6 +84,7 @@ jobs:
           PY
 
       - name: Guardar artefactos de revisión
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pr19a-routing-review
