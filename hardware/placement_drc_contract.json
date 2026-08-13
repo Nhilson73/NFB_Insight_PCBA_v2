@@ -1,63 +1,45 @@
 {
-  "schema_version": 2,
-  "status": "BOUNDED_PLACEMENT_DRC_DEBT_PR22_ECO",
+  "schema_version": 3,
+  "status": "BOUNDED_PLACEMENT_DRC_DEBT_PR24_ECO",
   "product": "NFB Insight PCBA v2",
   "kicad_version": "10.0.5",
   "scope": "PLACEMENT_ONLY_NO_ROUTING",
   "ci_revalidation_mode": "SEMANTIC_KICAD_UUID_TOLERANT",
   "json_artifacts_require_zero_diff": true,
-  "pcb_equivalence_requires": [
-    "references",
-    "XY",
-    "rotation",
-    "LIB_ID",
-    "pads_and_nets",
-    "zone_confinement",
-    "field_io_order",
-    "courtyard_overlap_zero",
-    "tracks_vias_zones_zero",
-    "bounded_DRC_contract"
-  ],
+  "pcb_equivalence_requires": ["references","XY","rotation","LIB_ID","pads_and_nets","zone_confinement","field_io_order","courtyard_overlap_zero","tracks_vias_zones_zero","bounded_DRC_contract"],
   "expected_error_count": 0,
   "allowed_warning_types_exact": {
     "silk_edge_clearance": 13,
     "silk_over_copper": 68,
-    "silk_overlap": 177,
+    "silk_overlap": 173,
     "text_height": 1
   },
-  "expected_warning_count": 259,
+  "expected_warning_count": 255,
   "expected_unconnected_items": 250,
-  "forbidden_violation_types": [
-    "clearance",
-    "shorting_items",
-    "courtyards_overlap",
-    "footprint_type_mismatch",
-    "board_edge_clearance",
-    "hole_clearance",
-    "drill_out_of_range",
-    "track_width",
-    "via_diameter",
-    "connection_width"
-  ],
-  "eco_revision": {
-    "id": "PR22_Z3_BUCK",
-    "reason": "Routing PR19A exposed insufficient electrical proximity around TPSM33625; five Z3 passives moved/rotated under TI layout guidance.",
-    "physical_result": "0 DRC errors; 0 short/clearance/courtyard violations; only silk_over_copper increased by 13.",
-    "warning_delta": {
-      "silk_over_copper": 13,
-      "total_warnings": 13
+  "forbidden_violation_types": ["clearance","shorting_items","courtyards_overlap","footprint_type_mismatch","board_edge_clearance","hole_clearance","drill_out_of_range","track_width","via_diameter","connection_width"],
+  "eco_revisions": [
+    {
+      "id": "PR22_Z3_BUCK",
+      "reason": "Five TPSM33625 support passives moved/rotated under TI layout guidance.",
+      "result": "0 physical DRC errors; bounded silk/text debt."
     },
-    "manufacturing_status": "NOT_RELEASE_ARTWORK; silk debt remains explicitly bounded and must be removed before Gerbers."
-  },
+    {
+      "id": "PR24_Z2_LOADCELL_TP",
+      "reason": "Move only TP_LOAD_A_POS/NEG near U_HX to shorten raw bridge-input test branches before coupled-pair routing.",
+      "evidence_boundary": "HX711 sensitivity is source-derived; exact TP coordinates are an NFB engineering inference.",
+      "physical_result": "0 DRC errors; 0 short/clearance/courtyard violations; silk_overlap decreased 177->173.",
+      "warning_delta_vs_pr22": {"silk_overlap": -4, "total_warnings": -4}
+    }
+  ],
   "interpretation": {
-    "warnings": "Deuda acotada de serigrafía/rotulación aceptada únicamente durante placement/routing; no habilita salidas de fabricación.",
-    "unconnected_items": "Deuda intencional de placement-only: antes de routing completo existen 250 conexiones pendientes.",
-    "uuid_note": "pcbnew puede regenerar UUIDs al reconstruir footprints; la equivalencia del PCB se valida semánticamente, mientras los JSON derivados sí deben reproducirse sin diff.",
+    "warnings": "Deuda acotada exclusivamente silk/text; no habilita fabricación.",
+    "unconnected_items": "250 conexiones pendientes esperadas en placement-only.",
+    "uuid_note": "Equivalencia PCB semántica; UUID pcbnew no es byte-estable.",
     "zero_errors_required": true
   },
   "removal_gates": {
-    "silkscreen_and_text": "Eliminar antes de congelar artwork/Gerbers de fabricación.",
-    "unconnected_items": "Eliminar durante la fase de routing antes del gate de fabricación.",
-    "new_warning_type_or_count_change": "Bloquea CI y requiere revisión explícita; no se permite crecimiento silencioso de deuda."
+    "silkscreen_and_text": "Eliminar antes de artwork/Gerbers.",
+    "unconnected_items": "Eliminar durante routing antes de fabricación.",
+    "new_warning_type_or_count_change": "Bloquea CI y requiere revisión explícita."
   }
 }
