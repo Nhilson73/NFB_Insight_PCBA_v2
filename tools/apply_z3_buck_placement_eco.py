@@ -8,6 +8,7 @@ cambiar board, zonas, netlist, footprint o política de routing.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +18,24 @@ ECO = ROOT / "hardware" / "z3_buck_placement_eco.json"
 
 def fail(msg: str) -> None:
     raise SystemExit("ERROR: " + msg)
+
+
+def rotated_courtyard(old_box, old_x: float, old_y: float, old_rot: float, new_x: float, new_y: float, new_rot: float):
+    """Transforma el bbox global antiguo a un bbox global nuevo para rotaciones ortogonales.
+
+    El placement PR17 base usa rotación conocida; recuperamos los cuatro vértices
+    en el marco local antiguo y aplicamos únicamente el delta de rotación ECO.
+    """
+    x0, y0, x1, y1 = map(float, old_box)
+    corners = [(x0-old_x, y0-old_y), (x0-old_x, y1-old_y), (x1-old_x, y0-old_y), (x1-old_x, y1-old_y)]
+    delta = (new_rot - old_rot) % 360.0
+    if min(abs(delta-k) for k in (0,90,180,270,360)) > 1e-6:
+        fail(f"rotación ECO no ortogonal: {old_rot} -> {new_rot}")
+    rad = math.radians(delta)
+    c, s = round(math.cos(rad)), round(math.sin(rad))
+    pts = [(new_x + c*x - s*y, new_y + s*x + c*y) for x,y in corners]
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    return [round(min(xs),3), round(min(ys),3), round(max(xs),3), round(max(ys),3)]
 
 
 def main() -> int:
@@ -58,25 +77,21 @@ def main() -> int:
         new_x = float(target["x_mm"])
         new_y = float(target["y_mm"])
         new_rot = float(target.get("rotation_deg", 0.0))
-        if abs(new_rot - old_rot) > 1e-9:
-            fail(f"{ref}: este ECO no admite cambio de rotación; requiere recálculo de courtyard")
-        dx, dy = new_x - old_x, new_y - old_y
+        if "courtyard_global_mm" not in p or len(p["courtyard_global_mm"]) != 4:
+            fail(f"{ref}: falta courtyard_global_mm")
+        p["courtyard_global_mm"] = rotated_courtyard(
+            p["courtyard_global_mm"], old_x, old_y, old_rot, new_x, new_y, new_rot
+        )
         p["x_mm"] = round(new_x, 3)
         p["y_mm"] = round(new_y, 3)
         p["rotation_deg"] = new_rot
-        if "courtyard_global_mm" not in p or len(p["courtyard_global_mm"]) != 4:
-            fail(f"{ref}: falta courtyard_global_mm")
-        x0, y0, x1, y1 = map(float, p["courtyard_global_mm"])
-        p["courtyard_global_mm"] = [
-            round(x0 + dx, 3), round(y0 + dy, 3),
-            round(x1 + dx, 3), round(y1 + dy, 3),
-        ]
         p["placement_eco"] = "PR22_Z3_BUCK"
         moved.append({
             "ref": ref,
             "from_mm": [round(old_x, 3), round(old_y, 3), old_rot],
             "to_mm": [round(new_x, 3), round(new_y, 3), new_rot],
             "role": target["role"],
+            "courtyard_global_mm": p["courtyard_global_mm"],
         })
 
     manifest["eco_revision"] = 1
