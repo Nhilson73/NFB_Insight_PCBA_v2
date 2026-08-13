@@ -9,6 +9,7 @@ on:
       - 'tools/pr19a_router_core.py'
       - 'tools/materialize_pr19a_local.py'
       - 'tools/materialize_pr19a_local_v2.py'
+      - 'tools/materialize_pr19a_local_v3.py'
       - 'tools/validate_pr19a_local.py'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
@@ -37,6 +38,7 @@ jobs:
           python3 -m py_compile tools/pr19a_router_core.py
           python3 -m py_compile tools/materialize_pr19a_local.py
           python3 -m py_compile tools/materialize_pr19a_local_v2.py
+          python3 -m py_compile tools/materialize_pr19a_local_v3.py
           python3 -m py_compile tools/validate_pr19a_local.py
           python3 -m py_compile tools/validate_routing_batches.py
 
@@ -44,7 +46,7 @@ jobs:
         run: python3 tools/validate_routing_batches.py
 
       - name: Materializar únicamente PR19A
-        run: python3 tools/materialize_pr19a_local_v2.py
+        run: python3 tools/materialize_pr19a_local_v3.py
 
       - name: Ejecutar DRC KiCad
         run: |
