@@ -8,7 +8,7 @@ on:
     paths:
       - 'tools/probe_pr19_routing.py'
       - 'tools/materialize_pr19_routing.py'
-      - 'tools/materialize_pr19_routing_v6.py'
+      - 'tools/materialize_pr19_routing_v7.py'
       - 'tools/validate_pr19_routing.py'
       - 'hardware/routing_contract.json'
       - 'hardware/pr19_routing_probe.json'
@@ -35,7 +35,7 @@ jobs:
         run: |
           python3 -m py_compile tools/probe_pr19_routing.py
           python3 -m py_compile tools/materialize_pr19_routing.py
-          python3 -m py_compile tools/materialize_pr19_routing_v6.py
+          python3 -m py_compile tools/materialize_pr19_routing_v7.py
           if [ -f tools/validate_pr19_routing.py ]; then python3 -m py_compile tools/validate_pr19_routing.py; fi
       - name: Inventariar endpoints y canales
         run: python3 tools/probe_pr19_routing.py
@@ -50,7 +50,7 @@ jobs:
               print(r['net'], r['class'], r['mode'], r.get('trunk_y_mm','-'), r['zones'], r['endpoint_count'])
           PY
       - name: Materializar routing de señal
-        run: python3 tools/materialize_pr19_routing_v6.py
+        run: python3 tools/materialize_pr19_routing_v7.py
       - name: Ejecutar DRC y resumir
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19_drc.json --severity-all
