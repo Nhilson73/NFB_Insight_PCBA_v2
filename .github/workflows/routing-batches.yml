@@ -1,0 +1,26 @@
+name: Routing incremental por lotes
+
+on:
+  push:
+    branches:
+      - agent/pr19a-local-routing
+      - agent/pr19b-analog-routing
+      - agent/pr19c-digital-routing
+      - agent/pr20a-power-routing
+      - agent/pr20b-ground-routing
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/routing_contract.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'docs/ROUTING_KNOWLEDGE_BASE.md'
+      - 'tools/validate_routing_batches.py'
+      - '.github/workflows/routing-batches.yml'
+
+jobs:
+  partition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar contrato 28+4+16+10+1
+        run: python3 tools/validate_routing_batches.py

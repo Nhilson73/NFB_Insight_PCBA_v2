@@ -78,7 +78,7 @@ Los JSON/BOM siguen siendo autoridad; las hojas generadas no deben editarse manu
 
 Fuente: `hardware/routing_contract.json`; narrativa: `docs/FASE5_PR18_ROUTING_READINESS.md`.
 
-PR #18 **no añade cobre**. Su función es congelar las reglas antes de rutear:
+PR #18 **no añadió cobre**. Su función fue congelar las reglas antes de rutear:
 
 - exactamente **59/59 nets** cubiertas una sola vez por 11 clases;
 - mínimos de potencia heredados de PR #10 no pueden debilitarse;
@@ -93,12 +93,32 @@ PR #18 **no añade cobre**. Su función es congelar las reglas antes de rutear:
 
 El `TPSM33625` es un módulo integrado y no expone una net SW externa. Su entrada/salida/feedback deben permanecer compactos en Z3.
 
+## Routing incremental — divide y vencerás
+
+El PR #19 monolítico fue usado como **laboratorio de routing** y se cerró sin merge. Demostró que mezclar señales locales, long-haul, potencia y GND en un solo PR aumenta la congestión y dificulta auditar la calidad geométrica.
+
+La base de conocimiento vive en `docs/ROUTING_KNOWLEDGE_BASE.md` y la partición machine-readable en `hardware/routing_batches_contract.json`.
+
+Las 59 nets quedan divididas exhaustivamente y sin solapes:
+
+- **28** nets locales — primer lote.
+- **4** nets analógicas inter-zona: `PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`.
+- **16** nets digital/control inter-zona.
+- **10** nets de potencia + salidas de actuadores.
+- **1** net GND, tratada como plano `In1.Cu` + stitching; el probe experimental identificó 83 endpoints.
+
+Total: **28 + 4 + 16 + 10 + 1 = 59**.
+
+Política de merge: **ALL_OR_NOTHING por lote**. No se mergea progreso parcial de un lote: todas sus nets deben estar conectadas, ninguna net futura puede ser tocada, no puede haber shorts/clearance/courtyard nuevos y placement/outline deben permanecer congelados.
+
+La calidad de routing se evalúa también por longitud, segmentos, vías y cambios de dirección. Una ruta meandriforme no se acepta únicamente porque pase conectividad.
+
 ## RF / enclosure
 
-La fuente primaria Arduino revisada no publicó un antenna keepout numérico textual. NFB no inventa una distancia. Z0 permanece libre de footprints NFB y, cuando se habilite routing, solo se permitirán escapes mínimos hacia/desde `J_UNOQ`; la revisión final de cobre/enclosure/stacking/RF sigue siendo un gate de release.
+La fuente primaria Arduino revisada no publicó un antenna keepout numérico textual. NFB no inventa una distancia. Z0 permanece libre de footprints NFB y, durante routing, solo se permiten escapes mínimos hacia/desde `J_UNOQ`; la revisión final de cobre/enclosure/stacking/RF sigue siendo un gate de release.
 
 ## Estado actual
 
-PR #17 dejó el placement físico mergeado y revisado visualmente, con board `242.34 × 68.58 mm`. PR #18 congela el contrato de routing y mantiene **0 tracks / 0 vías / 0 copper zones**.
+PR #17 dejó el placement físico mergeado y revisado visualmente, con board `242.34 × 68.58 mm`. PR #18 congeló el contrato de routing. PR #19 experimental fue cerrado sin merge.
 
-**Siguiente frente después de mergear PR #18: PR #19 — routing físico de producción bajo el contrato PR18.**
+**Siguiente checkpoint de producción: lote local de 28/28 nets bajo la estrategia incremental documentada.**
