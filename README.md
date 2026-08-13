@@ -10,14 +10,14 @@ Toda decisión dependiente del Arduino UNO Q se contrasta primero contra reposit
 
 NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su radio. No añade transmisores, antena, matching ni amplificación RF. El **EU Compliance Design Gate** vive en `docs/EU_COMPLIANCE_GATE.md` / `compliance/eu_compliance_contract.json` y cubre EMC, RoHS 3, REACH, WEEE, RED/CE del producto integrado.
 
-## Mecánica y placement — PR #16 / #17
+## Mecánica y placement — PR #16 / #17 / ECO PR #22 / #24
 
 - UNO Q rotado; origen global `(0,0)`; USB-C hacia `-Y`.
 - Envolvente UNO Q / Z0: `53.34 × 68.58 mm`.
 - Altura total PCB fija `68.58 mm`; crecimiento solo `+X`.
 - `Y=0` = FIELD I/O EDGE; cables hacia `-Y`.
 - Gradiente: Z0 UNO Q → Z1 sensores → Z2 digital → Z3 potencia → Z4 actuadores.
-- **Ancho final de placement PR17: `242.34 mm`.**
+- **Ancho final de placement: `242.34 mm`.**
 - Z0 `0.00→53.34 mm`.
 - Z1 `53.34→108.84 mm` = `55.50 mm`.
 - Z2 `108.84→163.34 mm` = `54.50 mm`.
@@ -25,7 +25,9 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 - Z4 `198.34→242.34 mm` = `44.00 mm`.
 - 119 footprints de producción + `J_UNOQ` = 120 footprints.
 - 59 nets materializadas.
-- PR17 cerró courtyard overlaps y fallos físicos de placement; routing permaneció en cero.
+- PR17 cerró courtyard overlaps y fallos físicos de placement.
+- PR22 aplicó el ECO acotado de placement alrededor del `TPSM33625` en Z3.
+- PR24 acercó `TP_LOAD_A_POS/NEG` al HX711 en Z2 sin alterar el resto del placement.
 
 ## Z1 sensores
 
@@ -93,6 +95,19 @@ PR #18 **no añadió cobre**. Su función fue congelar las reglas antes de rutea
 
 El `TPSM33625` es un módulo integrado y no expone una net SW externa. Su entrada/salida/feedback deben permanecer compactos en Z3.
 
+## Tooling KiCad — PR #25
+
+Las reglas operativas para agentes y automatización KiCad viven en `docs/KICAD_TOOLING_NOTES.md`, `docs/ROUTING_KNOWLEDGE_BASE.md` y `hardware/kicad_tooling_contract.json`.
+
+Principios relevantes:
+
+- `.kicad_pcb + .kicad_pro + .kicad_dru` se tratan como triplete canónico;
+- KiCad 10.0.5 DRC es la autoridad física final;
+- no se relajan clearances globales para hacer pasar routing;
+- pads compuestos se modelan como geometría múltiple pero un endpoint lógico por `(ref,pin)`;
+- placement se valida semánticamente, no por identidad textual/UUID del PCB;
+- workflows finales de aceptación son `contents: read`.
+
 ## Routing incremental — divide y vencerás
 
 El PR #19 monolítico fue usado como **laboratorio de routing** y se cerró sin merge. Demostró que mezclar señales locales, long-haul, potencia y GND en un solo PR aumenta la congestión y dificulta auditar la calidad geométrica.
@@ -101,11 +116,11 @@ La base de conocimiento vive en `docs/ROUTING_KNOWLEDGE_BASE.md` y la partición
 
 Las 59 nets quedan divididas exhaustivamente y sin solapes:
 
-- **28** nets locales — primer lote.
-- **4** nets analógicas inter-zona: `PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`.
-- **16** nets digital/control inter-zona.
-- **10** nets de potencia + salidas de actuadores.
-- **1** net GND, tratada como plano `In1.Cu` + stitching; el probe experimental identificó 83 endpoints.
+- **PR19A: 28** nets locales.
+- **PR19B: 4** nets analógicas inter-zona: `PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`.
+- **PR19C: 16** nets digital/control inter-zona.
+- **PR20A: 10** nets de potencia + salidas de actuadores.
+- **PR20B: 1** net GND, tratada como plano `In1.Cu` + stitching; el probe experimental identificó 83 endpoints.
 
 Total: **28 + 4 + 16 + 10 + 1 = 59**.
 
@@ -113,12 +128,39 @@ Política de merge: **ALL_OR_NOTHING por lote**. No se mergea progreso parcial d
 
 La calidad de routing se evalúa también por longitud, segmentos, vías y cambios de dirección. Una ruta meandriforme no se acepta únicamente porque pase conectividad.
 
+## PR19A — 28 nets locales / PR #27
+
+El primer lote físico de producción queda materializado y persistido sobre el placement post-PR22/post-PR24.
+
+Estado congelado del checkpoint:
+
+- **28/28 nets PR19A con cobre.**
+- **31/31 nets de lotes futuros sin cobre.**
+- **523 segmentos.**
+- **24 vías.**
+- `In1.Cu`: **0 signal tracks**.
+- copper zones: **0**.
+- KiCad 10.0.5 DRC: **0 errors**.
+- DRC warnings conocidos: **255**, exclusivamente deuda de serigrafía/texto:
+  - `silk_edge_clearance`: 13;
+  - `text_height`: 1;
+  - `silk_overlap`: 173;
+  - `silk_over_copper`: 68.
+- unconnected restantes: **204**; ninguno pertenece a las 28 nets PR19A y corresponden a lotes futuros todavía no rutados.
+
+La pasada de calidad redujo dos rutas excesivamente fragmentadas sin cambiar sus corredores DRC-clean:
+
+- `5V_PGOOD`: **143 → 12 segmentos**.
+- `WDT_MR_N`: **100 → 10 segmentos**.
+
+El PCB de este checkpoint está persistido en `kicad/NFB_Insight_PCBA_v2.kicad_pcb`; el manifest de evidencia vive en `hardware/pr19a_local_routing_manifest.json` y el probe en `hardware/pr19a_local_probe.json`.
+
 ## RF / enclosure
 
 La fuente primaria Arduino revisada no publicó un antenna keepout numérico textual. NFB no inventa una distancia. Z0 permanece libre de footprints NFB y, durante routing, solo se permiten escapes mínimos hacia/desde `J_UNOQ`; la revisión final de cobre/enclosure/stacking/RF sigue siendo un gate de release.
 
 ## Estado actual
 
-PR #17 dejó el placement físico mergeado y revisado visualmente, con board `242.34 × 68.58 mm`. PR #18 congeló el contrato de routing. PR #19 experimental fue cerrado sin merge.
+Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó las notas/contratos de tooling KiCad. **PR27 completa PR19A con 28/28 nets locales, 523 segmentos, 24 vías y DRC físico 0 errores.**
 
-**Siguiente checkpoint de producción: lote local de 28/28 nets bajo la estrategia incremental documentada.**
+**Siguiente checkpoint de producción: PR19B — 4 nets analógicas long-haul (`PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`).**
