@@ -20,6 +20,15 @@ base.PAD_HALO = 0.05
 impl.TURN_PENALTY = 2.50
 impl.VIA_COST = 14.0
 
+# El lazo FB es eléctricamente más crítico y geométricamente más confinado que
+# VCC/PGOOD. Sale primero; las otras nets se acomodan después alrededor de él.
+CONTROL_ORDER_V3 = [
+    "5V_FB", "5V_VCC", "5V_PGOOD",
+    "EFUSE_ILM", "EFUSE_ITIMER", "EFUSE_DVDT", "EFUSE_EN_UVLO", "EFUSE_OVLO",
+    "CO2_ILIM", "PUMP_SR_CFG",
+]
+impl.CONTROL_RANK = {n: i for i, n in enumerate(CONTROL_ORDER_V3)}
+
 FINE_PITCH_REFS = {"U_5V", "U_EFUSE", "U_CO2_DRV", "U_HX"}
 MIN_ESCAPE_MM = 0.85
 
@@ -67,12 +76,10 @@ class RouterPR19APhysical(impl.RouterPR19A):
         x, y = base.xy(ix, iy)
         margin = self._class_margin(net)
 
-        # Pad ajeno o NC: exclusión física dependiente de la clase actual.
         for owner, _ref, _pad, rect in self._foreign_pads[layer]:
             if owner != net and self._inside_expanded(x, y, rect, margin):
                 return True
 
-        # Rutas/vías ya colocadas: ocupación conservadora del planner.
         owners = self.track_occ[layer].get((ix, iy), set())
         if any(owner != net for owner in owners):
             return True
@@ -85,13 +92,11 @@ class RouterPR19APhysical(impl.RouterPR19A):
         ref = ep.get("ref")
         pin = str(ep.get("pad"))
 
-        # TPSM33625 / RDN0011A: pads 9/10/11 salen perpendicularmente por -Y.
         if ref == "U_5V" and pin in U5V_BOTTOM_PADS:
             out = dict(ep)
             out["y_mm"] = float(out["y_mm"]) - U5V_BOTTOM_ESCAPE_MM
             return out
 
-        # DYC0008A: pins 4/5 comparten garganta inferior; escape -Y explícito.
         if ref == "U_CO2_DRV" and (net, pin) in {
             ("CO2_OPENLOAD_N", "5"), ("CO2_EN_DRV", "4")
         }:
@@ -102,8 +107,6 @@ class RouterPR19APhysical(impl.RouterPR19A):
         if ref not in FINE_PITCH_REFS or ref not in self._placement_by_ref:
             return ep
 
-        # Escape cardinal desde el centro del footprint hacia el borde más cercano
-        # definido por la posición relativa del pad. Evita diagonales entre pines.
         fp = self._placement_by_ref[ref]
         cx, cy = float(fp["x_mm"]), float(fp["y_mm"])
         px, py = float(ep["x_mm"]), float(ep["y_mm"])
