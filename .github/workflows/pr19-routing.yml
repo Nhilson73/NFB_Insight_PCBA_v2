@@ -1,0 +1,58 @@
+name: PR19 routing físico
+
+on:
+  push:
+    branches: [agent/pr19-production-routing]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/probe_pr19_routing.py'
+      - 'tools/materialize_pr19_routing.py'
+      - 'tools/validate_pr19_routing.py'
+      - 'hardware/routing_contract.json'
+      - 'hardware/pr19_routing_probe.json'
+      - 'hardware/pr19_routing_contract.json'
+      - 'hardware/placement_manifest.json'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
+      - '.github/workflows/pr19-routing.yml'
+
+jobs:
+  routing:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inicializar librerías KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Compilar herramientas PR19
+        run: |
+          python3 -m py_compile tools/probe_pr19_routing.py
+          if [ -f tools/materialize_pr19_routing.py ]; then python3 -m py_compile tools/materialize_pr19_routing.py; fi
+          if [ -f tools/validate_pr19_routing.py ]; then python3 -m py_compile tools/validate_pr19_routing.py; fi
+      - name: Inventariar endpoints y canales
+        run: python3 tools/probe_pr19_routing.py
+      - name: Resumen probe
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('hardware/pr19_routing_probe.json',encoding='utf-8'))
+          print('BOARD',p['board_mm'])
+          print('NETS',p['net_count'],'CHANNELS',p['channel_count'])
+          for r in p['routes']:
+              print(r['net'], r['class'], r['mode'], r.get('trunk_y_mm','-'), r['zones'], r['endpoint_count'])
+          PY
+      - name: Materializar routing si existe generador
+        run: |
+          if [ -f tools/materialize_pr19_routing.py ]; then python3 tools/materialize_pr19_routing.py; fi
+      - name: DRC PR19 si existe validador
+        run: |
+          if [ -f tools/validate_pr19_routing.py ]; then
+            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19_drc.json --severity-all
+            python3 tools/validate_pr19_routing.py /tmp/pr19_drc.json
+          fi
