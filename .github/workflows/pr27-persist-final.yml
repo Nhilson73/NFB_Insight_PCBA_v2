@@ -48,6 +48,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git fetch origin agent/pr23-pr19a-local-routing
+          git reset --hard
           git checkout -B agent/pr23-pr19a-local-routing origin/agent/pr23-pr19a-local-routing
           cp /tmp/NFB_Insight_PCBA_v2.kicad_pcb kicad/NFB_Insight_PCBA_v2.kicad_pcb
           cp /tmp/pr19a_local_routing_manifest.json hardware/pr19a_local_routing_manifest.json
