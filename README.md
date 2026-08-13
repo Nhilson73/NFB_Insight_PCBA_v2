@@ -10,14 +10,22 @@ Toda decisión dependiente del Arduino UNO Q se contrasta primero contra reposit
 
 NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su radio. No añade transmisores, antena, matching ni amplificación RF. El **EU Compliance Design Gate** vive en `docs/EU_COMPLIANCE_GATE.md` / `compliance/eu_compliance_contract.json` y cubre EMC, RoHS 3, REACH, WEEE, RED/CE del producto integrado.
 
-## Mecánica
+## Mecánica y placement — PR #16 / #17
 
 - UNO Q rotado; origen global `(0,0)`; USB-C hacia `-Y`.
-- Envolvente UNO Q `53.34 × 68.58 mm`.
+- Envolvente UNO Q / Z0: `53.34 × 68.58 mm`.
 - Altura total PCB fija `68.58 mm`; crecimiento solo `+X`.
-- `Y=0` = FIELD I/O EDGE.
+- `Y=0` = FIELD I/O EDGE; cables hacia `-Y`.
 - Gradiente: Z0 UNO Q → Z1 sensores → Z2 digital → Z3 potencia → Z4 actuadores.
-- Ancho actual `220 mm` **provisional** hasta placement.
+- **Ancho final de placement PR17: `242.34 mm`.**
+- Z0 `0.00→53.34 mm`.
+- Z1 `53.34→108.84 mm` = `55.50 mm`.
+- Z2 `108.84→163.34 mm` = `54.50 mm`.
+- Z3 `163.34→198.34 mm` = `35.00 mm`.
+- Z4 `198.34→242.34 mm` = `44.00 mm`.
+- 119 footprints de producción + `J_UNOQ` = 120 footprints.
+- 59 nets materializadas.
+- PR17 cerró courtyard overlaps y fallos físicos de placement; routing permaneció en cero.
 
 ## Z1 sensores
 
@@ -33,9 +41,9 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 - HX711 3.3 V / 10 SPS en D2/D3.
 - HMI D0/D1 mediante `TXU0202DCUR`.
 - Watchdog `TPS3823-30DBVR`, WDI=D4.
-- PR #16 cierra `J_LOADCELL` con Phoenix Contact **1757268 / MSTBA 2,5/4-G-5,08**.
+- `J_LOADCELL`: Phoenix Contact **1757268 / MSTBA 2,5/4-G-5,08**.
 
-## Z3 potencia — PR #9 / #10 / #13 / #15
+## Z3 potencia
 
 Fuentes: `hardware/power_architecture_contract.json`, `hardware/power_production_netlist.json`, `hardware/power_netclasses.json` y `bom/insight_power_production_bom.csv`.
 
@@ -66,31 +74,31 @@ KiCad **10.0.5** sobre el hierarchy completo:
 
 Los JSON/BOM siguen siendo autoridad; las hojas generadas no deben editarse manualmente para alterar conectividad.
 
-## Pre-placement readiness — PR #16
+## Routing readiness — PR #18
 
-Fuente: `hardware/placement_readiness_contract.json`; detalle: `docs/FASE4_PR16_PREPLACEMENT_READINESS.md`.
+Fuente: `hardware/routing_contract.json`; narrativa: `docs/FASE5_PR18_ROUTING_READINESS.md`.
 
-Se revalidó UNO Q contra `arduino/docs-content` commit `24445a32e249d410c1e4359bdc99d8c0dcb17bd2`. Arduino identifica `WCBN3536A / Qualcomm WCN3980` y una **shared PCB antenna**.
+PR #18 **no añade cobre**. Su función es congelar las reglas antes de rutear:
 
-La documentación fuente revisada no publica un antenna keepout numérico textual. NFB por tanto **no inventa una distancia RF**. En su lugar:
+- exactamente **59/59 nets** cubiertas una sola vez por 11 clases;
+- mínimos de potencia heredados de PR #10 no pueden debilitarse;
+- `In1.Cu` = **GND continuo; signal routing prohibido**;
+- `In2.Cu` = distribución de potencia, sin analógica sensible;
+- pH/ORP/DO, load-cell/HX711 y `PUMP_CURRENT_ADC` forman dominio sensible;
+- `12V_ACT`, `PUMP_OUT1/2` y `CO2_SOL_POS` forman dominio dirty;
+- separación contractual sensitive↔dirty ≥ `1.00 mm` en recorridos paralelos;
+- `12V_ACT` y retornos high-current no atraviesan Z1/Z2;
+- contactos de chiller permanecen aislados, SELV ≤48 V y sin tie a GND;
+- `SW`, `CO2_ADC`, `TEMP_ADC`, `HUM_ADC`, `CO2_PWM`, `CO2_FLOW_PWM` y `RS485_IRQ_RSVD` están prohibidas como nets de producción.
 
-- Z0 completo queda prohibido para footprints de producción NFB;
-- el shield empieza en `X=53.34 mm`;
-- Z1 quiet/sensors queda adyacente al host;
-- Z3/Z4 ruidosos permanecen desplazados hacia `+X`;
-- cualquier metal/PCB apilada/enclosure sobre la región RF del host requiere validación 3D/RF posterior.
+El `TPSM33625` es un módulo integrado y no expone una net SW externa. Su entrada/salida/feedback deben permanecer compactos en Z3.
 
-PR #16 también congela:
+## RF / enclosure
 
-- `In1.Cu` = **plano GND continuo; no signal routing**;
-- orden FIELD I/O izquierda→derecha: pH, ORP, TEMP, MPR CO₂, DO, load cell, GNSS/RTC, HMI, power, pump, CO₂ solenoid, chiller;
-- todos los conectores side-entry hacia `-Y`, salvo el puerto vertical MPR;
-- retornos high-current fuera de Z1/Z2;
-- switching de buck confinado a Z3;
-- drivers/bulk de actuadores confinados a Z4.
+La fuente primaria Arduino revisada no publicó un antenna keepout numérico textual. NFB no inventa una distancia. Z0 permanece libre de footprints NFB y, cuando se habilite routing, solo se permitirán escapes mínimos hacia/desde `J_UNOQ`; la revisión final de cobre/enclosure/stacking/RF sigue siendo un gate de release.
 
 ## Estado actual
 
-Arquitectura Z0–Z4, compliance, footprints críticos y hierarchy EDA están cerrados. PR #16 prepara el PCB para iniciar **placement XY** sin autorizar todavía routing. El ancho de 220 mm continúa provisional y podrá crecer únicamente hacia `+X` si los courtyards reales lo requieren.
+PR #17 dejó el placement físico mergeado y revisado visualmente, con board `242.34 × 68.58 mm`. PR #18 congela el contrato de routing y mantiene **0 tracks / 0 vías / 0 copper zones**.
 
-**Siguiente frente después del gate PR #16: PR #17 — placement físico de producción, sin routing.**
+**Siguiente frente después de mergear PR #18: PR #19 — routing físico de producción bajo el contrato PR18.**
