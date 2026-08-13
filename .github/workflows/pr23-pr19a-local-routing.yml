@@ -1,8 +1,6 @@
 name: PR27 PR19A routing local 28 nets
 
 on:
-  push:
-    branches: [agent/pr23-pr19a-local-routing]
   pull_request:
     branches: [main]
     paths:
