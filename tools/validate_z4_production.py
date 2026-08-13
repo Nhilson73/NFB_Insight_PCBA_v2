@@ -3,6 +3,7 @@
 from __future__ import annotations
 import csv,json,math,re
 from pathlib import Path
+from validate_routing_phase import assert_authorized_phase
 ROOT=Path(__file__).resolve().parents[1]
 C=ROOT/"hardware"/"z4_actuator_contract.json"; N=ROOT/"hardware"/"z4_production_netlist.json"; P=ROOT/"hardware"/"insight_pin_contract.json"; A=ROOT/"hardware"/"footprint_audit.json"; B=ROOT/"bom"/"insight_z4_production_bom.csv"; S=ROOT/"kicad"/"z4_actuators.kicad_sch"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"
 def fail(m): raise SystemExit("ERROR: "+m)
@@ -15,7 +16,6 @@ def main():
     if n.get("schema_version")!=2 or n.get("status")!="FROZEN_Z4_NETLIST_PR12_FOOTPRINTS_CLOSED_PR13" or n.get("footprint_audit_source")!="hardware/footprint_audit.json": fail("netlist Z4 no enlaza PR13")
     if audit.get("schema_version")!=3 or audit.get("status")!="FOOTPRINT_AUDIT_CLOSED_PR13": fail("audit no es PR13")
     if p.get("schema_version")!=6 or p.get("z4_contract_source_of_truth")!="hardware/z4_actuator_contract.json" or p.get("z4_netlist_source_of_truth")!="hardware/z4_production_netlist.json": fail("pin contract no enlaza Z4")
-    # Los contratos históricos siguen declarando placement/routing fuera de su propio alcance.
     if c["design_policy"]["placement_in_scope"] or c["design_policy"]["routing_in_scope"] or n["placement_in_scope"] or n["routing_in_scope"]: fail("PR12/13 no deben reescribir su alcance histórico")
     pins={int(x["pad"]):x for x in p["pins"]}
     expected={13:("PUMP_CURRENT_ADC","ACTIVE_ANALOG_DIAGNOSTIC"),20:("PUMP_PWM","ACTIVE"),21:("PUMP_DIR","ACTIVE"),22:("CO2_SOL_CTL","ACTIVE"),23:("CHILLER_CTL","ACTIVE_CONTROL_ONLY"),25:("ACT_FAULT_N","ACTIVE_DIAGNOSTIC")}
@@ -63,6 +63,7 @@ def main():
     for aid in ("DRV8242_RHL20","TPS1HC120_DYC8","AQY212EHAX_DIP4_SMD"):
         if a[aid]["placement_allowed"] is not True or not str(a[aid]["status"]).startswith("CLOSED_PRIMARY_SOURCE"): fail(f"audit {aid} no cerrado")
     pcb=PCB.read_text(encoding="utf-8"); placed=[r for r in comps if f'"{r}"' in pcb]
+    phase=assert_authorized_phase(pcb,"Z4")
     if placed:
         if not PLACEMENT.exists(): fail(f"Z4 colocado sin manifest PR17: {placed[:5]}")
         pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
@@ -70,11 +71,10 @@ def main():
         pmap={x["ref"]:x for x in pm.get("placements",[])}
         bad=[ref for ref in placed if ref not in pmap or pmap[ref].get("zone")!="Z4"]
         if bad: fail(f"Z4 placement no trazado en manifest: {bad[:5]}")
-        if re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M): fail("PR17: Z4 contiene routing/cobre prematuro")
     sch=S.read_text(encoding="utf-8")
     for m in ("PR #12","DRV8242HQRHLRQ1","TPS1HC120CQDYCRQ1","AQY212EHAX","PUMP_CURRENT_ADC","ACT_FAULT_N","NO MAINS"):
         if m not in sch: fail(f"schematic Z4 sin {m}")
-    print(f"OK: Z4 PR12 + footprints PR13; placement PR17={len(placed)} refs, routing=0")
+    print(f"OK: Z4 PR12 + footprints PR13; placement PR17={len(placed)} refs, fase={phase}")
     print(f"- Pump telemetry: {vnom:.3f}V @0.8A; ~{imax:.2f}A at 3.05V worst scale")
     print("- RHL0020B/DYC0008A/AQY212EHAX cerrados contra fuentes primarias")
     return 0
