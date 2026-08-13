@@ -24,7 +24,9 @@ on:
       - 'tools/materialize_pr19a_local_v16.py'
       - 'tools/materialize_pr19a_local_v17.py'
       - 'tools/materialize_pr19a_local_v18.py'
+      - 'tools/materialize_pr19a_local_v19.py'
       - 'tools/validate_pr19a_local.py'
+      - 'hardware/pr19a_route_overrides_v19.json'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
@@ -69,12 +71,13 @@ jobs:
           python3 -m py_compile tools/materialize_pr19a_local_v16.py
           python3 -m py_compile tools/materialize_pr19a_local_v17.py
           python3 -m py_compile tools/materialize_pr19a_local_v18.py
+          python3 -m py_compile tools/materialize_pr19a_local_v19.py
           python3 -m py_compile tools/validate_pr19a_local.py
           python3 -m py_compile tools/validate_routing_batches.py
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
       - name: Materializar exclusivamente las 28 nets PR19A
-        run: python3 tools/materialize_pr19a_local_v18.py
+        run: python3 tools/materialize_pr19a_local_v19.py
       - name: Ejecutar DRC KiCad
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
@@ -93,10 +96,13 @@ jobs:
       - name: Exigir gate 28 de 28
         run: python3 tools/validate_pr19a_local.py hardware/pr27_pr19a_drc.json
       - name: Métricas de routing
+        if: always()
         run: |
           python3 - <<'PY'
-          import json
-          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
+          import json, pathlib
+          p=pathlib.Path('hardware/pr19a_local_routing_manifest.json')
+          if not p.exists(): raise SystemExit(0)
+          m=json.load(open(p,encoding='utf-8'))
           stats=sorted(m['net_stats'], key=lambda x:(x['segment_count'],x['via_count']), reverse=True)
           print('ROUTED',len(m['routed_nets']),'DEFERRED',len(m['deferred_nets']))
           print('SEGMENTS',len(m['segments']),'VIAS',len(m['vias']))
