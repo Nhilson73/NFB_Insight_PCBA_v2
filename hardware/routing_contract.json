@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "status": "ROUTING_READINESS_PR18",
+  "product": "NFB Insight PCBA v2",
+  "decision_date": "2026-08-12",
+  "source": [
+    "hardware/placement_manifest.json",
+    "hardware/placement_readiness_contract.json",
+    "hardware/z1_production_netlist.json",
+    "hardware/z2_production_netlist.json",
+    "hardware/power_production_netlist.json",
+    "hardware/z4_production_netlist.json",
+    "hardware/power_netclasses.json"
+  ],
+  "board_frozen": {
+    "origin_mm": [0.0, 0.0],
+    "width_mm": 242.34,
+    "height_mm": 68.58,
+    "growth_only": "+X",
+    "z0_x_mm": [0.0, 53.34],
+    "z1_x_mm": [53.34, 108.84],
+    "z2_x_mm": [108.84, 163.34],
+    "z3_x_mm": [163.34, 198.34],
+    "z4_x_mm": [198.34, 242.34]
+  },
+  "scope": {
+    "routing_allowed_in_pr18": false,
+    "routing_allowed_after_pr18_merge": true,
+    "placement_changes_allowed": false,
+    "board_geometry_changes_allowed": false,
+    "netlist_changes_allowed": false,
+    "expected_production_net_count": 59,
+    "expected_tracks_pr18": 0,
+    "expected_vias_pr18": 0,
+    "expected_copper_zones_pr18": 0
+  },
+  "layer_policy": {
+    "F.Cu": "critical/local signals, short analog front-end routes and local power loops",
+    "In1.Cu": "CONTINUOUS_GND_REFERENCE_NO_SIGNAL_ROUTING",
+    "In2.Cu": "power distribution and controlled low-impedance branches; no sensitive analog signal routing",
+    "B.Cu": "secondary low-speed signals and long-haul control/telemetry where needed",
+    "in1_signal_routing_allowed": false,
+    "in1_plane_net": "GND",
+    "z0_policy": "Only shortest direct escapes to/from J_UNOQ pads may enter Z0; no production footprints, no switching loops and no actuator high-current routing in Z0.",
+    "rf_policy": "Do not invent a numeric antenna keepout absent from Arduino primary source; final enclosure/stacking/RF copper review remains a release gate."
+  },
+  "routing_classes": [
+    {
+      "name": "GND_REFERENCE",
+      "nets": ["GND"],
+      "track_width_mm_min": 0.50,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.80,
+      "via_drill_mm_min": 0.40,
+      "preferred_layers": ["In1.Cu", "F.Cu", "B.Cu"],
+      "rules": ["In1.Cu remains continuous GND reference.", "Local stitching vias may be added in routing phase without segmenting quiet and dirty return paths."]
+    },
+    {
+      "name": "PWR_INPUT_5A",
+      "nets": ["12V_IN_RAW", "12V_PROTECTED"],
+      "track_width_mm_min": 2.00,
+      "clearance_mm_min": 0.50,
+      "via_diameter_mm_min": 1.20,
+      "via_drill_mm_min": 0.60,
+      "preferred_layers": ["F.Cu", "In2.Cu"],
+      "rules": ["Keep J_PWR_IN -> TVS/eFuse -> bulk loop inside Z3 and as short as placement permits."]
+    },
+    {
+      "name": "PWR_12V_BRANCH",
+      "nets": ["12V_HOST_VIN", "12V_LOGIC", "12V_ACT"],
+      "track_width_mm_min": 1.00,
+      "clearance_mm_min": 0.40,
+      "via_diameter_mm_min": 0.90,
+      "via_drill_mm_min": 0.45,
+      "preferred_layers": ["In2.Cu", "F.Cu"],
+      "rules": ["12V_ACT stays in Z3/Z4 except its source split and never traverses Z1/Z2.", "12V_HOST_VIN is the only 12 V branch permitted to terminate at J_UNOQ VIN."]
+    },
+    {
+      "name": "ACTUATOR_OUTPUT",
+      "nets": ["PUMP_OUT1", "PUMP_OUT2", "CO2_SOL_POS"],
+      "track_width_mm_min": 0.75,
+      "clearance_mm_min": 0.40,
+      "via_diameter_mm_min": 0.90,
+      "via_drill_mm_min": 0.45,
+      "preferred_layers": ["F.Cu", "In2.Cu"],
+      "rules": ["Remain confined to Z4.", "Do not run parallel to sensitive analog nets.", "Return current must close toward the Z3/Z4 star path, never through Z1/Z2."]
+    },
+    {
+      "name": "PWR_5V",
+      "nets": ["5V_RAIL"],
+      "track_width_mm_min": 0.75,
+      "clearance_mm_min": 0.30,
+      "via_diameter_mm_min": 0.80,
+      "via_drill_mm_min": 0.40,
+      "preferred_layers": ["In2.Cu", "F.Cu"],
+      "rules": ["Local shield rail only; never tie to J_UNOQ.5."]
+    },
+    {
+      "name": "PWR_3V3",
+      "nets": ["3V3_RAIL"],
+      "track_width_mm_min": 0.40,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.70,
+      "via_drill_mm_min": 0.35,
+      "preferred_layers": ["In2.Cu", "F.Cu"],
+      "rules": ["Local shield rail only; never tie to J_UNOQ.4."]
+    },
+    {
+      "name": "ANALOG_SENSITIVE",
+      "nets": ["PH_ADC", "ORP_ADC", "DO_ADC", "LOAD_A_POS", "LOAD_A_NEG", "HX_VBG", "PUMP_CURRENT_ADC"],
+      "track_width_mm_min": 0.20,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.60,
+      "via_drill_mm_min": 0.30,
+      "preferred_layers": ["F.Cu", "B.Cu"],
+      "rules": ["Reference continuously to In1.Cu GND.", "No parallel adjacency to PUMP_OUT1/PUMP_OUT2/CO2_SOL_POS/12V_ACT.", "PUMP_CURRENT_ADC crosses from Z4 to Z0 through the quietest available corridor and must avoid Z3 switching/power-entry loops.", "LOAD_A_POS/LOAD_A_NEG are routed as a coupled quiet pair from J_LOADCELL to U_HX; no actuator return between them."]
+    },
+    {
+      "name": "FIELD_ANALOG_LOCAL",
+      "nets": ["PH_FIELD_SIG", "ORP_FIELD_SIG", "DO_FIELD_SIG"],
+      "track_width_mm_min": 0.20,
+      "clearance_mm_min": 0.30,
+      "via_diameter_mm_min": 0.60,
+      "via_drill_mm_min": 0.30,
+      "preferred_layers": ["F.Cu"],
+      "rules": ["Remain in Z1 and as short as possible between field connector, ESD/protection and conditioning.", "Vias are strongly discouraged before the RC/ADC node."]
+    },
+    {
+      "name": "CONTROL_SENSITIVE",
+      "nets": ["EFUSE_EN_UVLO", "EFUSE_OVLO", "EFUSE_DVDT", "EFUSE_ILM", "EFUSE_ITIMER", "5V_FB", "5V_VCC", "5V_PGOOD", "UNO_IOREF_3V3", "PUMP_SR_CFG", "CO2_ILIM"],
+      "track_width_mm_min": 0.20,
+      "clearance_mm_min": 0.25,
+      "via_diameter_mm_min": 0.60,
+      "via_drill_mm_min": 0.30,
+      "preferred_layers": ["F.Cu"],
+      "rules": ["Keep feedback/programming loops local to their ICs.", "Do not route adjacent to actuator outputs or power-entry current path.", "TPSM33625 exposes no external SW net; a production net named SW is forbidden."]
+    },
+    {
+      "name": "DIGITAL_LOW_SPEED",
+      "nets": ["TEMP_1WIRE", "I2C_SDA", "I2C_SCL", "HX711_SCK", "HX711_DOUT", "HMI_FIELD_RX", "HMI_FIELD_TX", "HMI_RX", "HMI_TX", "MCU_NRST", "WDT_MR_N", "MCU_WDI", "LED_STATUS", "PUMP_PWM", "PUMP_PWM_DRV", "PUMP_DIR", "PUMP_DIR_DRV", "CO2_SOL_CTL", "CO2_EN_DRV", "CO2_OPENLOAD_N", "CHILLER_CTL", "CHILLER_GATE", "CHILLER_LED_A", "CHILLER_LED_K", "ACT_FAULT_N"],
+      "track_width_mm_min": 0.20,
+      "clearance_mm_min": 0.20,
+      "via_diameter_mm_min": 0.60,
+      "via_drill_mm_min": 0.30,
+      "preferred_layers": ["B.Cu", "F.Cu"],
+      "rules": ["Prefer B.Cu for long-haul low-speed routing so F.Cu remains available for local analog and power loops.", "I2C and HX711 clocks remain away from analog front-end inputs."]
+    },
+    {
+      "name": "CHILLER_DRY_CONTACT",
+      "nets": ["CHILLER_CONTACT_A", "CHILLER_CONTACT_B"],
+      "track_width_mm_min": 0.25,
+      "clearance_mm_min": 0.50,
+      "via_diameter_mm_min": 0.70,
+      "via_drill_mm_min": 0.35,
+      "preferred_layers": ["F.Cu"],
+      "rules": ["SELV <=48 V only; NO MAINS.", "Remain confined to Z4 isolated contact side.", "No intentional connection to GND or local logic rails."]
+    }
+  ],
+  "forbidden_production_nets": ["SW", "CO2_ADC", "TEMP_ADC", "HUM_ADC", "CO2_PWM", "CO2_FLOW_PWM", "RS485_IRQ_RSVD"],
+  "cross_class_rules": {
+    "sensitive_nets": ["PH_ADC", "ORP_ADC", "DO_ADC", "LOAD_A_POS", "LOAD_A_NEG", "HX_VBG", "PUMP_CURRENT_ADC"],
+    "dirty_nets": ["12V_ACT", "PUMP_OUT1", "PUMP_OUT2", "CO2_SOL_POS"],
+    "minimum_parallel_spacing_sensitive_to_dirty_mm": 1.00,
+    "dirty_return_policy": "No high-current return path through Z1/Z2; close in Z3/Z4 toward the protected-input star split.",
+    "buck_policy": "TPSM33625 input/output/feedback loops remain in Z3; no routing under/through Z1, HX711 or UNO Q RF region.",
+    "ground_policy": "In1.Cu continuous GND reference; no signal tracks on In1.Cu."
+  },
+  "next_gate": "PR19 may materialize routing only after PR18 CI proves 59/59 net coverage, zero duplicate class assignments, frozen geometry/placement, and tracks/vias/zones remain zero in PR18."
+}
