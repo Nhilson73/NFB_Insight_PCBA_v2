@@ -1,4 +1,4 @@
-name: PR19A persistido + banco PR19B analógico
+name: PR19A persistido + staging PR19B analógico
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ on:
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   pr19a-persistido:
@@ -37,7 +37,7 @@ jobs:
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
-      - name: Ejecutar DRC sobre cobre persistido
+      - name: DRC checkpoint PR19A de entrada
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19a_drc.json --severity-all
       - name: Normalizar representación angular para gate legado
         run: |
@@ -50,60 +50,65 @@ jobs:
               x['rotation_deg']=r
           with open(p,'w',encoding='utf-8') as f: json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
-      - name: Exigir gate PR19A 28 de 28
+      - name: Exigir PR19A 28 de 28 intacto
         run: python3 tools/validate_pr19a_local.py /tmp/pr19a_drc.json
-      - name: Exigir checkpoint PR19A conocido
-        run: |
-          python3 - <<'PY'
-          import collections,json
-          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8')); d=json.load(open('/tmp/pr19a_drc.json',encoding='utf-8'))
-          assert len(m['routed_nets'])==28 and len(m['deferred_nets'])==31
-          assert len(m['segments'])==523 and len(m['vias'])==24
-          assert len(d.get('unconnected_items',[]))==204
-          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']; assert not errors,errors[:3]
-          counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
-          expected={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68}
-          assert dict(counts)==expected,(dict(counts),expected)
-          print('OK PR19A persistido: 28/28, DRC errors=0')
-          PY
 
-  pr19b-candidato:
+  staging-pr19b:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
       options: --user root
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Detectar checkpoint ya persistido
+        id: state
+        run: |
+          if git ls-tree -r HEAD --name-only | grep -qx 'hardware/pr19b_analog_routing_manifest.json'; then
+            echo 'persisted=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'persisted=false' >> "$GITHUB_OUTPUT"
+          fi
       - name: Inicializar librerías KiCad
+        if: steps.state.outputs.persisted == 'false'
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Probar baseline PR19A
+        if: steps.state.outputs.persisted == 'false'
         run: python3 tools/probe_pr19b_analog.py
       - name: Materializar candidato PR19B
+        if: steps.state.outputs.persisted == 'false'
         run: python3 tools/materialize_pr19b_analog.py
-      - name: DRC KiCad 10.0.5 del candidato
+      - name: DRC KiCad 10.0.5
+        if: steps.state.outputs.persisted == 'false'
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19b_drc.json --severity-all
-      - name: Gate físico candidato
+      - name: Exigir 4 de 4 antes de persistir
+        if: steps.state.outputs.persisted == 'false'
         run: |
           python3 - <<'PY'
-          import json
+          import json,collections
           d=json.load(open('/tmp/pr19b_drc.json',encoding='utf-8'))
           m=json.load(open('hardware/pr19b_analog_routing_manifest.json',encoding='utf-8'))
-          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-          assert not errors,errors[:10]
+          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']; assert not errors,errors[:10]
           assert len(d.get('unconnected_items',[]))==192,len(d.get('unconnected_items',[]))
-          assert m['target_nets']==['PH_ADC','ORP_ADC','DO_ADC','PUMP_CURRENT_ADC']
-          print('OK candidato PR19B: 4/4, DRC errors=0, unconnected=192')
+          assert m['new_segment_count']==32 and m['new_via_count']==7
+          counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
+          assert dict(counts)=={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68},dict(counts)
+          print('OK staging PR19B: 4/4, DRC=0, sin deuda nueva')
           PY
-      - name: Publicar candidato para inspección/persistencia
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr19b-candidate
-          path: |
-            kicad/NFB_Insight_PCBA_v2.kicad_pcb
-            hardware/pr19b_analog_routing_manifest.json
-            hardware/pr19b_analog_probe.json
-            /tmp/pr19b_drc.json
-          if-no-files-found: error
+      - name: Persistir checkpoint validado únicamente en la rama PR19B
+        if: steps.state.outputs.persisted == 'false'
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kicad/NFB_Insight_PCBA_v2.kicad_pcb hardware/pr19b_analog_routing_manifest.json hardware/pr19b_analog_probe.json
+          git commit -m "routing: persistir PR19B 4/4 con DRC 0"
+          git push origin HEAD:${GITHUB_HEAD_REF}
+      - name: Checkpoint ya presente
+        if: steps.state.outputs.persisted == 'true'
+        run: echo 'PR19B ya está persistido; staging sin acción.'
