@@ -27,8 +27,14 @@ def main() -> int:
         fail("manifest base no es PR17")
     if eco.get("status") != "Z3_BUCK_PLACEMENT_ECO_PR22":
         fail("contrato ECO inválido")
-    if manifest["board"] != {"width_mm": 242.34, "height_mm": 68.58}:
-        fail(f"board inesperado: {manifest['board']}")
+    board = manifest.get("board", {})
+    if (
+        board.get("origin_mm") != [0.0, 0.0]
+        or abs(float(board.get("width_mm", -1)) - 242.34) > 1e-6
+        or abs(float(board.get("height_mm", -1)) - 68.58) > 1e-6
+        or board.get("growth_only") != "+X"
+    ):
+        fail(f"board inesperado: {board}")
     if manifest["policies"].get("routing_allowed") is not False:
         fail("ECO solo puede aplicarse sobre placement sin routing")
 
@@ -73,7 +79,6 @@ def main() -> int:
             "role": target["role"],
         })
 
-    # Metadato aditivo: mantener status histórico PR17 para compatibilidad de gates.
     manifest["eco_revision"] = 1
     manifest["eco_revisions"] = [{
         "id": "PR22_Z3_BUCK",
