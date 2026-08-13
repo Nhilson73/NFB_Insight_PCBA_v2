@@ -2,9 +2,20 @@
 
 # TPSM33625 RDN0011A usa el land pattern SMD preferido de TI 4226623/F.
 # La separación mínima cobre-cobre interna del encapsulado es 0.125 mm.
-# Esta excepción aplica EXCLUSIVAMENTE entre objetos del propio U_5V;
-# cualquier conexión/ruta externa conserva las reglas globales del board.
+# Esta excepción aplica EXCLUSIVAMENTE entre objetos del propio U_5V.
 (rule "TPSM33625_RDN_internal_pad_clearance"
   (condition "A.Reference == 'U_5V' && B.Reference == 'U_5V'")
+  (constraint clearance (min 0.125mm))
+)
+
+# PR23 / PR19A: escape RT -> VCC del TPSM33625.
+# TI permite RT=VCC para seleccionar 1 MHz y el land pattern RDN0011A tiene
+# gargantas internas de 0.125 mm. El neckdown NO cambia el clearance global:
+# solo aplica cuando el objeto A es una pista 5V_VCC que intersecta el
+# courtyard de U_5V y el objeto B pertenece físicamente a U_5V.
+# KiCad evalúa ambos órdenes A/B para reglas de clearance.
+# Esta regla se deja al final para tener prioridad sobre reglas más generales.
+(rule "TPSM33625_5V_VCC_escape_neckdown"
+  (condition "A.NetName == '5V_VCC' && A.Type == 'Track' && A.intersectsCourtyard('U_5V') && B.memberOfFootprint('U_5V')")
   (constraint clearance (min 0.125mm))
 )
