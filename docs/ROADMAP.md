@@ -116,7 +116,7 @@
 - [x] PR #17 mergeado; layout revisado visualmente antes de seguir.
 - [ ] Revisión 3D/enclosure/RF del conjunto físico.
 
-## Fase 5 — Routing
+## Fase 5 — Routing incremental
 
 ### PR #18 — routing readiness / contrato de cobre
 - [x] Congelar board y placement PR17: `242.34 × 68.58 mm`.
@@ -130,20 +130,60 @@
 - [x] Chiller dry-contact: SELV ≤48 V / NO MAINS / sin tie a GND.
 - [x] Prohibir `SW`, `CO2_ADC`, `TEMP_ADC`, `HUM_ADC`, `CO2_PWM`, `CO2_FLOW_PWM`, `RS485_IRQ_RSVD`.
 - [x] CI PR18 exige 0 tracks / 0 vías / 0 copper zones.
-- [ ] Full CI PR #18 + merge.
+- [x] Full CI PR #18 + merge.
 
-### PR #19 — routing físico de producción
-- [ ] Aplicar clases/anchos/clearances PR18.
-- [ ] Rutear power-entry/eFuse/buck/LDO localmente en Z3.
-- [ ] Rutear `12V_ACT` y salidas de actuadores confinadas Z3/Z4.
-- [ ] Rutear Z1 front-end con trayectos mínimos antes de acondicionamiento.
-- [ ] Rutear load-cell/HX711 quieto y HMI/I²C/low-speed en corredor controlado.
-- [ ] Rutear `PUMP_CURRENT_ADC` por corredor silencioso Z4→Z0, lejos de Z3 switching.
-- [ ] Mantener `In1.Cu` sin pistas y como referencia GND continua.
-- [ ] Añadir distribución `In2.Cu`/stitching sin crear retornos por Z1/Z2.
-- [ ] No cruzar región RF del host con loops ruidosos; escapes Z0 mínimos.
-- [ ] DRC de cobre = 0; unconnected = 0 esperado al cierre.
-- [ ] Revisar retorno/EMC y preparar revisión 3D/RF posterior.
+### PR #19 experimental — cerrado sin merge
+- [x] Medir endpoints/carriles de las 59 nets.
+- [x] Probar escapes finos TPSM33625 / TPS259470A / TPS1HC120.
+- [x] Confirmar frontera natural de 28 nets locales antes del long-haul.
+- [x] Detectar que long-haul monolítico produce congestión y rutas con demasiados segmentos.
+- [x] Cerrar PR #19 sin merge y preservar su rama como laboratorio/evidencia.
+- [x] Documentar aprendizaje en `docs/ROUTING_KNOWLEDGE_BASE.md`.
+- [x] Congelar partición machine-readable en `hardware/routing_batches_contract.json`.
+
+### PR19A — lote local, 28 nets
+- [ ] Rutear exactamente 28/28 nets locales.
+- [ ] 0 nets PR19B/PR19C/PR20A/PR20B tocadas.
+- [ ] Mantener `In1.Cu` sin signal routing.
+- [ ] DRC: 0 shorts y 0 errores nuevos de clearance/courtyard.
+- [ ] Registrar segmentos/vías/longitud/calidad geométrica por net.
+- [ ] Revisión visual del lote antes de merge.
+- [ ] Merge solo 28/28; política ALL_OR_NOTHING.
+
+### PR19B — lote analógico inter-zona, 4 nets
+- [ ] `PH_ADC`.
+- [ ] `ORP_ADC`.
+- [ ] `DO_ADC`.
+- [ ] `PUMP_CURRENT_ADC` por corredor silencioso Z4→Z0, evitando switching Z3.
+- [ ] Revisar retorno contra futuro plano GND.
+- [ ] Merge solo 4/4.
+
+### PR19C — lote digital/control inter-zona, 16 nets
+- [ ] Rutear 16/16 low-speed/control long-haul.
+- [ ] Preferir B.Cu para troncales; F.Cu para escapes locales.
+- [ ] Mantener clocks/I²C alejados de front-end analógico.
+- [ ] Limitar giros/vías y rechazar rutas meandriformes aunque conecten.
+- [ ] Merge solo 16/16.
+
+### PR20A — potencia + salidas de actuadores, 10 nets
+- [ ] Rutear 7 nets de potencia con anchos/clearances PR18.
+- [ ] Rutear `PUMP_OUT1`, `PUMP_OUT2`, `CO2_SOL_POS` confinadas a Z4.
+- [ ] `12V_ACT` y retornos high-current sin atravesar Z1/Z2.
+- [ ] Usar F.Cu/In2.Cu según contrato y revisar trayectoria de corriente.
+- [ ] Merge solo 10/10.
+
+### PR20B — GND / plano + stitching, 1 net
+- [ ] Materializar `GND` continuo en `In1.Cu`.
+- [ ] Conectar los 83 endpoints identificados por el probe experimental.
+- [ ] Añadir stitching controlado.
+- [ ] Revisar retornos quiet/dirty y continuidad del plano.
+- [ ] Exigir cierre completo de conectividad antes de artwork.
+
+### Regla de merge Fase 5
+- [x] Partición exhaustiva y mutuamente excluyente: `28 + 4 + 16 + 10 + 1 = 59`.
+- [x] Política `ALL_OR_NOTHING` por lote.
+- [x] CI falla ante net duplicada, faltante o fuera de lote.
+- [ ] Ningún lote se mergea parcialmente.
 
 ## Fase 6 — Fabricación / compliance
 
