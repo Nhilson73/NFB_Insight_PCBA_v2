@@ -1,4 +1,4 @@
-name: PR27 PR19A routing local 28 nets
+name: Routing gates PR19A + probe PR19B
 
 on:
   pull_request:
@@ -14,12 +14,15 @@ on:
       - 'hardware/placement_drc_contract.json'
       - 'tools/validate_pr19a_local.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
+  push:
+    branches: [agent/pr30-pr19b-analog-longhaul]
 
 permissions:
   contents: read
 
 jobs:
   local-routing:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -34,8 +37,7 @@ jobs:
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
       - name: Ejecutar DRC sobre cobre persistido
-        run: |
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
       - name: Normalizar representación angular para gate legado
         run: |
           python3 - <<'PY'
@@ -44,12 +46,10 @@ jobs:
           d=json.load(open(p,encoding='utf-8'))
           for x in d['placements']:
               r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
-              if abs(r+180.0) < 1e-9:
-                  r=180.0
+              if abs(r+180.0) < 1e-9: r=180.0
               x['rotation_deg']=r
           with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False)
-              f.write('\n')
+              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
       - name: Exigir gate 28 de 28
         run: python3 tools/validate_pr19a_local.py /tmp/pr27_drc.json
@@ -69,5 +69,41 @@ jobs:
           counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
           expected={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68}
           assert dict(counts) == expected, (dict(counts),expected)
-          print('OK: 28/28, 31 futuras sin cobre, 523 segmentos, 24 vias, DRC errors=0, warnings=255, unconnected=204')
+          print('OK: PR19A persistido 28/28, 523 segmentos, 24 vias, DRC=0')
+          PY
+
+  pr19b-probe:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe físico PR19B sobre cobre PR19A persistido
+        run: |
+          python3 - <<'PY'
+          import json, pcbnew
+          targets=['PH_ADC','ORP_ADC','DO_ADC','PUMP_CURRENT_ADC']
+          b=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb')
+          eps={n:[] for n in targets}
+          for fp in b.GetFootprints():
+              for p in fp.Pads():
+                  n=p.GetNetname() or ''
+                  if n not in eps: continue
+                  q=p.GetPosition()
+                  eps[n].append({'ref':fp.GetReference(),'pad':str(p.GetNumber()),'x_mm':round(pcbnew.ToMM(q.x),4),'y_mm':round(pcbnew.ToMM(q.y),4)})
+          segs=sum(1 for x in b.GetTracks() if not isinstance(x,pcbnew.PCB_VIA))
+          vias=sum(1 for x in b.GetTracks() if isinstance(x,pcbnew.PCB_VIA))
+          print('BASELINE',{'segments':segs,'vias':vias,'zones':len(b.Zones())})
+          assert (segs,vias,len(b.Zones()))==(523,24,0)
+          for n in targets:
+              tracks=[]; nv=0
+              for x in b.GetTracks():
+                  if x.GetNetname()!=n: continue
+                  if isinstance(x,pcbnew.PCB_VIA): nv+=1
+                  else: tracks.append(b.GetLayerName(x.GetLayer()))
+              print('NET',n,'ENDPOINTS',json.dumps(sorted(eps[n],key=lambda x:(x['ref'],x['pad'])),sort_keys=True),'EXISTING',len(tracks),nv,sorted(set(tracks)))
+              assert eps[n]
+              assert len(tracks)==0 and nv==0
           PY
