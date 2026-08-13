@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "Z3_BUCK_PLACEMENT_ECO_PR22",
+  "product": "NFB Insight PCBA v2",
+  "trigger": "PR19A routing revealed critical TPSM33625 support components were packed by generic PR17 placement rather than by TI electrical proximity priorities",
+  "authority": {
+    "primary_source": "TI TPSM33625 datasheet SNVSCB1D Rev. D, section 8.5.1 Layout Guidelines",
+    "repository_contract": "hardware/routing_contract.json",
+    "placement_base": "hardware/placement_manifest.json"
+  },
+  "scope": {
+    "zone": "Z3",
+    "outline_change": false,
+    "zone_boundary_change": false,
+    "netlist_change": false,
+    "footprint_change": false,
+    "routing_change": false,
+    "moved_refs_only": [
+      "C_5V_IN_4U7",
+      "C_5V_IN_100N",
+      "C_5V_VCC",
+      "R_5V_FBT",
+      "R_5V_FBB"
+    ]
+  },
+  "ti_layout_intent": [
+    "Place input capacitors as close as possible to VIN and GND.",
+    "Place the VCC bypass capacitor close to VCC and route VCC/GND with short wide traces.",
+    "Place R_FBT and R_FBB as close as possible to FB; FB and GND connections must be short.",
+    "Do not solve a poor micro-placement by relaxing DRC or by adding arbitrary layer changes."
+  ],
+  "targets": {
+    "C_5V_IN_4U7": {"x_mm": 184.60, "y_mm": 19.075, "rotation_deg": 0.0, "role": "VIN bulk ceramic adjacent to U_5V island"},
+    "C_5V_IN_100N": {"x_mm": 188.95, "y_mm": 19.075, "rotation_deg": 0.0, "role": "high-frequency VIN bypass closest to U_5V VIN side"},
+    "R_5V_FBT": {"x_mm": 190.55, "y_mm": 15.60, "rotation_deg": 0.0, "role": "feedback top resistor in compact FB island"},
+    "R_5V_FBB": {"x_mm": 192.75, "y_mm": 15.60, "rotation_deg": 0.0, "role": "feedback bottom resistor immediately below FB/GND edge"},
+    "C_5V_VCC": {"x_mm": 195.30, "y_mm": 15.60, "rotation_deg": 0.0, "role": "VCC bypass immediately below VCC/GND edge"}
+  },
+  "acceptance": {
+    "moved_ref_count": 5,
+    "all_other_xy_rotation_unchanged": true,
+    "courtyard_overlap_count": 0,
+    "routing_items": 0,
+    "copper_zones": 0,
+    "drc_errors": 0,
+    "board_width_mm": 242.34,
+    "board_height_mm": 68.58,
+    "in1_signal_routing": false
+  },
+  "routing_restart": "After this ECO is merged, restart PR19A from clean main and require 28/28 under routing_batches_contract.json."
+}
