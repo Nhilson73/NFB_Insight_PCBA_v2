@@ -1,23 +1,26 @@
-name: PR30 validar PR19B determinista
+name: PR30 persistir PR19B una vez
 on:
   push:
     branches: [agent/pr30-pr19b-analog-longhaul]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  pr19b:
+  persist:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
       options: --user root
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Preparar KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Materializar candidato temporal
+      - name: Materializar y verificar
         run: |
           PYTHONPATH=tools python3 - <<'PY'
           import pcbnew,json,math
@@ -26,37 +29,48 @@ jobs:
           b=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb')
           p=json.load(open('hardware/placement_manifest.json')); c=json.load(open('hardware/routing_contract.json'))
           assert (sum(not isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),sum(isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),len(b.Zones()))==(523,24,0)
-          r=q.Router(b,p,c,{'routes':[]}); ci=r.by_class['ANALOG_SENSITIVE']; w=float(ci['track_width_mm_min'])
-          D={
-          'PH_ADC':[('F',[(59.955,16.985),(58.255,16.995),(58.255,50.8),(50.8,50.8)])],
-          'ORP_ADC':[('F',[(67.455,16.995),(67.455,19.5),(74.315,19.5)]),('F',[(69.145,16.995),(69.145,19.5)]),('F',[(71.885,17.125),(71.885,19.5)]),('F',[(74.315,16.985),(74.315,19.5)]),('F',[(67.455,19.5),(67.455,53.34),(50.8,53.34)])],
-          'DO_ADC':[('F',[(101.78,16.995),(101.78,20.0),(103.48,20.0),(103.48,16.985)]),('F',[(101.78,20.0),(101.78,63.5),(50.8,63.5)])],
-          'PUMP_CURRENT_ADC':[('F',[(199.785,24.735),(199.785,26.5),(198.5,26.5)]),('F',[(202.505,24.725),(202.505,26.5),(198.5,26.5)]),('F',[(212.325,18.325),(214.75,18.75)]),('B',[(214.75,18.75),(214.75,27.5),(198.5,27.5),(198.5,26.5)]),('B',[(198.5,26.5),(198.5,60.96),(50.8,60.96)]),('B',[(198.5,60.96),(200.365,60.96)]),('F',[(200.365,60.96),(200.365,58.025)])]}
-          V={'PUMP_CURRENT_ADC':[(198.5,26.5),(214.75,18.75),(200.365,60.96)]}
+          targets=['PH_ADC','ORP_ADC','DO_ADC','PUMP_CURRENT_ADC']; r=q.Router(b,p,c,{'routes':[]}); ci=r.by_class['ANALOG_SENSITIVE']; w=float(ci['track_width_mm_min'])
+          D={'PH_ADC':[('F',[(59.955,16.985),(58.255,16.995),(58.255,50.8),(50.8,50.8)])],'ORP_ADC':[('F',[(67.455,16.995),(67.455,19.5),(74.315,19.5)]),('F',[(69.145,16.995),(69.145,19.5)]),('F',[(71.885,17.125),(71.885,19.5)]),('F',[(74.315,16.985),(74.315,19.5)]),('F',[(67.455,19.5),(67.455,53.34),(50.8,53.34)])],'DO_ADC':[('F',[(101.78,16.995),(101.78,20.0),(103.48,20.0),(103.48,16.985)]),('F',[(101.78,20.0),(101.78,63.5),(50.8,63.5)])],'PUMP_CURRENT_ADC':[('F',[(199.785,24.735),(199.785,26.5),(198.5,26.5)]),('F',[(202.505,24.725),(202.505,26.5),(198.5,26.5)]),('F',[(212.325,18.325),(214.75,18.75)]),('B',[(214.75,18.75),(214.75,27.5),(198.5,27.5),(198.5,26.5)]),('B',[(198.5,26.5),(198.5,60.96),(50.8,60.96)]),('B',[(198.5,60.96),(200.365,60.96)]),('F',[(200.365,60.96),(200.365,58.025)])]}; V={'PUMP_CURRENT_ADC':[(198.5,26.5),(214.75,18.75),(200.365,60.96)]}
+          stats=[]
           for n,polys in D.items():
             for L,pts in polys:
               layer=pcbnew.F_Cu if L=='F' else pcbnew.B_Cu
               for a,z in zip(pts,pts[1:]): r._add_track(n,layer,w,a,z)
             for x,y in V.get(n,[]): r._add_via(n,ci,q.gcoord(x),q.gcoord(y))
-          for n in D:
-            ss=[x for x in r.segments if x['net']==n]; vv=[x for x in r.vias if x['net']==n]
-            L=sum(math.hypot(s['end_mm'][0]-s['start_mm'][0],s['end_mm'][1]-s['start_mm'][1]) for s in ss)
-            print(n,len(ss),len(vv),round(L,3))
+            ss=[x for x in r.segments if x['net']==n]; vv=[x for x in r.vias if x['net']==n]; L=sum(math.hypot(s['end_mm'][0]-s['start_mm'][0],s['end_mm'][1]-s['start_mm'][1]) for s in ss)
+            stats.append({'net':n,'class':'ANALOG_SENSITIVE','segment_count':len(ss),'via_count':len(vv),'length_mm':round(L,3),'layers':sorted({s['layer'] for s in ss})})
           assert (len(r.segments),len(r.vias))==(27,3)
           pcbnew.SaveBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb',b)
+          p19a=json.load(open('hardware/pr19a_local_routing_manifest.json')); batches=json.load(open('hardware/routing_batches_contract.json'))
+          allnets=[n for x in batches['batches'] for n in x['nets']]; deferred=sorted(set(allnets)-set(p19a['routed_nets'])-set(targets))
+          manifest={'schema_version':1,'status':'ANALOG_LONGHAUL_PR19B','merge_policy':'ALL_OR_NOTHING','baseline':{'pr19a_segments':523,'pr19a_vias':24},'routed_nets':targets,'deferred_nets':deferred,'net_stats':stats,'segments':r.segments,'vias':r.vias}
+          json.dump(manifest,open('hardware/pr19b_analog_routing_manifest.json','w'),indent=2); open('hardware/pr19b_analog_routing_manifest.json','a').write('\n')
+          eps={n:[] for n in targets}
+          for fp in b.GetFootprints():
+            for pad in fp.Pads():
+              n=pad.GetNetname() or ''
+              if n in eps:
+                z=pad.GetPosition(); eps[n].append({'ref':fp.GetReference(),'pad':str(pad.GetNumber()),'x_mm':round(pcbnew.ToMM(z.x),4),'y_mm':round(pcbnew.ToMM(z.y),4)})
+          json.dump({'schema_version':1,'status':'PR19B_ANALOG_PROBE','baseline':{'segments':523,'vias':24,'zones':0},'endpoints':eps},open('hardware/pr19b_analog_probe.json','w'),indent=2); open('hardware/pr19b_analog_probe.json','a').write('\n')
           PY
-      - name: KiCad DRC y gate
-        run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/drc.json --severity-all
           python3 - <<'PY'
-          import json,collections,pcbnew
-          d=json.load(open('/tmp/drc.json')); e=[x for x in d.get('violations',[]) if x.get('severity')=='error']
-          print('ERRORS',len(e),'UNCONNECTED',len(d.get('unconnected_items',[])))
-          print('TYPES',dict(collections.Counter(x.get('type','?') for x in d.get('violations',[]))))
-          for x in e[:20]: print('ERROR',json.dumps(x,sort_keys=True))
-          b=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb')
-          print('TOTAL',sum(not isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),sum(isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()))
-          assert not e
-          assert len(d.get('unconnected_items',[]))==192
-          assert (sum(not isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),sum(isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),len(b.Zones()))==(550,27,0)
+          import json,pcbnew
+          d=json.load(open('/tmp/drc.json')); assert not [x for x in d.get('violations',[]) if x.get('severity')=='error']; assert len(d.get('unconnected_items',[]))==192
+          b=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb'); assert (sum(not isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),sum(isinstance(x,pcbnew.PCB_VIA) for x in b.GetTracks()),len(b.Zones()))==(550,27,0)
           PY
+      - name: Persistir verificado
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cp kicad/NFB_Insight_PCBA_v2.kicad_pcb /tmp/final.kicad_pcb
+          cp hardware/pr19b_analog_routing_manifest.json /tmp/manifest.json
+          cp hardware/pr19b_analog_probe.json /tmp/probe.json
+          git reset --hard HEAD
+          cp /tmp/final.kicad_pcb kicad/NFB_Insight_PCBA_v2.kicad_pcb
+          cp /tmp/manifest.json hardware/pr19b_analog_routing_manifest.json
+          cp /tmp/probe.json hardware/pr19b_analog_probe.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add kicad/NFB_Insight_PCBA_v2.kicad_pcb hardware/pr19b_analog_routing_manifest.json hardware/pr19b_analog_probe.json
+          git commit -m 'routing: persistir PR19B 4/4 DRC=0'
+          git push origin HEAD:agent/pr30-pr19b-analog-longhaul
