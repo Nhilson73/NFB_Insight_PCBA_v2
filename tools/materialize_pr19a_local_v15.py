@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 """PR19A v15: v14 + micro-ruta local para PUMP_DIR_DRV.
 
-El planner v14 cierra las islas TPSM33625/eFuse y el par LOAD_A post-PR24,
-pero la arista R_PUMP_DIR_SER.2 -> U_PUMP_DRV.3 queda confinada por el borde
-izquierdo del DRV8242. Se reserva un corredor exterior simple en F.Cu.
-
-No cambia netclass, clearance, placement ni capas permitidas. Cero vías.
-KiCad DRC sigue siendo la autoridad final.
+También actúa como launcher de v16 cuando se ejecuta directamente. Al ser
+importado por v16 expone RouterPR19AV15 sin recursión.
 """
 from __future__ import annotations
 
@@ -58,4 +54,5 @@ class RouterPR19AV15(v14.RouterPR19AV14):
 impl.RouterPR19A = RouterPR19AV15
 
 if __name__ == "__main__":
+    import materialize_pr19a_local_v16  # instala RouterPR19AV16 sobre impl
     raise SystemExit(impl.main())
