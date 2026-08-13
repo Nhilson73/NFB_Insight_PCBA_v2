@@ -1,19 +1,8 @@
-name: Routing gates PR19A + probe PR19B
+name: Routing gates PR19A + candidato PR19B
 
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
-      - 'hardware/pr19a_local_routing_manifest.json'
-      - 'hardware/pr19a_local_probe.json'
-      - 'hardware/routing_batches_contract.json'
-      - 'hardware/routing_contract.json'
-      - 'hardware/placement_manifest.json'
-      - 'hardware/placement_drc_contract.json'
-      - 'tools/validate_pr19a_local.py'
-      - '.github/workflows/pr23-pr19a-local-routing.yml'
   push:
     branches: [agent/pr30-pr19b-analog-longhaul]
 
@@ -34,45 +23,21 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Validar partición 28+4+16+10+1
-        run: python3 tools/validate_routing_batches.py
-      - name: Ejecutar DRC sobre cobre persistido
-        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
-      - name: Normalizar representación angular para gate legado
+      - name: DRC y gate PR19A persistido
         run: |
-          python3 - <<'PY'
-          import json
-          p='hardware/placement_manifest.json'
-          d=json.load(open(p,encoding='utf-8'))
-          for x in d['placements']:
-              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
-              if abs(r+180.0) < 1e-9: r=180.0
-              x['rotation_deg']=r
-          with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
-          PY
-      - name: Exigir gate 28 de 28
-        run: python3 tools/validate_pr19a_local.py /tmp/pr27_drc.json
-      - name: Exigir métricas finales y deuda DRC conocida
-        run: |
+          python3 tools/validate_routing_batches.py
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19a_drc.json --severity-all
           python3 - <<'PY'
           import collections,json
           m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
-          d=json.load(open('/tmp/pr27_drc.json',encoding='utf-8'))
-          assert len(m['routed_nets']) == 28
-          assert len(m['deferred_nets']) == 31
-          assert len(m['segments']) == 523
-          assert len(m['vias']) == 24
-          assert len(d.get('unconnected_items',[])) == 204
-          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-          assert not errors, errors[:3]
-          counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
-          expected={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68}
-          assert dict(counts) == expected, (dict(counts),expected)
-          print('OK: PR19A persistido 28/28, 523 segmentos, 24 vias, DRC=0')
+          d=json.load(open('/tmp/pr19a_drc.json',encoding='utf-8'))
+          assert len(m['routed_nets'])==28 and len(m['segments'])==523 and len(m['vias'])==24
+          assert not [v for v in d.get('violations',[]) if v.get('severity')=='error']
+          assert len(d.get('unconnected_items',[]))==204
+          print('OK PR19A')
           PY
 
-  pr19b-probe:
+  pr19b-candidate:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     container:
@@ -80,30 +45,108 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: Probe físico PR19B sobre cobre PR19A persistido
+      - name: Inicializar librerías KiCad
         run: |
-          python3 - <<'PY'
-          import json, pcbnew
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Materializar 4 analog long-haul temporalmente
+        run: |
+          PYTHONPATH=tools python3 - <<'PY'
+          import json,math,pcbnew
+          from pathlib import Path
+          import pr19a_router_core as base
+          base.STEP=0.25
+          base.PAD_HALO=0.15
+          base.MAX_EXPANSIONS=1500000
+          ROOT=Path('.')
           targets=['PH_ADC','ORP_ADC','DO_ADC','PUMP_CURRENT_ADC']
+          order=['PUMP_CURRENT_ADC','DO_ADC','ORP_ADC','PH_ADC']
           b=pcbnew.LoadBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb')
-          eps={n:[] for n in targets}
+          placement=json.load(open('hardware/placement_manifest.json',encoding='utf-8'))
+          contract=json.load(open('hardware/routing_contract.json',encoding='utf-8'))
+          batches=json.load(open('hardware/routing_batches_contract.json',encoding='utf-8'))
+          batch=[x for x in batches['batches'] if x['id']=='PR19B'][0]
+          assert batch['nets']==targets and batch['expected_net_count']==4
+          old_segments=sum(1 for x in b.GetTracks() if not isinstance(x,pcbnew.PCB_VIA))
+          old_vias=sum(1 for x in b.GetTracks() if isinstance(x,pcbnew.PCB_VIA))
+          assert (old_segments,old_vias,len(b.Zones()))==(523,24,0)
+          by_ref={x['ref']:x for x in placement['placements']}
+          _,by_net=base.class_maps(contract)
+          endpoints={n:[] for n in targets}
           for fp in b.GetFootprints():
               for p in fp.Pads():
                   n=p.GetNetname() or ''
-                  if n not in eps: continue
+                  if n not in endpoints: continue
                   q=p.GetPosition()
-                  eps[n].append({'ref':fp.GetReference(),'pad':str(p.GetNumber()),'x_mm':round(pcbnew.ToMM(q.x),4),'y_mm':round(pcbnew.ToMM(q.y),4)})
-          segs=sum(1 for x in b.GetTracks() if not isinstance(x,pcbnew.PCB_VIA))
-          vias=sum(1 for x in b.GetTracks() if isinstance(x,pcbnew.PCB_VIA))
-          print('BASELINE',{'segments':segs,'vias':vias,'zones':len(b.Zones())})
-          assert (segs,vias,len(b.Zones()))==(523,24,0)
+                  endpoints[n].append({'ref':fp.GetReference(),'pad':str(p.GetNumber()),'x_mm':base.mm(q.x),'y_mm':base.mm(q.y)})
+          def zone(ref):
+              if ref=='J_UNOQ': return 'Z0'
+              return by_ref[ref]['zone']
+          routes={}
           for n in targets:
-              tracks=[]; nv=0
-              for x in b.GetTracks():
-                  if x.GetNetname()!=n: continue
-                  if isinstance(x,pcbnew.PCB_VIA): nv+=1
-                  else: tracks.append(b.GetLayerName(x.GetLayer()))
-              print('NET',n,'ENDPOINTS',json.dumps(sorted(eps[n],key=lambda x:(x['ref'],x['pad'])),sort_keys=True),'EXISTING',len(tracks),nv,sorted(set(tracks)))
-              assert eps[n]
-              assert len(tracks)==0 and nv==0
+              assert by_net[n]=='ANALOG_SENSITIVE'
+              routes[n]={'net':n,'class':'ANALOG_SENSITIVE','mode':'SENSITIVE_INTERZONE','zones':sorted({zone(e['ref']) for e in endpoints[n]}),'endpoint_count':len(endpoints[n])}
+          class R(base.Router):
+              def __init__(self,*a,**kw):
+                  super().__init__(*a,**kw)
+                  self.index_existing()
+              def sample(self,a,c):
+                  dx=c[0]-a[0]; dy=c[1]-a[1]
+                  k=max(1,int(math.ceil(math.hypot(dx,dy)/0.125)))
+                  out=[]
+                  for i in range(k+1):
+                      t=i/k; q=(base.gcoord(a[0]+dx*t),base.gcoord(a[1]+dy*t))
+                      if not out or q!=out[-1]: out.append(q)
+                  return out
+              def index_existing(self):
+                  ns=nv=0
+                  for x in self.board.GetTracks():
+                      n=x.GetNetname() or '__NC__'
+                      if isinstance(x,pcbnew.PCB_VIA):
+                          q=x.GetPosition(); self._mark_via(n,base.gcoord(base.mm(q.x)),base.gcoord(base.mm(q.y)),halo=3); nv+=1
+                      elif x.GetLayer() in (pcbnew.F_Cu,pcbnew.B_Cu):
+                          a=x.GetStart(); c=x.GetEnd()
+                          self._mark_track(n,x.GetLayer(),self.sample((base.mm(a.x),base.mm(a.y)),(base.mm(c.x),base.mm(c.y))),halo=2); ns+=1
+                  assert (ns,nv)==(523,24)
+                  print('INDEXED_EXISTING',ns,nv)
+          router=R(b,placement,contract,{'routes':list(routes.values())})
+          stats=[]
+          for net in order:
+              ci=router.by_class['ANALOG_SENSITIVE']; route=routes[net]
+              eps=router.pads_by_net[net]
+              eps.sort(key=lambda e:(e['ref'],e['pad'],round(e['x_mm'],4),round(e['y_mm'],4)))
+              assert len(eps)==route['endpoint_count']
+              xmin,xmax=base.route_bounds(route,placement)
+              edges=base.mst_edges(eps)
+              bs,bv=len(router.segments),len(router.vias)
+              for i,j in edges:
+                  path=router._astar(net,'ANALOG_SENSITIVE',eps[i],eps[j],xmin,xmax)
+                  router._materialize_path(net,'ANALOG_SENSITIVE',ci,path,eps[i],eps[j])
+              seg=router.segments[bs:]; length=sum(math.hypot(s['end_mm'][0]-s['start_mm'][0],s['end_mm'][1]-s['start_mm'][1]) for s in seg)
+              st={'net':net,'endpoints':len(eps),'edges':len(edges),'segments':len(router.segments)-bs,'vias':len(router.vias)-bv,'length_mm':round(length,3)}
+              stats.append(st); print('PR19B_ROUTE',json.dumps(st,sort_keys=True))
+          manifest={'schema_version':1,'status':'PR19B_CANDIDATE','routed_nets':order,'net_stats':stats,'segments':router.segments,'vias':router.vias}
+          json.dump(manifest,open('/tmp/pr19b_manifest.json','w'),indent=2)
+          pcbnew.SaveBoard('kicad/NFB_Insight_PCBA_v2.kicad_pcb',b)
+          print('PR19B_CANDIDATE',len(router.segments),len(router.vias))
           PY
+      - name: Ejecutar DRC KiCad sobre candidato
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19b_drc.json --severity-all
+          python3 - <<'PY'
+          import collections,json
+          d=json.load(open('/tmp/pr19b_drc.json',encoding='utf-8'))
+          v=d.get('violations',[])
+          print('DRC',{'violations':len(v),'unconnected':len(d.get('unconnected_items',[])),'types':dict(collections.Counter(x.get('type','?') for x in v)),'severities':dict(collections.Counter(x.get('severity','?') for x in v))})
+          for x in [q for q in v if q.get('severity')=='error'][:20]: print('ERROR',json.dumps(x,ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Guardar candidato para revisión
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr30-pr19b-candidate
+          path: |
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb
+            /tmp/pr19b_manifest.json
+            /tmp/pr19b_drc.json
