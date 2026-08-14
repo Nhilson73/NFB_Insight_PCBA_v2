@@ -57,4 +57,15 @@ jobs:
       - name: DRC + gate PR19D
         run: |
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_drc.json --severity-all
+          python3 - <<'PY'
+          import json
+          p='hardware/placement_manifest.json'
+          d=json.load(open(p,encoding='utf-8'))
+          for x in d['placements']:
+              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
+              if abs(r+180.0)<1e-9: r=180.0
+              x['rotation_deg']=r
+          with open(p,'w',encoding='utf-8') as f:
+              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
+          PY
           python3 tools/validate_hmi_power_eco.py /tmp/hmi_drc.json
