@@ -7,6 +7,8 @@ import pcbnew  # type: ignore
 
 import materialize_pr19c_digital as core
 
+CANDIDATE_REVISION = "v2-local-first"
+
 
 def edge_len(eps, edge):
     i, j = edge
@@ -52,6 +54,7 @@ class RouterV2(core.Router):
         return {
             'schema_version': 1,
             'status': 'PR19C_DIGITAL_ROUTING_CANDIDATE',
+            'candidate_revision': CANDIDATE_REVISION,
             'batch': 'PR19C',
             'target_nets': core.TARGET,
             'baseline': {'segments': core.PRIOR_SEGMENTS, 'vias': core.PRIOR_VIAS},
