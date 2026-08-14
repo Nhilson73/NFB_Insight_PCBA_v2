@@ -10,11 +10,15 @@ on:
       - 'bom/insight_hmi_system_bom.csv'
       - 'bom/insight_z2_production_bom.csv'
       - 'kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_SDExtender_External.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_BOX_Speaker_External.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_Foca_Max_Service.kicad_mod'
       - 'docs/HMI_NEXTION_NX8048P050.md'
       - 'docs/FASE2_PR7_Z2_DIGITAL.md'
       - 'hmi/README.md'
       - 'README.md'
       - 'tools/apply_hmi_nextion_decision.py'
+      - 'tools/apply_hmi_nextion_decision_v2.py'
       - 'tools/validate_hmi_system.py'
       - '.github/workflows/hmi-nextion.yml'
 
@@ -37,21 +41,29 @@ jobs:
       - name: Compilar tooling HMI
         run: |
           python3 -m py_compile tools/apply_hmi_nextion_decision.py
+          python3 -m py_compile tools/apply_hmi_nextion_decision_v2.py
           python3 -m py_compile tools/validate_hmi_system.py
       - name: Gate HMI
         run: python3 tools/validate_hmi_system.py
       - name: Gate Z2
         run: python3 tools/validate_z2_production.py
-      - name: Footprint mecánico Nextion
+      - name: Huellas mecánicas Nextion
         run: |
           python3 - <<'PY'
           import pcbnew
-          fp=pcbnew.FootprintLoad('kicad/lib/nfb_footprints.pretty','Nextion_NX8048P050_011C_Y_Enclosure')
-          if fp is None:
-              raise SystemExit('footprint Nextion no carga en KiCad 10.0.5')
-          if len(list(fp.Pads())) != 0:
-              raise SystemExit('footprint mecánico externo no debe tener pads')
-          print('OK footprint Nextion: KiCad 10.0.5, 0 pads de PCBA')
+          names=[
+              'Nextion_NX8048P050_011C_Y_Enclosure',
+              'Nextion_SDExtender_External',
+              'Nextion_BOX_Speaker_External',
+              'Nextion_Foca_Max_Service',
+          ]
+          for name in names:
+              fp=pcbnew.FootprintLoad('kicad/lib/nfb_footprints.pretty',name)
+              if fp is None:
+                  raise SystemExit(f'footprint {name} no carga en KiCad 10.0.5')
+              if len(list(fp.Pads())) != 0:
+                  raise SystemExit(f'footprint {name} no debe tener pads de PCBA')
+              print('OK footprint',name,'0 pads')
           PY
       - name: DRC del checkpoint de producción
         run: |
