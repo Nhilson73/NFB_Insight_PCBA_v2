@@ -1,73 +1,44 @@
-name: PR27 PR19A routing local 28 nets
-
+name: PR19B final
 on:
   pull_request:
     branches: [main]
     paths:
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_dru'
-      - 'hardware/pr19a_local_routing_manifest.json'
-      - 'hardware/pr19a_local_probe.json'
+      - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/routing_batches_contract.json'
-      - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
-      - 'hardware/placement_drc_contract.json'
-      - 'tools/validate_pr19a_local.py'
+      - 'tools/validate_pr19b_analog.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
-
 permissions:
   contents: read
-
 jobs:
-  local-routing:
+  pr19b-final:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: Inicializar librerías KiCad
+      - name: Preparar KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Validar partición 28+4+16+10+1
+      - name: Validar partición
         run: python3 tools/validate_routing_batches.py
-      - name: Ejecutar DRC sobre cobre persistido
-        run: |
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr27_drc.json --severity-all
-      - name: Normalizar representación angular para gate legado
+      - name: DRC
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19b.json --severity-all
+      - name: Normalizar ángulos del manifest de placement
         run: |
           python3 - <<'PY'
           import json
-          p='hardware/placement_manifest.json'
-          d=json.load(open(p,encoding='utf-8'))
+          p='hardware/placement_manifest.json'; d=json.load(open(p,encoding='utf-8'))
           for x in d['placements']:
               r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
-              if abs(r+180.0) < 1e-9:
-                  r=180.0
+              if abs(r+180.0)<1e-9: r=180.0
               x['rotation_deg']=r
           with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False)
-              f.write('\n')
+              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
-      - name: Exigir gate 28 de 28
-        run: python3 tools/validate_pr19a_local.py /tmp/pr27_drc.json
-      - name: Exigir métricas finales y deuda DRC conocida
-        run: |
-          python3 - <<'PY'
-          import collections,json
-          m=json.load(open('hardware/pr19a_local_routing_manifest.json',encoding='utf-8'))
-          d=json.load(open('/tmp/pr27_drc.json',encoding='utf-8'))
-          assert len(m['routed_nets']) == 28
-          assert len(m['deferred_nets']) == 31
-          assert len(m['segments']) == 523
-          assert len(m['vias']) == 24
-          assert len(d.get('unconnected_items',[])) == 204
-          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-          assert not errors, errors[:3]
-          counts=collections.Counter(v.get('type','?') for v in d.get('violations',[]))
-          expected={'silk_edge_clearance':13,'text_height':1,'silk_overlap':173,'silk_over_copper':68}
-          assert dict(counts) == expected, (dict(counts),expected)
-          print('OK: 28/28, 31 futuras sin cobre, 523 segmentos, 24 vias, DRC errors=0, warnings=255, unconnected=204')
-          PY
+      - name: Gate acumulativo
+        run: python3 tools/validate_pr19b_analog.py /tmp/pr19b.json
