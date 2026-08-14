@@ -8,7 +8,7 @@ on:
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
-      - 'tools/materialize_pr19c_digital_v12.py'
+      - 'tools/materialize_pr19c_digital_v13.py'
       - 'tools/validate_pr19c_digital.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
@@ -28,7 +28,7 @@ jobs:
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Compilar materializador y gate
         run: |
-          python3 -m py_compile tools/materialize_pr19c_digital_v12.py
+          python3 -m py_compile tools/materialize_pr19c_digital_v13.py
           python3 -m py_compile tools/validate_pr19c_digital.py
       - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
@@ -46,8 +46,8 @@ jobs:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
           python3 tools/validate_pr19b_analog.py /tmp/pr19c_baseline.json
-      - name: Materializar candidato PR19C v12
-        run: python3 tools/materialize_pr19c_digital_v12.py
+      - name: Materializar candidato PR19C v13
+        run: python3 tools/materialize_pr19c_digital_v13.py
       - name: DRC KiCad 10.0.5 del candidato
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_candidate.json --severity-all
       - name: Resumir DRC
