@@ -1,4 +1,4 @@
-name: PR19B final
+name: PR19C probe digital/control
 on:
   pull_request:
     branches: [main]
@@ -7,12 +7,13 @@ on:
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/placement_manifest.json'
+      - 'tools/probe_pr19c_digital.py'
       - 'tools/validate_pr19b_analog.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
   contents: read
 jobs:
-  pr19b-final:
+  pr19c-probe:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -24,12 +25,11 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Validar partición
+      - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
-      - name: DRC
-        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19b.json --severity-all
-      - name: Normalizar ángulos del manifest de placement
+      - name: Revalidar baseline PR19B
         run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_baseline.json --severity-all
           python3 - <<'PY'
           import json
           p='hardware/placement_manifest.json'; d=json.load(open(p,encoding='utf-8'))
@@ -40,5 +40,11 @@ jobs:
           with open(p,'w',encoding='utf-8') as f:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
-      - name: Gate acumulativo
-        run: python3 tools/validate_pr19b_analog.py /tmp/pr19b.json
+          python3 tools/validate_pr19b_analog.py /tmp/pr19c_baseline.json
+      - name: Extraer endpoints y ocupación PR19C
+        run: python3 tools/probe_pr19c_digital.py
+      - name: Publicar probe read-only
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr19c-probe
+          path: hardware/pr19c_digital_probe.json
