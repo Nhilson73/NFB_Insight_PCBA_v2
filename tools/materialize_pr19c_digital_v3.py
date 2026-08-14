@@ -13,7 +13,7 @@ import pcbnew  # type: ignore
 
 import materialize_pr19c_digital as core
 
-CANDIDATE_REVISION = "v3-uno-ioref-microroute"
+CANDIDATE_REVISION = "v3-uno-ioref-microroute-grid-aligned"
 
 
 def edge_len(eps, edge):
@@ -37,20 +37,17 @@ class RouterV3(core.Router):
             core.fail('endpoints UNO_IOREF_3V3 inesperados')
         before_s, before_v = len(self.new_segments), len(self.new_vias)
         clsinfo = self.class_info[self.class_by_net['UNO_IOREF_3V3']]
-        # Coordenadas medidas sobre el checkpoint PR19B. La primera vía queda
-        # por encima de la pista 5V_PGOOD y la segunda a la izquierda del RDN.
-        v1 = (189.905, 27.800)
-        v2 = (190.500, 17.900)
+        # Coordenadas de vía alineadas a la rejilla efectiva de 0.5 mm.
+        # V1 queda por encima de 5V_PGOOD; V2 queda a la izquierda del RDN.
+        v1 = (190.000, 28.000)
+        v2 = (190.500, 18.000)
         length = 0.0
         length += self._manual_segment('UNO_IOREF_3V3', pcbnew.F_Cu, (r['x_mm'], r['y_mm']), v1)
         self._add_via('UNO_IOREF_3V3', clsinfo, core.gcoord(v1[0]), core.gcoord(v1[1]))
-        # _add_via cuantiza a la rejilla; usar los centros reales resultantes.
-        q1 = core.xy(core.gcoord(v1[0]), core.gcoord(v1[1]))
-        q2 = core.xy(core.gcoord(v2[0]), core.gcoord(v2[1]))
-        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.B_Cu, q1, (q2[0], q1[1]))
-        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.B_Cu, (q2[0], q1[1]), q2)
+        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.B_Cu, v1, (v2[0], v1[1]))
+        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.B_Cu, (v2[0], v1[1]), v2)
         self._add_via('UNO_IOREF_3V3', clsinfo, core.gcoord(v2[0]), core.gcoord(v2[1]))
-        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.F_Cu, q2, (u['x_mm'], u['y_mm']))
+        length += self._manual_segment('UNO_IOREF_3V3', pcbnew.F_Cu, v2, (u['x_mm'], u['y_mm']))
         return len(self.new_segments)-before_s, len(self.new_vias)-before_v, 2, length
 
     def route_all(self) -> dict:
@@ -72,8 +69,6 @@ class RouterV3(core.Router):
             if net == 'UNO_IOREF_3V3':
                 _, _, b, l = self._manual_uno_ioref_local(eps)
                 bends += b; length += l
-                # La troncal queda entre UNO Q y R_5V_EN_PD; la rama local ya
-                # conecta R_5V_EN_PD con U_5V.2.
                 j = next(e for e in eps if e['ref'] == 'J_UNOQ')
                 r = next(e for e in eps if e['ref'] == 'R_5V_EN_PD')
                 path = self._astar(net, j, r)
