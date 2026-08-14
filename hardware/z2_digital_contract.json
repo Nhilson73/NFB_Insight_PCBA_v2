@@ -192,7 +192,7 @@
       "mpn": "S4B-XH-A(LF)(SN)",
       "footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
       "pinout": {
-        "1": "5V_RAIL",
+        "1": "5V_HMI",
         "2": "GND",
         "3": "HMI_FIELD_RX",
         "4": "HMI_FIELD_TX"
@@ -203,7 +203,7 @@
       "mpn": "TXU0202DCUR",
       "package": "VSSOP-8_DCU",
       "vcca_net": "3V3_RAIL",
-      "vccb_net": "5V_RAIL",
+      "vccb_net": "5V_HMI",
       "oe_net": "3V3_RAIL",
       "pinout": {
         "1": "HMI_FIELD_TX",
@@ -212,7 +212,7 @@
         "4": "HMI_RX",
         "5": "HMI_TX",
         "6": "3V3_RAIL",
-        "7": "5V_RAIL",
+        "7": "5V_HMI",
         "8": "HMI_FIELD_RX"
       },
       "direction": {
@@ -238,7 +238,7 @@
       "rx": 15,
       "tx": 16
     },
-    "phase3_resolution": "PR #9 congela 5V_RAIL local con TPSM33625RDNR, 2.5 A nominal y límite de diseño de 1.5 A continuo. La HMI seleccionada NX8048P050-011C-Y requiere 5 V/1 A y el BOX Speaker obliga a reservar +0.5 A; HMI+audio consume por diseño 1.5 A, igual al límite continuo actual antes de pH/ORP/DO y 3V3 LDO. Se exige ECO de potencia antes de PR20A/release; ver hardware/hmi_system_contract.json.",
+    "phase3_resolution": "PR #9 historical: TPSM33625RDNR local 5V_RAIL was limited to 1.5 A continuous. PR19D closes HMI power ECO by moving J_HMI/TXU0202 VCCB to dedicated external 5V_HMI; 5V_RAIL no longer powers the display/audio.",
     "system_contract": "hardware/hmi_system_contract.json",
     "selected_display_mpn": "NX8048P050-011C-Y",
     "selected_display_sku": "6920075776553",
@@ -254,6 +254,12 @@
       "speaker_increment_a": 0.5,
       "reserved_a_with_audio": 1.5,
       "release_status": "POWER_ECO_REQUIRED_BEFORE_PRODUCT_RELEASE"
+    },
+    "power_eco": {
+      "status": "CLOSED_PR19D",
+      "system_contract": "hardware/hmi_system_contract.json",
+      "field_power_net": "5V_HMI",
+      "rule": "5V_HMI must never tie to 5V_RAIL or J_UNOQ.5"
     }
   },
   "watchdog": {

@@ -1,21 +1,26 @@
-name: PR19C final
+name: PR19C histórico + fase actual
 on:
   pull_request:
     branches: [main]
     paths:
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
       - 'hardware/pr19c_digital_routing_manifest.json'
+      - 'hardware/pr19d_hmi_power_routing_manifest.json'
+      - 'hardware/hmi_power_eco.json'
+      - 'hardware/hmi_system_contract.json'
+      - 'hardware/z2_production_netlist.json'
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/routing_batches_contract.json'
       - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
       - 'tools/validate_pr19c_digital.py'
+      - 'tools/validate_hmi_power_eco.py'
       - 'tools/validate_routing_phase.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
   contents: read
 jobs:
-  pr19c-final:
+  pr19c-historical-current-phase:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -30,11 +35,12 @@ jobs:
       - name: Compilar gates
         run: |
           python3 -m py_compile tools/validate_pr19c_digital.py
+          python3 -m py_compile tools/validate_hmi_power_eco.py
           python3 -m py_compile tools/validate_routing_phase.py
-      - name: Validar partición 28+4+16+10+1
+      - name: Validar partición vigente 28+4+16+1+10+1
         run: python3 tools/validate_routing_batches.py
       - name: DRC KiCad 10.0.5 del checkpoint persistido
-        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_final.json --severity-all
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/current_phase.json --severity-all
       - name: Normalizar ángulos del manifest de placement
         run: |
           python3 - <<'PY'
@@ -47,5 +53,10 @@ jobs:
           with open(p,'w',encoding='utf-8') as f:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
-      - name: Gate acumulativo PR19A + PR19B + PR19C
-        run: python3 tools/validate_pr19c_digital.py /tmp/pr19c_final.json
+      - name: Validar PR19C histórico o fase PR19D actual
+        run: |
+          if [ -f hardware/pr19d_hmi_power_routing_manifest.json ]; then
+            python3 tools/validate_hmi_power_eco.py /tmp/current_phase.json
+          else
+            python3 tools/validate_pr19c_digital.py /tmp/current_phase.json
+          fi

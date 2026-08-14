@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Valida arquitectura PR9/PR10 bajo contrato UNO Q y routing incremental gobernado."""
+"""Valida arquitectura PR9/PR10 bajo contrato UNO Q y routing incremental hasta PR19D."""
 from __future__ import annotations
 import json, math, re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"; ROUTING_BATCHES=ROOT/"hardware"/"routing_batches_contract.json"; PR19A_MANIFEST=ROOT/"hardware"/"pr19a_local_routing_manifest.json"
+POWER=ROOT/"hardware"/"power_architecture_contract.json"; PIN=ROOT/"hardware"/"insight_pin_contract.json"; Z1=ROOT/"hardware"/"z1_production_netlist.json"; Z2=ROOT/"hardware"/"z2_production_netlist.json"; Z4=ROOT/"hardware"/"z4_production_netlist.json"; PCB=ROOT/"kicad"/"NFB_Insight_PCBA_v2.kicad_pcb"; README=ROOT/"README.md"; ROADMAP=ROOT/"docs"/"ROADMAP.md"; SOURCES=ROOT/"docs"/"SOURCE_OF_TRUTH.md"; POWERDOC=ROOT/"docs"/"POWER_ARCHITECTURE.md"; PLACEMENT=ROOT/"hardware"/"placement_manifest.json"; ROUTING_BATCHES=ROOT/"hardware"/"routing_batches_contract.json"; PR19A_MANIFEST=ROOT/"hardware"/"pr19a_local_routing_manifest.json"; PR19D_MANIFEST=ROOT/"hardware"/"pr19d_hmi_power_routing_manifest.json"
 ARDUINO_SNAPSHOT="196feda03787005572a059f030677b8a1de9bcd2"
 def fail(m): raise SystemExit("ERROR: "+m)
 def main():
@@ -32,8 +32,13 @@ def main():
     if c["shield_5v"]["host_5v_tied"] or u5["mpn"]!="TPSM33625RDNR" or float(u5["design_continuous_limit_a"])>1.5: fail("5V baseline incorrecto")
     if c["shield_5v"]["enable"]["source"]!="UNO_IOREF_3V3": fail("5V no secuenciado por IOREF")
     if c["shield_3v3"]["host_3v3_tied"] or u3["mpn"]!="TLV75533PDBVR" or float(u3["design_continuous_limit_a"])>0.25: fail("3V3 baseline incorrecto")
+    # PR19D puede añadir potencia HMI externa, pero no cambia los tres bloques de diseño de la PCBA principal.
     b=c["power_budget"]; total=float(b["host_branch_w_design"])+float(b["shield_5v_w_design"])+float(b["actuator_12v_w_design"])
     if not math.isclose(total,float(b["total_w_design"]),abs_tol=1e-9) or float(b["recommended_supply_w"])<total*1.25: fail("budget potencia sin margen")
+    if c.get("external_hmi_power"):
+        eh=c["external_hmi_power"]
+        if eh.get("converter")!="RECOM R-78K5.0-2.0L 5V/2A" or eh.get("output_net")!="5V_HMI" or eh.get("main_pcba_high_current_path") is not False: fail("ECO HMI externo inconsistente")
+        if c["shield_5v"].get("hmi_integration",{}).get("status")!="CLOSED_EXTERNAL_DEDICATED_5V_HMI": fail("5V_RAIL aún reclama HMI")
     if p.get("schema_version")!=6 or p.get("power_architecture_source_of_truth")!="hardware/power_architecture_contract.json": fail("pin contract no enlaza potencia")
     pins={int(x["pad"]):x for x in p["pins"]}
     if (pins[2]["net"],pins[2]["status"])!=("UNO_IOREF_3V3","ACTIVE_CONTROL_OUTPUT") or (pins[8]["net"],pins[8]["status"])!=("12V_HOST_VIN","ACTIVE_POWER_INPUT"): fail("frontera IOREF/VIN incorrecta")
@@ -41,6 +46,10 @@ def main():
     for nz,name in ((z1,"Z1"),(z2,"Z2"),(z4,"Z4")):
         nets={x["name"]:set(x["nodes"]) for x in nz["nets"]}
         if "J_UNOQ.4" in nets.get("3V3_RAIL",set()) or "J_UNOQ.5" in nets.get("5V_RAIL",set()): fail(f"{name} back-feed host")
+    n2={x["name"]:set(x["nodes"]) for x in z2["nets"]}
+    if "5V_HMI" in n2:
+        if n2["5V_HMI"]!={"J_HMI.1","U_HMI_LVL.7","C_HMI_B.1"}: fail("5V_HMI Z2 tiene endpoints inesperados")
+        if n2["5V_HMI"] & n2.get("5V_RAIL",set()): fail("5V_HMI puenteado a 5V_RAIL")
     n4={x["name"]:set(x["nodes"]) for x in z4["nets"]}
     if "12V_ACT" not in n4 or "U_PUMP_DRV.6" not in n4["12V_ACT"] or "U_CO2_DRV.8" not in n4["12V_ACT"]: fail("Z4 no consume rama 12V_ACT")
     if any(x in n4["12V_ACT"] for x in ("U_CHILLER.3","U_CHILLER.4")): fail("chiller conectado a potencia PCBA")
@@ -50,33 +59,24 @@ def main():
     if placed_power:
         if not PLACEMENT.exists(): fail(f"placement sin contrato PR17: {placed_power}")
         pm=json.loads(PLACEMENT.read_text(encoding="utf-8"))
-        if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False:
-            fail("placement de potencia presente sin gate PR17 válido")
+        if pm.get("status")!="PRODUCTION_PLACEMENT_PR17" or pm.get("policies",{}).get("routing_allowed") is not False: fail("placement de potencia presente sin gate PR17 válido")
         refs={x["ref"] for x in pm.get("placements",[])}
         if not set(placed_power)<=refs: fail(f"placement de potencia no trazado en manifest PR17: {sorted(set(placed_power)-refs)}")
-
         has_copper=bool(re.search(r'^\s*\((segment|arc|via|zone)\b',pcb,re.M))
         if has_copper:
-            # Desde PR19A el PCB ya puede contener cobre. La autoridad de scope pasa
-            # al contrato incremental: este gate de potencia exige evidencia machine-
-            # readable de un lote permitido y, sobre todo, que ninguna net de potencia
-            # futura haya sido adelantada.
-            if not ROUTING_BATCHES.exists() or not PR19A_MANIFEST.exists():
-                fail("cobre presente sin contrato/manifest de routing incremental")
-            rb=json.loads(ROUTING_BATCHES.read_text(encoding="utf-8"))
-            rm=json.loads(PR19A_MANIFEST.read_text(encoding="utf-8"))
-            batches={x["id"]:x for x in rb.get("batches",[])}
-            if set(batches)!={"PR19A","PR19B","PR19C","PR20A","PR20B"}:
-                fail("partición de routing incompleta o inesperada")
-            allowed=set(batches["PR19A"]["nets"])
-            routed=set(rm.get("routed_nets",[]))
-            if rm.get("status")!="LOCAL_ROUTING_PR19A" or routed!=allowed or len(routed)!=28:
-                fail("cobre presente pero manifest PR19A no prueba lote 28/28")
+            if not ROUTING_BATCHES.exists() or not PR19A_MANIFEST.exists(): fail("cobre presente sin contrato/manifest de routing incremental")
+            rb=json.loads(ROUTING_BATCHES.read_text(encoding="utf-8")); rm=json.loads(PR19A_MANIFEST.read_text(encoding="utf-8")); batches={x["id"]:x for x in rb.get("batches",[])}
+            expected={"PR19A","PR19B","PR19C","PR19D","PR20A","PR20B"}
+            if set(batches)!=expected: fail(f"partición de routing incompleta o inesperada: {sorted(batches)}")
+            if batches["PR19D"].get("nets")!=["5V_HMI"] or batches["PR19D"].get("expected_net_count")!=1: fail("PR19D no congela exclusivamente 5V_HMI")
+            allowed=set(batches["PR19A"]["nets"]); routed=set(rm.get("routed_nets",[]))
+            if rm.get("status")!="LOCAL_ROUTING_PR19A" or routed!=allowed or len(routed)!=28: fail("manifest PR19A histórico inválido")
             future_power=set(batches["PR20A"]["nets"]) | set(batches["PR20B"]["nets"])
-            if routed & future_power:
-                fail(f"routing prematuro de potencia/GND: {sorted(routed & future_power)}")
-            if any(n in routed for n in ("12V_IN_RAW","12V_PROTECTED","12V_HOST_VIN","12V_LOGIC","12V_ACT","5V_RAIL","3V3_RAIL","PUMP_OUT1","PUMP_OUT2","CO2_SOL_POS","GND")):
-                fail("PR19A adelantó net de potencia")
+            if routed & future_power: fail(f"routing prematuro de potencia/GND: {sorted(routed & future_power)}")
+            if PR19D_MANIFEST.exists():
+                rd=json.loads(PR19D_MANIFEST.read_text(encoding="utf-8"))
+                if rd.get("status")!="HMI_POWER_ROUTING_PR19D" or rd.get("target_nets")!=["5V_HMI"]: fail("manifest PR19D inválido")
+                if set(rd.get("target_nets",[])) & future_power: fail("PR19D adelantó PR20A/PR20B")
 
     src=SOURCES.read_text(encoding="utf-8")
     for m in ("https://github.com/Arduino","arduino/docs-content","Regla de conflicto"):
@@ -87,6 +87,6 @@ def main():
     if "Fuente primaria UNO Q" not in readme: fail("README perdió jerarquía de fuentes")
     required_road=("PR #9","PR #10","potencia de producción","12 V protegido → VIN UNO Q","TPS259470ARPWR","TPSM33625RDNR","TLV75533PDBVR")
     if any(m not in road for m in required_road): fail("roadmap no preserva arquitectura PR9/PR10")
-    print("OK: arquitectura potencia PR9/10 preservada; routing incremental presente sin adelantar potencia/GND")
+    print("OK: arquitectura potencia PR9/10 preservada; PR19D 5V_HMI externo reconocido sin adelantar PR20A/GND")
     return 0
 if __name__=="__main__": raise SystemExit(main())

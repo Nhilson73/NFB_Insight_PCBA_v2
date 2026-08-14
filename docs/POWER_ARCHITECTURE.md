@@ -184,3 +184,21 @@ Snapshot oficial Arduino `arduino/docs-content` commit `196feda03787005572a059f0
 - TDK/Murata: capacitores cerámicos seleccionados en la BOM.
 
 La BOM final para fabricación deberá acompañarse de evidencia RoHS/REACH conforme al EU Compliance Gate.
+
+## 12. Addendum PR19D — alimentación HMI dedicada
+
+PR9/PR10 permanece como baseline histórico de la **PCBA principal**. La selección posterior de `NX8048P050-011C-Y` + BOX Speaker reveló que reservar 1.5 A sobre `5V_RAIL` consumiría todo el límite continuo de diseño de ese rail. PR19D resuelve el conflicto fuera de Z3, sin mover el TPSM33625 ni sus pasivos:
+
+```text
+12 V sistema — split externo upstream del eFuse NFB
+  → Littelfuse 0FHM0001ZXJ
+  → Littelfuse 0997002.WXN / 2 A
+  → RECOM R-78K5.0-2.0L / 5 V, 2 A
+  → 5V_HMI
+```
+
+La corriente de display/audio permanece en el arnés externo. `5V_HMI` entra a la PCBA únicamente por `J_HMI.1` para `TXU0202 VCCB` y `C_HMI_B`; `5V_RAIL` deja de alimentar la HMI. Ambos rails comparten GND de sistema porque el RECOM seleccionado es no aislado, pero **no pueden unirse entre sí**.
+
+El presupuesto de salida HMI es 7.5 W. Como screening conservador a 90 % de eficiencia equivale a ~8.33 W de entrada; por margen de sistema se recomienda fuente certificada **12 V / 6 A (72 W)**. La rama HMI lleva protección 2 A propia.
+
+Este addendum no altera el eFuse, buck 5 V, LDO 3.3 V, split estrella ni placement de la PCBA principal. El first article debe validar arranque/corriente, temperatura del convertidor, ausencia de nuisance-trip, mating y EMC. Fuente de verdad: `hardware/hmi_power_eco.json`.

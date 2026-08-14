@@ -9,6 +9,7 @@ on:
       - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/pr19c_digital_routing_manifest.json'
+      - 'hardware/pr19d_hmi_power_routing_manifest.json'
       - 'hardware/power_netclasses.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
@@ -24,6 +25,7 @@ on:
       - 'tools/validate_pr19a_local.py'
       - 'tools/validate_pr19b_analog.py'
       - 'tools/validate_pr19c_digital.py'
+      - 'tools/validate_hmi_power_eco.py'
       - '.github/workflows/routing-readiness.yml'
   pull_request:
     branches: [main]
@@ -33,6 +35,7 @@ on:
       - 'hardware/pr19a_local_routing_manifest.json'
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/pr19c_digital_routing_manifest.json'
+      - 'hardware/pr19d_hmi_power_routing_manifest.json'
       - 'hardware/power_netclasses.json'
       - 'hardware/placement_manifest.json'
       - 'hardware/z1_production_netlist.json'
@@ -48,6 +51,7 @@ on:
       - 'tools/validate_pr19a_local.py'
       - 'tools/validate_pr19b_analog.py'
       - 'tools/validate_pr19c_digital.py'
+      - 'tools/validate_hmi_power_eco.py'
       - '.github/workflows/routing-readiness.yml'
 
 permissions:
@@ -68,15 +72,12 @@ jobs:
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Compilar validadores
         run: |
-          python3 -m py_compile tools/validate_routing_contract.py
-          python3 -m py_compile tools/validate_routing_phase.py
-          python3 -m py_compile tools/validate_pr17_placement.py
-          python3 -m py_compile tools/validate_pr17_drc.py
-          python3 -m py_compile tools/validate_pr19a_local.py
-          python3 -m py_compile tools/validate_pr19b_analog.py
-          python3 -m py_compile tools/validate_pr19c_digital.py
-      - name: Validar contrato de routing PR18
-        run: python3 tools/validate_routing_contract.py
+          python3 -m py_compile tools/validate_routing_contract.py tools/validate_routing_phase.py tools/validate_pr17_placement.py tools/validate_pr17_drc.py
+          python3 -m py_compile tools/validate_pr19a_local.py tools/validate_pr19b_analog.py tools/validate_pr19c_digital.py tools/validate_hmi_power_eco.py
+      - name: Validar contrato de routing PR18/PR19D
+        run: |
+          python3 tools/validate_routing_batches.py
+          python3 tools/validate_routing_contract.py
       - name: Revalidar estado físico según fase
         run: |
           normalize_placement() {
@@ -86,28 +87,23 @@ jobs:
           d=json.load(open(p,encoding='utf-8'))
           for x in d['placements']:
               r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
-              if abs(r+180.0) < 1e-9:
-                  r=180.0
+              if abs(r+180.0) < 1e-9: r=180.0
               x['rotation_deg']=r
           with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False)
-              f.write('\n')
+              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
           }
-          if [ -f hardware/pr19c_digital_routing_manifest.json ]; then
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
-            normalize_placement
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
+          normalize_placement
+          if [ -f hardware/pr19d_hmi_power_routing_manifest.json ]; then
+            python3 tools/validate_hmi_power_eco.py /tmp/pr18_drc.json
+          elif [ -f hardware/pr19c_digital_routing_manifest.json ]; then
             python3 tools/validate_pr19c_digital.py /tmp/pr18_drc.json
           elif [ -f hardware/pr19b_analog_routing_manifest.json ]; then
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
-            normalize_placement
             python3 tools/validate_pr19b_analog.py /tmp/pr18_drc.json
           elif [ -f hardware/pr19a_local_routing_manifest.json ]; then
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
-            normalize_placement
             python3 tools/validate_pr19a_local.py /tmp/pr18_drc.json
           else
             python3 tools/validate_pr17_placement.py
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr18_drc.json --severity-all
             python3 tools/validate_pr17_drc.py /tmp/pr18_drc.json
           fi

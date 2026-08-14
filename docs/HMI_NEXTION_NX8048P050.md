@@ -6,6 +6,8 @@
 
 Esta pantalla es un **ensamble externo**, no un footprint poblado sobre la PCBA. La shield mantiene `J_HMI` como interfaz de cable y el repositorio incorpora huellas mecánicas externas para la HMI y sus accesorios, utilizables en integración de enclosure/servicio sin contaminar BOM o pick-and-place de la PCBA.
 
+**Actualización PR19D:** el ECO de potencia queda cerrado en diseño mediante una rama externa dedicada `5V_HMI`. La pantalla y el BOX Speaker ya no consumen desde `5V_RAIL` de la PCBA principal.
+
 ## Pantalla congelada
 
 - MPN: `NX8048P050-011C-Y`.
@@ -23,7 +25,7 @@ Fuentes oficiales: https://itead.cc/product/5-0-nextion-intelligent-series-hmi-t
 
 `J_HMI` permanece `S4B-XH-A(LF)(SN)` con footprint KiCad `Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal`, side-entry hacia `-Y`.
 
-La razón de **no mover pads** es deliberada: PR19C ya cerró el routing de `HMI_RX/HMI_TX`. ITEAD publica la interfaz del display como `XH2.54 4P` pero no publica en la ficha consultada un MPN JST exacto. Por tanto:
+La razón de **no mover pads** es deliberada: PR19C cerró el routing UART y PR19D solo reasigna eléctricamente el pin de potencia. ITEAD publica la interfaz del display como `XH2.54 4P` pero no publica en la ficha consultada un MPN JST exacto. Por tanto:
 
 1. no se inventa una equivalencia 2.50 ↔ 2.54;
 2. se conserva la geometría de producción del board-side connector;
@@ -31,6 +33,8 @@ La razón de **no mover pads** es deliberada: PR19C ya cerró el routing de `HMI
 4. cualquier cambio posterior de `J_HMI` será un ECO de footprint/routing explícito.
 
 Mapping lógico: `HMI_TX` del UNO → TXU0202 → `HMI_FIELD_RX` → RX de Nextion; TX de Nextion → `HMI_FIELD_TX` → TXU0202 → `HMI_RX` del UNO. Campo protegido con `PESD5V0U1UL,315`.
+
+Desde PR19D, `J_HMI.1 = 5V_HMI`; `5V_HMI` también alimenta `U_HMI_LVL.7` (VCCB) y `C_HMI_B.1`. No existe puente permitido entre `5V_HMI` y `5V_RAIL`.
 
 ## Accesorios seleccionados
 
@@ -68,25 +72,44 @@ Mapping lógico: `HMI_TX` del UNO → TXU0202 → `HMI_FIELD_RX` → RX de Nexti
 
 ## Footprints mecánicos congelados
 
-Las cuatro huellas siguientes son **referencias mecánicas externas, sin pads**, y están marcadas para quedar excluidas de BOM/position files de la PCBA:
+Las huellas siguientes son **referencias mecánicas externas, sin pads**, y están marcadas para quedar excluidas de BOM/position files de la PCBA:
 
 - `NFB:Nextion_NX8048P050_011C_Y_Enclosure` — 160.04 × 107.07 mm, profundidad máxima documentada 21.2 mm.
 - `NFB:Nextion_SDExtender_External` — 17.1 × 41.48 mm, espesor 2.5 mm.
 - `NFB:Nextion_BOX_Speaker_External` — 31 × 28 mm, altura 14.8 mm.
 - `NFB:Nextion_Foca_Max_Service` — 50 × 50 mm, altura total 12 mm; servicio solamente.
+- `NFB:RECOM_R78K5_0_2_0L_External` — referencia mecánica del convertidor dedicado HMI.
 
-No se insertan estas huellas externas dentro de `NFB_Insight_PCBA_v2.kicad_pcb`; el PCB de producción conserva el checkpoint PR19C.
+No se insertan estas huellas externas dentro de `NFB_Insight_PCBA_v2.kicad_pcb`.
 
-## Gate de potencia — obligatorio antes de PR20A/release
+## ECO de potencia PR19D — cerrado en diseño
 
-El `5V_RAIL` actual usa `TPSM33625RDNR` (2.5 A nominal), pero el contrato de NFB limita el diseño a **1.5 A continuo** y ese mismo rail alimenta pH, ORP, DO y la entrada del LDO 3.3 V. La HMI + speaker ya reserva **1.5 A** por sí sola.
+El problema detectado en PR #32 era que `5V_RAIL` tenía un límite continuo de diseño de 1.5 A y HMI + speaker ya reservaban esos mismos 1.5 A, sin dejar margen a sensores ni al LDO de 3.3 V.
 
-Por tanto el uso del conjunto está seleccionado, pero **la alimentación desde el 5V_RAIL actual no se declara liberada**. Antes de congelar PR20A se debe cerrar uno de estos ECOs:
+PR19D resuelve el conflicto sin mover placement de Z3 y sin usar capacidad ficticia del rail principal:
 
-- validar térmica/corriente/layout y elevar formalmente el presupuesto continuo con margen para todas las cargas, o
-- introducir 5 V dedicado para HMI mediante una revisión eléctrica explícita.
+```text
+12V sistema (split externo, upstream del eFuse de la PCBA)
+   → Littelfuse 0FHM0001ZXJ
+   → Littelfuse 0997002.WXN / 2 A
+   → RECOM R-78K5.0-2.0L / 5 V, 2 A
+   → 5V_HMI
+      ├─ Nextion NX8048P050-011C-Y
+      ├─ Nextion BOX Speaker
+      └─ J_HMI.1 → TXU0202 VCCB + C_HMI_B
+```
 
-No se reduce margen ni se relaja una regla para hacer caber el HMI.
+Consecuencias:
+
+- display/audio no atraviesan la NFB PCBA v2;
+- `5V_RAIL` queda para pH, ORP, DO y la cadena 3V3;
+- `5V_HMI` es una net distinta y no puede unirse a `5V_RAIL`;
+- el convertidor dedicado tiene 2.0 A nominales frente a 1.5 A reservados, es decir, **0.5 A de headroom nominal**;
+- se recomienda fuente de sistema 12 V / 6 A para recuperar margen global.
+
+PR19D introdujo `5V_HMI` como la net #60 y la ruteó como lote ALL_OR_NOTHING 1/1: **7 segmentos + 2 vías**, acumulado **924 segmentos / 121 vías**, `In1.Cu` sin señales, zones=0, DRC=0. El escape inmediato de `U_HMI_LVL.7` usa 0.20 mm por ≤1.20 mm debido al pitch VSSOP; el clearance permanece ≥0.20 mm y la distribución retorna a 0.40 mm.
+
+El cierre de diseño no sustituye el first article: deben medirse arranque/corriente, temperatura del RECOM dentro del enclosure, comportamiento del fusible de 2 A, mating del arnés y EMC del cable final.
 
 ## Firmware y mantenimiento
 
@@ -98,11 +121,14 @@ No se reduce margen ni se relaja una regla para hacer caber el HMI.
 ## Archivos fuente de verdad
 
 - `hardware/hmi_system_contract.json`
+- `hardware/hmi_power_eco.json`
+- `hardware/pr19d_hmi_power_routing_manifest.json`
 - `bom/insight_hmi_system_bom.csv`
-- `kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod`
-- `kicad/lib/nfb_footprints.pretty/Nextion_SDExtender_External.kicad_mod`
-- `kicad/lib/nfb_footprints.pretty/Nextion_BOX_Speaker_External.kicad_mod`
-- `kicad/lib/nfb_footprints.pretty/Nextion_Foca_Max_Service.kicad_mod`
+- `docs/HMI_POWER_ECO_PR19D.md`
 - `hardware/z2_digital_contract.json`
+- `hardware/z2_production_netlist.json`
 - `hardware/power_architecture_contract.json`
-- materializador canónico: `tools/apply_hmi_nextion_decision_v2.py`
+- `hardware/routing_contract.json`
+- `hardware/routing_batches_contract.json`
+- `kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod`
+- `kicad/lib/nfb_footprints.pretty/RECOM_R78K5_0_2_0L_External.kicad_mod`

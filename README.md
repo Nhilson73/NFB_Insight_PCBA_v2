@@ -24,7 +24,7 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 - Z3 `163.34→198.34 mm` = `35.00 mm`.
 - Z4 `198.34→242.34 mm` = `44.00 mm`.
 - 119 footprints de producción + `J_UNOQ` = 120 footprints.
-- 59 nets materializadas.
+- 60 nets materializadas desde PR19D; `5V_HMI` es la net ECO añadida después de PR19C.
 - PR17 cerró courtyard overlaps y fallos físicos de placement.
 - PR22 aplicó el ECO acotado de placement alrededor del `TPSM33625` en Z3.
 - PR24 acercó `TP_LOAD_A_POS/NEG` al HX711 en Z2 sin alterar el resto del placement.
@@ -43,7 +43,7 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 - HX711 3.3 V / 10 SPS en D2/D3.
 - HMI: **Nextion Intelligent `NX8048P050-011C-Y`**, 5.0 in capacitiva con enclosure, 800×480; D0/D1 mediante `TXU0202DCUR`.
 - Accesorios HMI seleccionados: `SDExtender` + `Nextion BOX Speaker`; `Foca Max` queda como herramienta de programación/servicio.
-- HMI+speaker reserva **5 V / 1.5 A**; existe un gate de potencia abierto antes de PR20A/release porque `5V_RAIL` tiene otras cargas. Ver `hardware/hmi_system_contract.json`.
+- HMI+speaker reserva **5 V / 1.5 A**. PR19D cerró el ECO con `5V_HMI` dedicado externo (RECOM `R-78K5.0-2.0L` + fusible 2 A); display/audio ya no cargan `5V_RAIL`.
 - Watchdog `TPS3823-30DBVR`, WDI=D4.
 - `J_LOADCELL`: Phoenix Contact **1757268 / MSTBA 2,5/4-G-5,08**.
 
@@ -116,15 +116,16 @@ El PR #19 monolítico fue usado como **laboratorio de routing** y se cerró sin 
 
 La base de conocimiento vive en `docs/ROUTING_KNOWLEDGE_BASE.md` y la partición machine-readable en `hardware/routing_batches_contract.json`.
 
-Las 59 nets quedan divididas exhaustivamente y sin solapes:
+Las **60 nets vigentes** quedan divididas exhaustivamente y sin solapes. Los lotes PR19A/B/C conservan sus manifests históricos; PR19D introduce únicamente la net creada por el ECO HMI:
 
 - **PR19A: 28** nets locales.
 - **PR19B: 4** nets analógicas inter-zona: `PH_ADC`, `ORP_ADC`, `DO_ADC`, `PUMP_CURRENT_ADC`.
 - **PR19C: 16** nets digital/control inter-zona.
+- **PR19D: 1** net ECO local de potencia HMI: `5V_HMI`.
 - **PR20A: 10** nets de potencia + salidas de actuadores.
 - **PR20B: 1** net GND, tratada como plano `In1.Cu` + stitching; el probe experimental identificó 83 endpoints.
 
-Total: **28 + 4 + 16 + 10 + 1 = 59**.
+Total vigente: **28 + 4 + 16 + 1 + 10 + 1 = 60**.
 
 Política de merge: **ALL_OR_NOTHING por lote**. No se mergea progreso parcial de un lote: todas sus nets deben estar conectadas, ninguna net futura puede ser tocada, no puede haber shorts/clearance/courtyard nuevos y placement/outline deben permanecer congelados.
 
@@ -216,6 +217,11 @@ La fuente primaria Arduino revisada no publicó un antenna keepout numérico tex
 
 ## Estado actual
 
-Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó tooling KiCad. **PR28 cerró PR19A (28/28), PR30 cerró PR19B (4/4) y PR31 cerró PR19C (16/16). El PCB de producción queda en 48/59 nets ruteadas, 917 segmentos, 119 vías y DRC físico 0 errores.**
+Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing y PR25 consolidó tooling KiCad. **PR28 cerró PR19A (28/28), PR30 cerró PR19B (4/4), PR31 cerró PR19C (16/16) y PR19D cerró el ECO HMI `5V_HMI` 1/1. El PCB vigente queda en 49/60 nets ruteadas, 924 segmentos, 121 vías, 0 zones, DRC físico 0 errores y 151 unconnected. PR20A conserva sus 10 nets históricas y queda como siguiente lote de cobre.**
 
 **Siguiente checkpoint de producción: PR20A — routing de 10 nets de potencia + salidas de actuadores (`12V_IN_RAW`, `12V_PROTECTED`, `12V_HOST_VIN`, `12V_LOGIC`, `12V_ACT`, `5V_RAIL`, `3V3_RAIL`, `PUMP_OUT1`, `PUMP_OUT2`, `CO2_SOL_POS`). PR20B/GND permanece diferido hasta cerrar PR20A.**
+
+## HMI power ECO — PR19D
+
+La HMI Nextion `NX8048P050-011C-Y` + BOX Speaker usa alimentación externa dedicada `5V_HMI`: Littelfuse `0FHM0001ZXJ` + `0997002.WXN` 2 A → RECOM `R-78K5.0-2.0L` 5 V/2 A. La corriente de display/audio no atraviesa `5V_RAIL` de la PCBA. En la placa, `5V_HMI` solo alimenta `J_HMI.1`, `TXU0202 VCCB` y `C_HMI_B`. Nuevo lote de routing `PR19D` 1/1 antes de PR20A. Ver `docs/HMI_POWER_ECO_PR19D.md`.
+
