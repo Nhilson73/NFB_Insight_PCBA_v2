@@ -4,10 +4,9 @@ from __future__ import annotations
 import json
 import pcbnew  # type: ignore
 import materialize_pr19c_digital as core
-import materialize_pr19c_digital_v6 as v6
 import materialize_pr19c_digital_v9 as v9
 
-CANDIDATE_REVISION='v10-act-fault-star-topology'
+CANDIDATE_REVISION='v10-act-fault-star-topology-active'
 
 def edge_len(eps,e):
     i,j=e; a,b=eps[i],eps[j]
@@ -17,9 +16,7 @@ class RouterV10(v9.RouterV9):
     def route_all(self)->dict:
         batch=self.batches['PR19C']
         if batch['nets']!=core.TARGET or int(batch['expected_net_count'])!=16: core.fail('contrato PR19C divergente')
-        order=['UNO_IOREF_3V3','I2C_SDA','I2C_SCL','TEMP_1WIRE',
-               'ACT_FAULT_N','PUMP_PWM','PUMP_DIR','CO2_SOL_CTL','CHILLER_CTL',
-               'HX711_DOUT','HX711_SCK','MCU_NRST','MCU_WDI','HMI_RX','HMI_TX','LED_STATUS']
+        order=['UNO_IOREF_3V3','I2C_SDA','I2C_SCL','TEMP_1WIRE','ACT_FAULT_N','PUMP_PWM','PUMP_DIR','CO2_SOL_CTL','CHILLER_CTL','HX711_DOUT','HX711_SCK','MCU_NRST','MCU_WDI','HMI_RX','HMI_TX','LED_STATUS']
         for net in order:
             eps=self.pads_by_net.get(net,[]); eps.sort(key=lambda e:(e['x_mm'],e['y_mm'],e['ref'],e['pad']))
             if len(eps)<2: core.fail(f'{net}: endpoints insuficientes')
@@ -39,17 +36,9 @@ class RouterV10(v9.RouterV9):
                 for i,j in edges:
                     path=self._astar(net,eps[i],eps[j]); _,_,b,l=self._materialize(net,path,eps[i],eps[j]); bends+=b; length+=l
                 edges_count=len(edges)
-            stat={'net':net,'class':self.class_by_net[net],'endpoint_count':len(eps),'edge_count':edges_count,
-                  'segment_count':len(self.new_segments)-bs,'via_count':len(self.new_vias)-bv,
-                  'bend_count':bends,'grid_length_mm':round(length,3)}
+            stat={'net':net,'class':self.class_by_net[net],'endpoint_count':len(eps),'edge_count':edges_count,'segment_count':len(self.new_segments)-bs,'via_count':len(self.new_vias)-bv,'bend_count':bends,'grid_length_mm':round(length,3)}
             self.net_stats.append(stat); print('ROUTED',stat)
-        return {'schema_version':1,'status':'PR19C_DIGITAL_ROUTING_CANDIDATE','candidate_revision':CANDIDATE_REVISION,
-                'batch':'PR19C','target_nets':core.TARGET,'baseline':{'segments':core.PRIOR_SEGMENTS,'vias':core.PRIOR_VIAS},
-                'net_stats':self.net_stats,'new_segments':self.new_segments,'new_vias':self.new_vias,
-                'new_segment_count':len(self.new_segments),'new_via_count':len(self.new_vias),
-                'policies':{'in1_signal_tracks':0,'zones_added':0,'future_batch_copper':0},
-                'planner':{'grid_mm':core.STEP,'pad_halo_mm':core.PAD_HALO,'track_cell_halo':2,'via_cell_halo':3,
-                           'act_fault_tree':'J_UNOQ-RPU; RPU-TP; RPU-PUMP; PUMP-CO2'}}
+        return {'schema_version':1,'status':'PR19C_DIGITAL_ROUTING_CANDIDATE','candidate_revision':CANDIDATE_REVISION,'batch':'PR19C','target_nets':core.TARGET,'baseline':{'segments':core.PRIOR_SEGMENTS,'vias':core.PRIOR_VIAS},'net_stats':self.net_stats,'new_segments':self.new_segments,'new_vias':self.new_vias,'new_segment_count':len(self.new_segments),'new_via_count':len(self.new_vias),'policies':{'in1_signal_tracks':0,'zones_added':0,'future_batch_copper':0},'planner':{'grid_mm':core.STEP,'pad_halo_mm':core.PAD_HALO,'track_cell_halo':2,'via_cell_halo':3,'act_fault_tree':'J_UNOQ-RPU; RPU-TP; RPU-PUMP; PUMP-CO2'}}
 
 def main()->int:
     board=pcbnew.LoadBoard(str(core.PCB)); placement=json.loads(core.PLACEMENT.read_text(encoding='utf-8')); routing=json.loads(core.ROUTING.read_text(encoding='utf-8')); batches=json.loads(core.BATCHES.read_text(encoding='utf-8'))
