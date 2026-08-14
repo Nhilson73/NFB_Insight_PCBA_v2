@@ -183,21 +183,30 @@ Los guardrails históricos fueron promovidos para reconocer de forma exacta `PRE
 
 ## PR19C — 16 nets digital/control inter-zona / PR #31
 
-PR #31 está en fase de laboratorio sobre el checkpoint PR19B. Antes de materializar cobre se ejecutó un probe **read-only** en KiCad 10.0.5 que revalidó primero el baseline PR19B y luego extrajo endpoints reales de las 16 nets:
+PR #31 materializó el tercer lote de producción bajo política **ALL_OR_NOTHING**:
 
 `ACT_FAULT_N`, `CHILLER_CTL`, `CO2_SOL_CTL`, `HMI_RX`, `HMI_TX`, `HX711_DOUT`, `HX711_SCK`, `I2C_SCL`, `I2C_SDA`, `LED_STATUS`, `MCU_NRST`, `MCU_WDI`, `PUMP_DIR`, `PUMP_PWM`, `TEMP_1WIRE`, `UNO_IOREF_3V3`.
 
-Baseline confirmado antes de PR19C:
+Checkpoint congelado post-merge:
 
-- **555 segmentos / 31 vías**.
-- **DRC=0 errors**.
-- **192 unconnected**.
-- **16/16 nets PR19C sin cobre propio** al iniciar el lote.
-- **11 nets PR20A/PR20B sin cobre adelantado**.
-- `In1.Cu` sigue reservado a GND, sin signal routing.
-- B.Cu permanece como corredor preferente para long-haul low-speed; F.Cu se reserva para escapes locales y conexiones cortas.
+- **16/16 nets PR19C conectadas.**
+- PR19A y PR19B preservados: **32/32 nets previas**.
+- PR19C añadió **362 segmentos / 88 vías**.
+- acumulado de producción: **917 segmentos / 119 vías**.
+- **48/59 nets de producción ya ruteadas**.
+- **11 nets PR20A/PR20B permanecen sin cobre**.
+- `In1.Cu`: **0 signal tracks**.
+- copper zones: **0**.
+- KiCad 10.0.5 DRC: **0 errors**.
+- warnings conocidos: **255**, exactamente la deuda histórica de serigrafía/texto.
+- unconnected restantes: **154**.
+- placement y outline congelados sin cambios.
+- todas las nets PR19C cumplen el gate geométrico de **≤10 vías por net**.
+- workflows finales de aceptación: **15/15 verdes**.
 
-El gate de PR19C exige **16/16 conectadas y revisión geométrica**, sin tocar PR20A/PR20B y sin alterar placement/outline.
+Durante el cierre se aplicaron dos correcciones geométricas controladas sin alterar conectividad ni reglas: `CO2_ILIM` se reperfiló **4→4 segmentos / 0→0 vías** para abrir el corredor de `ACT_FAULT_N`, y una vía `I2C_SDA` se desplazó localmente para cerrar el spacing `hole_to_hole` sin cambiar topología ni conteos.
+
+Los guardrails históricos reconocen ahora de forma exacta `PRE_ROUTING → PR19A → PR19B → PR19C`. El manifest final es `hardware/pr19c_digital_routing_manifest.json` con status `DIGITAL_ROUTING_PR19C`; la narrativa vive en `docs/FASE5_PR19C_DIGITAL_ROUTING.md`.
 
 ## RF / enclosure
 
@@ -205,6 +214,6 @@ La fuente primaria Arduino revisada no publicó un antenna keepout numérico tex
 
 ## Estado actual
 
-Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó tooling KiCad. **PR28 cerró PR19A (28/28) y PR30 cerró PR19B (4/4), dejando el PCB de producción en 555 segmentos, 31 vías y DRC físico 0 errores.**
+Placement y ECOs PR22/PR24 están congelados. PR18 congeló las reglas de routing. PR25 consolidó tooling KiCad. **PR28 cerró PR19A (28/28), PR30 cerró PR19B (4/4) y PR31 cerró PR19C (16/16). El PCB de producción queda en 48/59 nets ruteadas, 917 segmentos, 119 vías y DRC físico 0 errores.**
 
-**Checkpoint en curso: PR19C / PR #31 — routing de las 16 nets digital/control inter-zona. El probe read-only ya pasó sobre el baseline PR19B; el siguiente gate es materializar 16/16 bajo política ALL_OR_NOTHING y validar geometría + DRC antes del merge.**
+**Siguiente checkpoint de producción: PR20A — routing de 10 nets de potencia + salidas de actuadores (`12V_IN_RAW`, `12V_PROTECTED`, `12V_HOST_VIN`, `12V_LOGIC`, `12V_ACT`, `5V_RAIL`, `3V3_RAIL`, `PUMP_OUT1`, `PUMP_OUT2`, `CO2_SOL_POS`). PR20B/GND permanece diferido hasta cerrar PR20A.**
