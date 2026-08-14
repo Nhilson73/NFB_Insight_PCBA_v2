@@ -38,6 +38,19 @@ jobs:
           python3 tools/finalize_hmi_power_eco.py
       - name: DRC KiCad 10.0.5
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_power_drc.json --severity-all
+      - name: Normalizar representación angular histórica
+        run: |
+          python3 - <<'PY'
+          import json
+          p='hardware/placement_manifest.json'
+          d=json.load(open(p,encoding='utf-8'))
+          for x in d['placements']:
+              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
+              if abs(r+180.0)<1e-9: r=180.0
+              x['rotation_deg']=r
+          with open(p,'w',encoding='utf-8') as f:
+              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
+          PY
       - name: Gate PR19D acumulativo
         run: python3 tools/validate_hmi_power_eco.py /tmp/hmi_power_drc.json
       - name: Gate Z2 y routing contracts
@@ -61,12 +74,14 @@ jobs:
               d=json.load(open(p,encoding='utf-8'))
               counts={}
               for v in d.get('violations',[]): counts[v.get('type','?')]=counts.get(v.get('type','?'),0)+1
-              print('DRC_ERRORS=',sum(v.get('severity')=='error' for v in d.get('violations',[])))
+              errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
+              print('DRC_ERRORS=',len(errors))
+              for i,e in enumerate(errors,1): print('DRC_ERROR',i,json.dumps(e,ensure_ascii=False))
               print('WARNINGS=',counts)
               print('UNCONNECTED=',len(d.get('unconnected_items',[])))
           PY
       - name: Guardar candidato
-        if: ${{ github.event_name == 'push' && !hashFiles('hardware/hmi_power_eco.json') }}
+        if: ${{ always() && github.event_name == 'push' }}
         uses: actions/upload-artifact@v4
         with:
           name: hmi-power-pr19d-candidate
