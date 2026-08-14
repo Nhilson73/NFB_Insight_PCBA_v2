@@ -24,6 +24,7 @@ jobs:
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
       - name: Compilar tooling ECO
         run: |
+          python3 tools/patch_hmi_power_materializer.py
           python3 -m py_compile tools/apply_hmi_power_eco.py tools/materialize_pr19d_hmi_power.py tools/finalize_hmi_power_eco.py tools/validate_hmi_power_eco.py
           python3 -m py_compile tools/validate_routing_phase.py tools/validate_routing_batches.py tools/validate_routing_contract.py tools/validate_z2_production.py tools/validate_root_eda.py
       - name: Materializar candidato desde main PR19C
