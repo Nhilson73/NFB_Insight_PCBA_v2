@@ -25,11 +25,12 @@ jobs:
         with:
           ref: agent/pr19c-digital-control-routing
           fetch-depth: 1
-      - name: Preparar KiCad
+      - name: Preparar KiCad y Git
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Compilar gates
         run: |
           python3 -m py_compile tools/materialize_pr19c_digital_v18.py
