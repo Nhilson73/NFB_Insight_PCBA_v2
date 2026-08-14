@@ -2,9 +2,7 @@
 
 ## Estado
 
-**Baseline eléctrico Z2 congelado.** Este PR define conectividad, BOM, contratos de bring-up y exclusiones de producto para la zona digital de NFB Insight PCBA v2.
-
-Fuera de alcance: placement, routing, cambios de `Edge.Cuts`, planos de cobre y cambios al firmware.
+**Baseline eléctrico Z2 congelado**, con ECO posterior de potencia HMI PR19D. Este documento conserva la intención original de PR #7 y registra las decisiones posteriores que afectan Z2 sin reescribir su historia.
 
 ## 1. I²C global
 
@@ -30,8 +28,6 @@ La PCBA ofrece `J_GNSS_RTC`, JST XH de cuatro vías side-entry:
 
 El arnés adapta XH-4 a Gravity 4P. PPS, INT y 32K del módulo no forman parte del baseline PR #7.
 
-Esta decisión mantiene antena GNSS, respaldo RTC y mecánica específica del módulo fuera de la PCBA principal.
-
 ## 3. HX711 + celda de carga
 
 `U_HX` se conserva onboard para Insight:
@@ -51,27 +47,36 @@ Esta decisión mantiene antena GNSS, respaldo RTC y mecánica específica del m�
 3. `LOAD_A_POS` / A+
 4. `LOAD_A_NEG` / A-
 
-El origen comercial concreto del HX711 queda pendiente de calificación de fabricación; la función, encapsulado SOP-16 y topología sí quedan congelados.
-
-## 4. HMI UART — selección final Nextion
+## 4. HMI UART — Nextion + ECO de potencia PR19D
 
 D0/D1 mantienen el contrato lógico:
 
 - D0 = `HMI_RX`
 - D1 = `HMI_TX`
 
-La HMI seleccionada posteriormente para producto es **Nextion Intelligent Series `NX8048P050-011C-Y`**, 5.0" capacitiva con enclosure, 800×480, alimentación oficial 5 V/1 A y USART `XH2.54 4P`. La interfaz de lógica sigue usando **TI `TXU0202DCUR`**:
+La HMI seleccionada es **Nextion Intelligent Series `NX8048P050-011C-Y`**, 5.0" capacitiva con enclosure, 800×480. La interfaz lógica sigue usando **TI `TXU0202DCUR`**:
 
-- UNO `HMI_TX` 3.3 V → `HMI_FIELD_RX` 5 V → RX de Nextion.
-- TX de Nextion → `HMI_FIELD_TX` 5 V → UNO `HMI_RX` 3.3 V.
+- UNO `HMI_TX` 3.3 V → `HMI_FIELD_RX` → RX de Nextion.
+- TX de Nextion → `HMI_FIELD_TX` → UNO `HMI_RX` 3.3 V.
 
-`J_HMI` conserva `S4B-XH-A(LF)(SN)` y su footprint side-entry ya ruteado. ITEAD no identifica un MPN JST exacto para su denominación `XH2.54 4P`; por eso no se mueve la geometría post-PR19C y se exige prueba de apareamiento del arnés en first article.
+`J_HMI` conserva `S4B-XH-A(LF)(SN)` y su footprint side-entry; no se movieron pads para el ECO. El mating del arnés Nextion `XH2.54 4P` debe verificarse en first article.
 
-Accesorios seleccionados: `SDExtender`, `Nextion BOX Speaker` y `Foca Max` (este último solo como herramienta de servicio/programación). El BOX Speaker añade 0.5 A al requisito del display, por lo que se reserva **5 V/1.5 A** para HMI+audio.
+### Alimentación final
 
-Esto abre un gate de potencia: el límite continuo actual de `5V_RAIL` también es 1.5 A y el rail alimenta cargas adicionales. El conjunto HMI queda seleccionado, pero su alimentación no puede declararse liberada hasta un ECO de potencia previo a PR20A/release.
+El BOX Speaker añade 0.5 A al requisito de 1 A del display. Para evitar consumir todo el presupuesto histórico de `5V_RAIL`, PR19D cierra el ECO con un rail externo dedicado:
 
-Fuente de verdad: `hardware/hmi_system_contract.json`, `bom/insight_hmi_system_bom.csv` y `docs/HMI_NEXTION_NX8048P050.md`.
+`12V sistema → fuse 2 A → RECOM R-78K5.0-2.0L → 5V_HMI`
+
+En la PCBA:
+
+1. `J_HMI.1 = 5V_HMI`
+2. `U_HMI_LVL.7 / VCCB = 5V_HMI`
+3. `C_HMI_B.1 = 5V_HMI`
+4. `5V_HMI` **no** puede unirse a `5V_RAIL` ni a `J_UNOQ.5`.
+
+La corriente de pantalla/audio permanece en el subensamble externo. La PCBA solo toma de `5V_HMI` la corriente de soporte del lado B del TXU0202.
+
+PR19D cerró `5V_HMI` 1/1 con DRC=0, sin modificar placement, outline ni el cobre UART previo. Fuente de verdad: `hardware/hmi_system_contract.json`, `hardware/hmi_power_eco.json` y `docs/HMI_POWER_ECO_PR19D.md`.
 
 ## 5. Watchdog / supervisión
 
@@ -81,14 +86,12 @@ Se congela **TPS3823-30DBVR**:
 - `WDI` ← D4 / `MCU_WDI`.
 - `MR_n` con pull-up de 10 kΩ.
 - VDD = 3V3.
-- timeout nominal de watchdog usado por el contrato: 1.6 s.
-- firmware de referencia alimenta WDI cada 400 ms.
-
-Se añade `TP_WDT_MR` para bring-up; no se incluye botón de reset en este PR.
+- timeout nominal: 1.6 s.
+- firmware alimenta WDI cada 400 ms.
 
 ## 6. LED de estado
 
-No se añade un LED externo. D13 / `LED_STATUS` conserva el LED integrado del UNO Q como implementación principal y se añade `TP_LED_STATUS`.
+No se añade un LED externo. D13 / `LED_STATUS` conserva el LED integrado del UNO Q y se mantiene `TP_LED_STATUS`.
 
 ## 7. Test points de bring-up
 
@@ -101,8 +104,6 @@ Se congelan:
 - `TP_HMI_TX`, `TP_HMI_RX`
 - `TP_WDI`, `TP_NRST`, `TP_WDT_MR`
 - `TP_LED_STATUS`
-
-Son features de PCB, no componentes comprados.
 
 ## 8. Bloques expresamente excluidos de Insight Z2
 
@@ -120,25 +121,20 @@ D10 permanece solo como reserva contractual para una futura expansión deliberad
 
 ## 9. Seguimiento de firmware
 
-El firmware no cambia en este PR. Queda pendiente:
+1. DFR1103 `0x66` sustituye GPS `0x42` + RTC `0x68`.
+2. HX711 permanece sobre D2/D3.
+3. watchdog permanece D4 con feed de 400 ms.
+4. HMI UART permanece sobre TXU0202; la alimentación de campo es `5V_HMI` desde PR19D.
 
-1. reemplazar GPS `0x42` + RTC `0x68` por DFR1103 `0x66`;
-2. mantener HX711 sobre D2/D3;
-3. mantener watchdog D4 con feed de 400 ms;
-4. validar HMI UART física mediante el TXU0202.
-
-## 10. Gates del PR
-
-El PR no puede mergearse si falla alguno de estos puntos:
+## 10. Gates vigentes
 
 - contrato UNO Q + Z1 + Z2;
 - referencias BOM = referencias netlist Z2;
-- topología/pinout contractual de HX711;
-- dirección I²C DFR1103 `0x66`;
-- pull-ups globales I²C = 4.7 kΩ;
-- pinout contractual TXU0202;
+- HX711 y DFR1103 congelados;
+- TXU0202 preservado;
+- `J_HMI.1/U_HMI_LVL.7/C_HMI_B.1 = 5V_HMI`;
+- ausencia de puente `5V_HMI ↔ 5V_RAIL`;
 - watchdog TPS3823-30;
-- ausencia de bloques legacy/Signature en BOM/netlist Z2;
-- ERC del root schematic;
-- Z1 permanece verde;
-- mecánica/DRC permanece sin cambios.
+- ERC del root = 0;
+- DRC físico = 0;
+- placement/outline congelados.
