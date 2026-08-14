@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   candidate-or-final:
@@ -17,17 +17,20 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: Preparar KiCad
+        with:
+          ref: agent/hmi-dedicated-5v-eco
+      - name: Preparar KiCad y Git
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Compilar tooling ECO
         run: |
           python3 tools/patch_hmi_power_materializer.py
-          python3 -m py_compile tools/apply_hmi_power_eco.py tools/materialize_pr19d_hmi_power.py tools/finalize_hmi_power_eco.py tools/validate_hmi_power_eco.py
+          python3 -m py_compile tools/apply_hmi_power_eco.py tools/materialize_pr19d_hmi_power.py tools/finalize_hmi_power_eco.py tools/validate_hmi_power_eco.py tools/update_pr19d_docs.py
           python3 -m py_compile tools/validate_routing_phase.py tools/validate_routing_batches.py tools/validate_routing_contract.py tools/validate_z2_production.py tools/validate_root_eda.py
-      - name: Materializar candidato desde main PR19C
+      - name: Materializar candidato PR19D
         if: ${{ !hashFiles('hardware/hmi_power_eco.json') }}
         run: |
           python3 tools/probe_hmi_power_eco.py
@@ -36,9 +39,10 @@ jobs:
           python3 tools/migrate_pr15_verified_footprints.py
           python3 tools/materialize_pr19d_hmi_power.py
           python3 tools/finalize_hmi_power_eco.py
+          python3 tools/update_pr19d_docs.py
       - name: DRC KiCad 10.0.5
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_power_drc.json --severity-all
-      - name: Normalizar representación angular histórica
+      - name: Normalizar representación angular histórica para gate
         run: |
           python3 - <<'PY'
           import json
@@ -53,8 +57,9 @@ jobs:
           PY
       - name: Gate PR19D acumulativo
         run: python3 tools/validate_hmi_power_eco.py /tmp/hmi_power_drc.json
-      - name: Gate Z2 y routing contracts
+      - name: Gate HMI, Z2 y routing contracts
         run: |
+          python3 tools/validate_hmi_system.py
           python3 tools/validate_z2_production.py
           python3 tools/validate_routing_batches.py
           python3 tools/validate_routing_contract.py
@@ -65,41 +70,45 @@ jobs:
           python3 tools/validate_root_eda.py
           kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/hmi_power_root_erc.rpt --severity-all --exit-code-violations
       - name: Resumen DRC
-        if: always()
         run: |
           python3 - <<'PY'
-          import json, pathlib
-          p=pathlib.Path('/tmp/hmi_power_drc.json')
-          if p.exists():
-              d=json.load(open(p,encoding='utf-8'))
-              counts={}
-              for v in d.get('violations',[]): counts[v.get('type','?')]=counts.get(v.get('type','?'),0)+1
-              errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-              print('DRC_ERRORS=',len(errors))
-              for i,e in enumerate(errors,1): print('DRC_ERROR',i,json.dumps(e,ensure_ascii=False))
-              print('WARNINGS=',counts)
-              print('UNCONNECTED=',len(d.get('unconnected_items',[])))
+          import json
+          d=json.load(open('/tmp/hmi_power_drc.json',encoding='utf-8'))
+          counts={}
+          for v in d.get('violations',[]): counts[v.get('type','?')]=counts.get(v.get('type','?'),0)+1
+          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
+          print('DRC_ERRORS=',len(errors),'WARNINGS=',counts,'UNCONNECTED=',len(d.get('unconnected_items',[])))
+          if errors: raise SystemExit('DRC no verde')
           PY
-      - name: Guardar candidato
-        if: ${{ always() && github.event_name == 'push' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: hmi-power-pr19d-candidate
-          path: |
-            hardware/hmi_power_eco.json
-            hardware/hmi_system_contract.json
-            hardware/z2_digital_contract.json
-            hardware/z2_production_netlist.json
-            hardware/routing_contract.json
-            hardware/routing_batches_contract.json
-            hardware/pr19d_hmi_power_routing_manifest.json
-            hardware/power_architecture_contract.json
-            bom/insight_hmi_system_bom.csv
-            bom/insight_z2_production_bom.csv
-            docs/HMI_POWER_ECO_PR19D.md
-            kicad/NFB_Insight_PCBA_v2.kicad_pcb
-            kicad/z2_interface.kicad_sch
-            kicad/lib/nfb_generated.kicad_sym
-            kicad/lib/nfb_footprints.pretty/RECOM_R78K5_0_2_0L_External.kicad_mod
-            /tmp/hmi_power_drc.json
-            /tmp/hmi_power_root_erc.rpt
+      - name: Persistir únicamente después de gates verdes
+        if: ${{ github.event_name == 'push' && !hashFiles('hardware/hmi_power_eco.json') }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -- hardware/placement_manifest.json
+          git add \
+            hardware/hmi_power_eco.json \
+            hardware/hmi_system_contract.json \
+            hardware/z2_digital_contract.json \
+            hardware/z2_production_netlist.json \
+            hardware/routing_contract.json \
+            hardware/routing_batches_contract.json \
+            hardware/pr19d_hmi_power_routing_manifest.json \
+            hardware/power_architecture_contract.json \
+            bom/insight_hmi_system_bom.csv \
+            bom/insight_z2_production_bom.csv \
+            docs/HMI_POWER_ECO_PR19D.md \
+            docs/POWER_ARCHITECTURE.md \
+            docs/ROUTING_KNOWLEDGE_BASE.md \
+            README.md \
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb \
+            kicad/z2_interface.kicad_sch \
+            kicad/lib/nfb_generated.kicad_sym \
+            kicad/lib/nfb_footprints.pretty/RECOM_R78K5_0_2_0L_External.kicad_mod \
+            tools/apply_hmi_power_eco.py
+          if git diff --cached --quiet; then
+            echo "PR19D ya persistido; sin delta."
+          else
+            git commit -m "power: cerrar ECO HMI con 5V_HMI dedicado y PR19D"
+            git push origin HEAD:agent/hmi-dedicated-5v-eco
+          fi
