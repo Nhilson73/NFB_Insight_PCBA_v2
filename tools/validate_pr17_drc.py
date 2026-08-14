@@ -1,14 +1,33 @@
 #!/usr/bin/env python3
-"""Valida DRC placement contra deuda exacta y versionada PR17/PR22/PR24."""
+"""Valida DRC placement contra deuda exacta PR17/PR22/PR24 y ECO netlist PR19D.
+
+Los contratos históricos fijaron 250 unconnected con 59 nets. PR19D divide tres
+endpoints que compartían 5V_RAIL en una net adicional 5V_HMI; sobre una vista
+placement-only de la misma geometría eso reduce el conteo esperado a 249 sin
+cambiar warnings, placement ni reglas DRC.
+"""
 from __future__ import annotations
 import json,sys
 from collections import Counter
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-MANIFEST=ROOT/'hardware'/'placement_manifest.json'; CONTRACT=ROOT/'hardware'/'placement_drc_contract.json'
+MANIFEST=ROOT/'hardware'/'placement_manifest.json'; CONTRACT=ROOT/'hardware'/'placement_drc_contract.json'; Z2=ROOT/'hardware'/'z2_production_netlist.json'
 ALLOWED={(1,'BOUNDED_PLACEMENT_DRC_DEBT_PR17'),(2,'BOUNDED_PLACEMENT_DRC_DEBT_PR22_ECO'),(3,'BOUNDED_PLACEMENT_DRC_DEBT_PR24_ECO')}
 
 def fail(m): raise SystemExit('ERROR: '+m)
+
+def expected_unconnected(c):
+    base=int(c['expected_unconnected_items'])
+    if not Z2.exists(): return base
+    z=json.loads(Z2.read_text(encoding='utf-8'))
+    nets={n.get('name'):set(n.get('nodes',[])) for n in z.get('nets',[])}
+    if '5V_HMI' not in nets: return base
+    if nets['5V_HMI']!={'J_HMI.1','U_HMI_LVL.7','C_HMI_B.1'}:
+        fail(f"5V_HMI presente con endpoints inesperados: {sorted(nets['5V_HMI'])}")
+    if {'J_HMI.1','U_HMI_LVL.7','C_HMI_B.1'} & nets.get('5V_RAIL',set()):
+        fail('5V_HMI y 5V_RAIL comparten endpoints tras ECO')
+    if base!=250: fail(f'baseline histórico unconnected inesperado={base}')
+    return 249
 
 def main():
     if len(sys.argv)!=2: fail('uso: validate_pr17_drc.py <reporte-drc.json>')
@@ -39,7 +58,9 @@ def main():
     if sum(typ.values())!=int(c['expected_warning_count']): fail('warning total cambió')
     bad=set(c.get('forbidden_violation_types',[])) & set(typ)
     if bad: fail(f'tipos físicos prohibidos={sorted(bad)}')
-    if len(u)!=int(c['expected_unconnected_items']): fail(f'unconnected={len(u)} esperado={c["expected_unconnected_items"]}')
-    print(f'OK: placement DRC exacto; errors=0 warnings={sum(typ.values())} unconnected={len(u)}')
+    expected=expected_unconnected(c)
+    if len(u)!=expected: fail(f'unconnected={len(u)} esperado={expected}')
+    mode='PR19D_60_NETS' if expected==249 else 'HISTORICAL_59_NETS'
+    print(f'OK: placement DRC exacto; errors=0 warnings={sum(typ.values())} unconnected={len(u)} mode={mode}')
     return 0
 if __name__=='__main__': raise SystemExit(main())
