@@ -1,0 +1,80 @@
+name: HMI Nextion NX8048P050
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hardware/hmi_system_contract.json'
+      - 'hardware/z2_digital_contract.json'
+      - 'hardware/power_architecture_contract.json'
+      - 'bom/insight_hmi_system_bom.csv'
+      - 'bom/insight_z2_production_bom.csv'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_SDExtender_External.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_BOX_Speaker_External.kicad_mod'
+      - 'kicad/lib/nfb_footprints.pretty/Nextion_Foca_Max_Service.kicad_mod'
+      - 'docs/HMI_NEXTION_NX8048P050.md'
+      - 'docs/FASE2_PR7_Z2_DIGITAL.md'
+      - 'hmi/README.md'
+      - 'README.md'
+      - 'tools/apply_hmi_nextion_decision.py'
+      - 'tools/apply_hmi_nextion_decision_v2.py'
+      - 'tools/validate_hmi_system.py'
+      - '.github/workflows/hmi-nextion.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-read-only:
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Compilar tooling HMI
+        run: |
+          python3 -m py_compile tools/apply_hmi_nextion_decision.py
+          python3 -m py_compile tools/apply_hmi_nextion_decision_v2.py
+          python3 -m py_compile tools/validate_hmi_system.py
+      - name: Gate HMI
+        run: python3 tools/validate_hmi_system.py
+      - name: Gate Z2
+        run: python3 tools/validate_z2_production.py
+      - name: Huellas mecánicas Nextion
+        run: |
+          python3 - <<'PY'
+          import pcbnew
+          names=[
+              'Nextion_NX8048P050_011C_Y_Enclosure',
+              'Nextion_SDExtender_External',
+              'Nextion_BOX_Speaker_External',
+              'Nextion_Foca_Max_Service',
+          ]
+          for name in names:
+              fp=pcbnew.FootprintLoad('kicad/lib/nfb_footprints.pretty',name)
+              if fp is None:
+                  raise SystemExit(f'footprint {name} no carga en KiCad 10.0.5')
+              if len(list(fp.Pads())) != 0:
+                  raise SystemExit(f'footprint {name} no debe tener pads de PCBA')
+              print('OK footprint',name,'0 pads')
+          PY
+      - name: DRC del checkpoint de producción
+        run: |
+          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_drc.json --severity-all
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/hmi_drc.json',encoding='utf-8'))
+          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
+          if errors:
+              raise SystemExit(f'DRC errors={len(errors)} primero={errors[0]}')
+          if len(d.get('unconnected_items',[])) != 154:
+              raise SystemExit(f"unconnected={len(d.get('unconnected_items',[]))} != 154 checkpoint PR19C")
+          print('OK HMI read-only: DRC=0; unconnected=154; PCB PR19C preservado')
+          PY

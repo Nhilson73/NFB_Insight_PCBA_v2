@@ -9,7 +9,7 @@ HX711,J_LOADCELL,1,connector,"MSTBA 2,5/4-G-5,08",1757268,"Connector_Phoenix_MST
 HX711,C_HX_100N,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
 HX711,C_HX_10U,1,capacitor,10uF 10V X5R,GRM21BR61A106KE19L,Capacitor_SMD:C_0805_2012Metric,POPULATE,
 HX711,C_HX_VBG,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
-HMI,J_HMI,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,5V/GND/RX/TX; side-entry hacia -Y.
+HMI,J_HMI,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,Board-side para Nextion NX8048P050-011C-Y; 5V/GND/RX/TX; side-entry -Y. ITEAD denomina el arnés XH2.54 4P; conservar footprint ruteado S4B-XH-A 2.50 mm y validar mating first article. BOM de sistema: bom/insight_hmi_system_bom.csv.
 HMI,U_HMI_LVL,1,level_translator,TXU0202,TXU0202DCUR,NFB:TI_DCU0008A_TXU0202,POPULATE,Traductor UART bidireccional por dos canales de dirección fija.
 HMI,C_HMI_A,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
 HMI,C_HMI_B,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,

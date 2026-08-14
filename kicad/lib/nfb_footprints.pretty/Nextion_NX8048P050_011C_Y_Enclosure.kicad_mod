@@ -1,0 +1,37 @@
+(footprint "Nextion_NX8048P050_011C_Y_Enclosure"
+  (version 20240108)
+  (generator pcbnew)
+  (layer "F.Cu")
+  (descr "EXTERNAL MECHANICAL ENVELOPE ONLY - Nextion NX8048P050-011C-Y with enclosure; front 160.04 x 107.07 mm; max depth 21.2 mm. Not to be placed on NFB PCBA.")
+  (tags "Nextion HMI NX8048P050-011C-Y enclosure external mechanical")
+  (attr exclude_from_pos_files exclude_from_bom)
+  (fp_rect
+    (start -80.02 -53.535)
+    (end 80.02 53.535)
+    (stroke (width 0.25) (type default))
+    (fill none)
+    (layer "F.Fab")
+  )
+  (fp_rect
+    (start -80.02 -53.535)
+    (end 80.02 53.535)
+    (stroke (width 0.20) (type dash))
+    (fill none)
+    (layer "Dwgs.User")
+  )
+  (fp_text reference "HMI_EXT"
+    (at 0 -56)
+    (layer "F.Fab")
+    (effects (font (size 1.5 1.5) (thickness 0.25)))
+  )
+  (fp_text value "NX8048P050-011C-Y"
+    (at 0 56)
+    (layer "F.Fab")
+    (effects (font (size 1.5 1.5) (thickness 0.25)))
+  )
+  (fp_text user "EXTERNAL HMI - NOT PCBA"
+    (at 0 0)
+    (layer "F.Fab")
+    (effects (font (size 2 2) (thickness 0.3)))
+  )
+)

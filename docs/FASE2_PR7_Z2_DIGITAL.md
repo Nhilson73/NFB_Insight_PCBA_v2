@@ -53,21 +53,25 @@ Esta decisión mantiene antena GNSS, respaldo RTC y mecánica específica del m�
 
 El origen comercial concreto del HX711 queda pendiente de calificación de fabricación; la función, encapsulado SOP-16 y topología sí quedan congelados.
 
-## 4. HMI UART
+## 4. HMI UART — selección final Nextion
 
 D0/D1 mantienen el contrato lógico:
 
 - D0 = `HMI_RX`
 - D1 = `HMI_TX`
 
-La interfaz física a HMI de 5 V se realiza con **TI TXU0202DCUR**, dos canales de dirección fija opuesta:
+La HMI seleccionada posteriormente para producto es **Nextion Intelligent Series `NX8048P050-011C-Y`**, 5.0" capacitiva con enclosure, 800×480, alimentación oficial 5 V/1 A y USART `XH2.54 4P`. La interfaz de lógica sigue usando **TI `TXU0202DCUR`**:
 
-- UNO `HMI_TX` 3.3 V → `HMI_FIELD_RX` 5 V.
-- `HMI_FIELD_TX` 5 V → UNO `HMI_RX` 3.3 V.
+- UNO `HMI_TX` 3.3 V → `HMI_FIELD_RX` 5 V → RX de Nextion.
+- TX de Nextion → `HMI_FIELD_TX` 5 V → UNO `HMI_RX` 3.3 V.
 
-`J_HMI` queda como JST XH side-entry de cuatro vías: 5V, GND, RX y TX. Cada línea UART de campo usa un `PESD5V0U1UL,315` individual a GND.
+`J_HMI` conserva `S4B-XH-A(LF)(SN)` y su footprint side-entry ya ruteado. ITEAD no identifica un MPN JST exacto para su denominación `XH2.54 4P`; por eso no se mueve la geometría post-PR19C y se exige prueba de apareamiento del arnés en first article.
 
-La capacidad de corriente real de `5V_RAIL` para alimentar la HMI se revalidará en Fase 3 antes de fabricar.
+Accesorios seleccionados: `SDExtender`, `Nextion BOX Speaker` y `Foca Max` (este último solo como herramienta de servicio/programación). El BOX Speaker añade 0.5 A al requisito del display, por lo que se reserva **5 V/1.5 A** para HMI+audio.
+
+Esto abre un gate de potencia: el límite continuo actual de `5V_RAIL` también es 1.5 A y el rail alimenta cargas adicionales. El conjunto HMI queda seleccionado, pero su alimentación no puede declararse liberada hasta un ECO de potencia previo a PR20A/release.
+
+Fuente de verdad: `hardware/hmi_system_contract.json`, `bom/insight_hmi_system_bom.csv` y `docs/HMI_NEXTION_NX8048P050.md`.
 
 ## 5. Watchdog / supervisión
 

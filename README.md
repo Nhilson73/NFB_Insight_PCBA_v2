@@ -41,7 +41,9 @@ NFB Insight PCBA v2 es un **shield/carrier del UNO Q**, no un rediseño de su ra
 
 - I²C: MPR `0x28` + DFR1103 `0x66`.
 - HX711 3.3 V / 10 SPS en D2/D3.
-- HMI D0/D1 mediante `TXU0202DCUR`.
+- HMI: **Nextion Intelligent `NX8048P050-011C-Y`**, 5.0 in capacitiva con enclosure, 800×480; D0/D1 mediante `TXU0202DCUR`.
+- Accesorios HMI seleccionados: `SDExtender` + `Nextion BOX Speaker`; `Foca Max` queda como herramienta de programación/servicio.
+- HMI+speaker reserva **5 V / 1.5 A**; existe un gate de potencia abierto antes de PR20A/release porque `5V_RAIL` tiene otras cargas. Ver `hardware/hmi_system_contract.json`.
 - Watchdog `TPS3823-30DBVR`, WDI=D4.
 - `J_LOADCELL`: Phoenix Contact **1757268 / MSTBA 2,5/4-G-5,08**.
 
