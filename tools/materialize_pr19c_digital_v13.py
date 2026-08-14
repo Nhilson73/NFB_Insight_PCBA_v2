@@ -15,7 +15,7 @@ import materialize_pr19c_digital as core
 import materialize_pr19c_digital_v7 as v7
 import materialize_pr19c_digital_v12 as v12
 
-CANDIDATE_REVISION='v13-low-act-trunk-clean-driver-escapes'
+CANDIDATE_REVISION='v13-low-act-trunk-clean-driver-escapes-active'
 
 class RouterV13(v12.RouterV12):
     def _manual_uno_ioref_local(self,eps):
@@ -37,8 +37,6 @@ class RouterV13(v12.RouterV12):
     def _astar(self,net,a,z):
         refs={a['ref'],z['ref']}
         if net=='ACT_FAULT_N' and refs=={'J_UNOQ','R_ACT_FAULT_PU'}:
-            # Trunk bajo: evita I2C (B y6/7), HMI_FIELD_TX (termina y3.635)
-            # y las verticales digitales que bloquearon y9.5.
             nodes=[
                 (2.50,36.50,pcbnew.B_Cu),(8.00,36.50,pcbnew.B_Cu),(8.00,2.00,pcbnew.B_Cu),
                 (202.50,2.00,pcbnew.B_Cu),(202.50,13.25,pcbnew.B_Cu),
@@ -49,9 +47,6 @@ class RouterV13(v12.RouterV12):
             return list(reversed(p)) if a['ref']=='R_ACT_FAULT_PU' else p
 
         if net=='ACT_FAULT_N' and refs=={'R_ACT_FAULT_PU','U_PUMP_DRV'}:
-            # Salir del RPU en F.Cu; bajar por B.Cu en x207.0. El cruce de
-            # PUMP_CURRENT_ADC B.Cu y26.5 se hace localmente por F.Cu.
-            # La entrada al pad18 usa una vía en x214.5/y17.75, lejos del pad21 GND.
             nodes=[
                 (200.75,50.00,pcbnew.F_Cu),(207.00,50.00,pcbnew.F_Cu),(207.00,50.00,pcbnew.B_Cu),
                 (207.00,27.75,pcbnew.B_Cu),(207.00,27.75,pcbnew.F_Cu),(207.00,25.25,pcbnew.F_Cu),
@@ -62,9 +57,6 @@ class RouterV13(v12.RouterV12):
             return p if a['ref']=='R_ACT_FAULT_PU' else list(reversed(p))
 
         if net=='ACT_FAULT_N' and refs=={'U_CO2_DRV','U_PUMP_DRV'}:
-            # Reutiliza el escape del pump hasta x214.5. Cruza PUMP_CURRENT_ADC
-            # en F.Cu a y22.5, baja al este en B.Cu y entra a CO2 pad1 sin vía
-            # junto al pad8 12V_ACT.
             nodes=[
                 (212.25,17.75,pcbnew.F_Cu),(214.50,17.75,pcbnew.F_Cu),(214.50,17.75,pcbnew.B_Cu),
                 (214.50,22.50,pcbnew.B_Cu),(214.50,22.50,pcbnew.F_Cu),(217.00,22.50,pcbnew.F_Cu),
