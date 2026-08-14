@@ -1,4 +1,4 @@
-name: PR19C staging controlado
+name: PR19C final
 on:
   pull_request:
     branches: [main]
@@ -7,79 +7,36 @@ on:
       - 'hardware/pr19c_digital_routing_manifest.json'
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/routing_batches_contract.json'
+      - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
-      - 'tools/materialize_pr19c_digital_v18.py'
       - 'tools/validate_pr19c_digital.py'
+      - 'tools/validate_routing_phase.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
-  contents: write
+  contents: read
 jobs:
-  pr19c-staging:
+  pr19c-final:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
       options: --user root
     steps:
-      - name: Descargar rama PR19C
-        uses: actions/checkout@v4
-        with:
-          ref: agent/pr19c-digital-control-routing
-          fetch-depth: 1
-      - name: Preparar KiCad y Git
+      - uses: actions/checkout@v4
+      - name: Preparar KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Compilar gates
         run: |
-          python3 -m py_compile tools/materialize_pr19c_digital_v18.py
           python3 -m py_compile tools/validate_pr19c_digital.py
           python3 -m py_compile tools/validate_routing_phase.py
-      - name: Validar partición
+      - name: Validar partición 28+4+16+10+1
         run: python3 tools/validate_routing_batches.py
-      - name: Materializar v18 si aún no está persistido
+      - name: DRC KiCad 10.0.5 del checkpoint persistido
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_final.json --severity-all
+      - name: Normalizar ángulos del manifest de placement
         run: |
-          python3 - <<'PY'
-          import json, pathlib
-          p=pathlib.Path('hardware/pr19c_digital_routing_manifest.json')
-          production=False
-          if p.exists():
-              try:
-                  production=json.loads(p.read_text(encoding='utf-8')).get('status')=='DIGITAL_ROUTING_PR19C'
-              except Exception:
-                  pass
-          pathlib.Path('/tmp/pr19c_already_production').write_text('1' if production else '0')
-          PY
-          if [ "$(cat /tmp/pr19c_already_production)" = "0" ]; then
-            kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_baseline.json --severity-all
-            python3 - <<'PY'
-          import json
-          p='hardware/placement_manifest.json'; d=json.load(open(p,encoding='utf-8'))
-          for x in d['placements']:
-              r=((float(x['rotation_deg'])+180.0)%360.0)-180.0
-              if abs(r+180.0)<1e-9: r=180.0
-              x['rotation_deg']=r
-          with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
-          PY
-            python3 tools/validate_pr19b_analog.py /tmp/pr19c_baseline.json
-            git checkout -- hardware/placement_manifest.json
-            python3 tools/materialize_pr19c_digital_v18.py
-            python3 - <<'PY'
-          import json
-          p='hardware/pr19c_digital_routing_manifest.json'
-          d=json.load(open(p,encoding='utf-8'))
-          if d.get('new_segment_count')!=362 or d.get('new_via_count')!=88:
-              raise SystemExit('conteos v18 inesperados')
-          d['status']='DIGITAL_ROUTING_PR19C'
-          with open(p,'w',encoding='utf-8') as f:
-              json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
-          PY
-          fi
-      - name: DRC y gate del PCB a persistir
-        run: |
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_final.json --severity-all
           python3 - <<'PY'
           import json
           p='hardware/placement_manifest.json'; d=json.load(open(p,encoding='utf-8'))
@@ -90,16 +47,5 @@ jobs:
           with open(p,'w',encoding='utf-8') as f:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
-          python3 tools/validate_pr19c_digital.py /tmp/pr19c_final.json
-          git checkout -- hardware/placement_manifest.json
-      - name: Persistir únicamente PCB y manifest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add kicad/NFB_Insight_PCBA_v2.kicad_pcb hardware/pr19c_digital_routing_manifest.json
-          if git diff --cached --quiet; then
-            echo "Checkpoint PR19C ya persistido; sin cambios."
-          else
-            git commit -m "routing: persistir checkpoint PR19C 16/16 DRC=0"
-            git push origin HEAD:agent/pr19c-digital-control-routing
-          fi
+      - name: Gate acumulativo PR19A + PR19B + PR19C
+        run: python3 tools/validate_pr19c_digital.py /tmp/pr19c_final.json
