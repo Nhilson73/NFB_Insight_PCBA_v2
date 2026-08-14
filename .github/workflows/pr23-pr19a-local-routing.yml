@@ -1,4 +1,4 @@
-name: PR19C probe digital/control
+name: PR19C candidato digital/control
 on:
   pull_request:
     branches: [main]
@@ -6,14 +6,15 @@ on:
       - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
       - 'hardware/pr19b_analog_routing_manifest.json'
       - 'hardware/routing_batches_contract.json'
+      - 'hardware/routing_contract.json'
       - 'hardware/placement_manifest.json'
-      - 'tools/probe_pr19c_digital.py'
-      - 'tools/validate_pr19b_analog.py'
+      - 'tools/materialize_pr19c_digital.py'
+      - 'tools/validate_pr19c_digital.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
   contents: read
 jobs:
-  pr19c-probe:
+  pr19c-candidato:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -41,10 +42,19 @@ jobs:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
           python3 tools/validate_pr19b_analog.py /tmp/pr19c_baseline.json
-      - name: Extraer endpoints y ocupación PR19C
-        run: python3 tools/probe_pr19c_digital.py
-      - name: Publicar probe read-only
+      - name: Materializar candidato PR19C
+        run: python3 tools/materialize_pr19c_digital.py
+      - name: DRC KiCad 10.0.5 del candidato
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_candidate.json --severity-all
+      - name: Gate acumulativo candidato
+        run: python3 tools/validate_pr19c_digital.py /tmp/pr19c_candidate.json
+      - name: Publicar candidato read-only
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr19c-probe
-          path: hardware/pr19c_digital_probe.json
+          name: pr19c-candidate
+          path: |
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb
+            hardware/pr19c_digital_routing_manifest.json
+            /tmp/pr19c_candidate.json
+          if-no-files-found: ignore
