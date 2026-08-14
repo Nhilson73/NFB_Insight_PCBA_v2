@@ -18,7 +18,6 @@ import pcbnew  # type: ignore
 import materialize_pr19c_digital as core
 import materialize_pr19c_digital_v3 as v3
 
-# Planner más fino; no cambia reglas KiCad ni contratos.
 core.STEP = 0.25
 core.PAD_HALO = 0.05
 core.MAX_EXPANSIONS = 1_500_000
@@ -27,25 +26,14 @@ TURN_PENALTY = 2.50
 VIA_COST = 12.0
 LANE_WEIGHT = 0.045
 LOCAL_EDGE_MM = 24.0
+CANDIDATE_REVISION = 'v4-directional-lanes-025-active'
 
-# Carriles preferentes, no exclusivos. El A* puede desviarse ante cobre real.
 LANES = {
-    'I2C_SDA': 6.0,
-    'I2C_SCL': 7.0,
-    'TEMP_1WIRE': 8.5,
-    'ACT_FAULT_N': 9.5,
-    'CHILLER_CTL': 10.5,
-    'CO2_SOL_CTL': 11.5,
-    'PUMP_DIR': 12.5,
-    'PUMP_PWM': 13.5,
-    'LED_STATUS': 59.75,
-    'UNO_IOREF_3V3': 62.25,
-    'HX711_DOUT': 64.0,
-    'HX711_SCK': 64.5,
-    'HMI_RX': 65.0,
-    'HMI_TX': 65.5,
-    'MCU_WDI': 66.5,
-    'MCU_NRST': 67.0,
+    'I2C_SDA': 6.0, 'I2C_SCL': 7.0, 'TEMP_1WIRE': 8.5,
+    'ACT_FAULT_N': 9.5, 'CHILLER_CTL': 10.5, 'CO2_SOL_CTL': 11.5,
+    'PUMP_DIR': 12.5, 'PUMP_PWM': 13.5, 'LED_STATUS': 59.75,
+    'UNO_IOREF_3V3': 62.25, 'HX711_DOUT': 64.0, 'HX711_SCK': 64.5,
+    'HMI_RX': 65.0, 'HMI_TX': 65.5, 'MCU_WDI': 66.5, 'MCU_NRST': 67.0,
 }
 
 
@@ -80,13 +68,12 @@ class RouterV4(v3.RouterV3):
             for dx,dy,ndir in moves:
                 nx,ny=ix+dx,iy+dy
                 if (nx,ny) not in goal_cells and self._blocked(nx,ny,layer,net): continue
-                x,y=core.xy(nx,ny)
+                _,y=core.xy(nx,ny)
                 if channel:
                     step = 1.0 if layer==pcbnew.B_Cu else 1.75
                     if trunk_y is not None and layer==pcbnew.B_Cu:
                         step += LANE_WEIGHT*abs(y-trunk_y)
                 else:
-                    # Ramas cortas: F.Cu preferente, B.Cu disponible para cruce.
                     step = 1.0 if layer==pcbnew.F_Cu else 1.25
                 if pdir not in (-1,4) and ndir != pdir:
                     step += TURN_PENALTY
@@ -109,7 +96,6 @@ class RouterV4(v3.RouterV3):
         while cur is not None:
             path.append(cur); cur=prev[cur]
         path.reverse()
-        # Materializador espera estado 4-tupla; deduplicar xyz conservando dir.
         out=[]
         for p in path:
             if not out or p[:3] != out[-1][:3]: out.append(p)
@@ -117,14 +103,11 @@ class RouterV4(v3.RouterV3):
 
     def route_all(self) -> dict:
         result = super().route_all()
-        result['candidate_revision'] = 'v4-directional-lanes-025'
+        result['candidate_revision'] = CANDIDATE_REVISION
         result['planner'] = {
-            'grid_mm': core.STEP,
-            'pad_halo_mm': core.PAD_HALO,
-            'turn_penalty': TURN_PENALTY,
-            'via_cost': VIA_COST,
-            'lane_weight': LANE_WEIGHT,
-            'local_edge_threshold_mm': LOCAL_EDGE_MM,
+            'grid_mm': core.STEP, 'pad_halo_mm': core.PAD_HALO,
+            'turn_penalty': TURN_PENALTY, 'via_cost': VIA_COST,
+            'lane_weight': LANE_WEIGHT, 'local_edge_threshold_mm': LOCAL_EDGE_MM,
             'preferred_lanes_mm': LANES,
         }
         return result
