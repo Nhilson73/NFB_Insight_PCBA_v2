@@ -81,7 +81,7 @@ jobs:
           if errors: raise SystemExit('DRC no verde')
           PY
       - name: Persistir únicamente después de gates verdes
-        if: ${{ github.event_name == 'push' && !hashFiles('hardware/hmi_power_eco.json') }}
+        if: ${{ github.event_name == 'push' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
