@@ -6,14 +6,13 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
+from validate_routing_phase import assert_authorized_phase
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "hardware" / "routing_contract.json"
 PLACEMENT = ROOT / "hardware" / "placement_manifest.json"
 POWER_BASELINE = ROOT / "hardware" / "power_netclasses.json"
 PCB = ROOT / "kicad" / "NFB_Insight_PCBA_v2.kicad_pcb"
-BATCHES = ROOT / "hardware" / "routing_batches_contract.json"
-PR19A_MANIFEST = ROOT / "hardware" / "pr19a_local_routing_manifest.json"
 NETLISTS = [
     ROOT / "hardware" / "z1_production_netlist.json",
     ROOT / "hardware" / "z2_production_netlist.json",
@@ -151,33 +150,15 @@ def main() -> int:
         "vias": len(re.findall(r"(?m)^\s*\(via\b", pcb_text)),
         "zones": len(re.findall(r"(?m)^\s*\(zone\b", pcb_text)),
     }
-    pre_routing = {
-        "tracks": int(scope.get("expected_tracks_pr18", -1)),
-        "vias": int(scope.get("expected_vias_pr18", -1)),
-        "zones": int(scope.get("expected_copper_zones_pr18", -1)),
-    }
-    if PR19A_MANIFEST.exists():
-        rb = load(BATCHES)
-        rm = load(PR19A_MANIFEST)
-        batches = {x["id"]: x for x in rb.get("batches", [])}
-        if set(batches) != {"PR19A", "PR19B", "PR19C", "PR20A", "PR20B"}:
-            fail("partición incremental de routing inválida")
-        allowed = set(batches["PR19A"]["nets"])
-        routed = set(rm.get("routed_nets", []))
-        deferred = set(rm.get("deferred_nets", []))
-        if rm.get("status") != "LOCAL_ROUTING_PR19A" or routed != allowed or len(routed) != 28:
-            fail("manifest PR19A no acredita 28/28")
-        if deferred != (production_nets - allowed) or len(deferred) != 31:
-            fail("manifest PR19A no preserva exactamente las 31 nets futuras")
-        expected_now = {
-            "tracks": len(rm.get("segments", [])),
-            "vias": len(rm.get("vias", [])),
-            "zones": 0,
+    phase = assert_authorized_phase(pcb_text, "routing contract PR18")
+    if phase == "PRE_ROUTING":
+        pre_routing = {
+            "tracks": int(scope.get("expected_tracks_pr18", -1)),
+            "vias": int(scope.get("expected_vias_pr18", -1)),
+            "zones": int(scope.get("expected_copper_zones_pr18", -1)),
         }
-        if counts != expected_now:
-            fail(f"PCB no coincide con manifest PR19A: actual={counts}, esperado={expected_now}")
-    elif counts != pre_routing:
-        fail(f"cobre presente sin manifest de lote autorizado: actual={counts}, esperado PR18={pre_routing}")
+        if counts != pre_routing:
+            fail(f"PRE_ROUTING no coincide con baseline PR18: actual={counts}, esperado={pre_routing}")
 
     if set(class_by_name["ANALOG_SENSITIVE"]["nets"]) != {
         "PH_ADC", "ORP_ADC", "DO_ADC", "LOAD_A_POS", "LOAD_A_NEG", "HX_VBG", "PUMP_CURRENT_ADC"
@@ -193,6 +174,7 @@ def main() -> int:
     print(f"- routing classes: {len(classes)}")
     print("- In1.Cu = GND continuo; signal routing prohibido")
     print("- board/placement congelados: 242.34 x 68.58 mm")
+    print(f"- fase autorizada: {phase}")
     print(f"- cobre actual: tracks={counts['tracks']} vias={counts['vias']} zones={counts['zones']}")
     return 0
 
