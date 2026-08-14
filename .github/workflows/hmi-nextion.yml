@@ -1,12 +1,6 @@
 name: HMI Nextion NX8048P050
 
 on:
-  push:
-    branches: [agent/hmi-nextion-nx8048p050]
-    paths:
-      - 'tools/apply_hmi_nextion_decision.py'
-      - 'tools/validate_hmi_system.py'
-      - '.github/workflows/hmi-nextion.yml'
   pull_request:
     branches: [main]
     paths:
@@ -20,37 +14,35 @@ on:
       - 'docs/FASE2_PR7_Z2_DIGITAL.md'
       - 'hmi/README.md'
       - 'README.md'
+      - 'tools/apply_hmi_nextion_decision.py'
       - 'tools/validate_hmi_system.py'
       - '.github/workflows/hmi-nextion.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize-on-branch:
-    if: github.event_name == 'push'
+  validate-read-only:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
       options: --user root
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: agent/hmi-nextion-nx8048p050
-          fetch-depth: 1
-      - name: Preparar KiCad y Git
+      - name: Preparar KiCad
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Materializar decisión
-        run: python3 tools/apply_hmi_nextion_decision.py
-      - name: Validar sistema HMI
+      - name: Compilar tooling HMI
+        run: |
+          python3 -m py_compile tools/apply_hmi_nextion_decision.py
+          python3 -m py_compile tools/validate_hmi_system.py
+      - name: Gate HMI
         run: python3 tools/validate_hmi_system.py
-      - name: Revalidar Z2 existente
+      - name: Gate Z2
         run: python3 tools/validate_z2_production.py
-      - name: Validar footprint mecánico con pcbnew
+      - name: Footprint mecánico Nextion
         run: |
           python3 - <<'PY'
           import pcbnew
@@ -59,11 +51,10 @@ jobs:
               raise SystemExit('footprint Nextion no carga en KiCad 10.0.5')
           if len(list(fp.Pads())) != 0:
               raise SystemExit('footprint mecánico externo no debe tener pads')
-          print('OK footprint Nextion: KiCad 10.0.5 lo carga; 0 pads')
+          print('OK footprint Nextion: KiCad 10.0.5, 0 pads de PCBA')
           PY
-      - name: Confirmar PCB de producción intacto y DRC físico
+      - name: DRC del checkpoint de producción
         run: |
-          git diff --exit-code -- kicad/NFB_Insight_PCBA_v2.kicad_pcb
           kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_drc.json --severity-all
           python3 - <<'PY'
           import json
@@ -71,55 +62,7 @@ jobs:
           errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
           if errors:
               raise SystemExit(f'DRC errors={len(errors)} primero={errors[0]}')
-          print('OK DRC: 0 errores; unconnected=',len(d.get('unconnected_items',[])))
-          PY
-      - name: Persistir decisión y fuentes de verdad
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add hardware/hmi_system_contract.json hardware/z2_digital_contract.json hardware/power_architecture_contract.json \
-            bom/insight_hmi_system_bom.csv bom/insight_z2_production_bom.csv \
-            kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod \
-            docs/HMI_NEXTION_NX8048P050.md docs/FASE2_PR7_Z2_DIGITAL.md hmi/README.md README.md
-          if git diff --cached --quiet; then
-            echo "Decisión HMI ya materializada; sin cambios."
-          else
-            git commit -m "hmi: congelar Nextion NX8048P050-011C-Y y accesorios"
-            git push origin HEAD:agent/hmi-nextion-nx8048p050
-          fi
-
-  validate-read-only:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    container:
-      image: kicad/kicad:10.0.5
-      options: --user root
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Preparar KiCad
-        run: |
-          mkdir -p "$HOME/.config/kicad/10.0"
-          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
-          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Gate HMI
-        run: python3 tools/validate_hmi_system.py
-      - name: Gate Z2
-        run: python3 tools/validate_z2_production.py
-      - name: Footprint y DRC
-        run: |
-          python3 - <<'PY'
-          import pcbnew
-          fp=pcbnew.FootprintLoad('kicad/lib/nfb_footprints.pretty','Nextion_NX8048P050_011C_Y_Enclosure')
-          if fp is None or len(list(fp.Pads())) != 0:
-              raise SystemExit('footprint mecánico Nextion inválido')
-          PY
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_drc.json --severity-all
-          python3 - <<'PY'
-          import json
-          d=json.load(open('/tmp/hmi_drc.json',encoding='utf-8'))
-          errors=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-          if errors: raise SystemExit(f'DRC errors={len(errors)}')
-          print('OK HMI read-only: DRC=0')
+          if len(d.get('unconnected_items',[])) != 154:
+              raise SystemExit(f"unconnected={len(d.get('unconnected_items',[]))} != 154 checkpoint PR19C")
+          print('OK HMI read-only: DRC=0; unconnected=154; PCB PR19C preservado')
           PY
