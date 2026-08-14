@@ -12,6 +12,7 @@ on:
       - 'tools/materialize_pr19c_digital_v3.py'
       - 'tools/materialize_pr19c_digital_v4.py'
       - 'tools/materialize_pr19c_digital_v5.py'
+      - 'tools/materialize_pr19c_digital_v6.py'
       - 'tools/validate_pr19c_digital.py'
       - '.github/workflows/pr23-pr19a-local-routing.yml'
 permissions:
@@ -45,8 +46,8 @@ jobs:
               json.dump(d,f,indent=2,ensure_ascii=False); f.write('\n')
           PY
           python3 tools/validate_pr19b_analog.py /tmp/pr19c_baseline.json
-      - name: Materializar candidato PR19C v5
-        run: python3 tools/materialize_pr19c_digital_v5.py
+      - name: Materializar candidato PR19C v6
+        run: python3 tools/materialize_pr19c_digital_v6.py
       - name: DRC KiCad 10.0.5 del candidato
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr19c_candidate.json --severity-all
       - name: Gate acumulativo candidato
