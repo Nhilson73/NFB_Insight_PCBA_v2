@@ -4,7 +4,7 @@
 
 **SELECCIONADO para NFB Insight:** Nextion Intelligent Series 5.0" capacitiva con enclosure, MPN `NX8048P050-011C-Y`, SKU `6920075776553`.
 
-Esta pantalla es un **ensamble externo**, no un footprint poblado sobre la PCBA. La shield mantiene `J_HMI` como interfaz de cable y el repositorio añade una huella mecánica de referencia del enclosure para integración física.
+Esta pantalla es un **ensamble externo**, no un footprint poblado sobre la PCBA. La shield mantiene `J_HMI` como interfaz de cable y el repositorio incorpora huellas mecánicas externas para la HMI y sus accesorios, utilizables en integración de enclosure/servicio sin contaminar BOM o pick-and-place de la PCBA.
 
 ## Pantalla congelada
 
@@ -40,6 +40,7 @@ Mapping lógico: `HMI_TX` del UNO → TXU0202 → `HMI_FIELD_RX` → RX de Nexti
 - 17.1 × 41.48 × 2.5 mm; 7 g;
 - FAT32 microSD; compatible con todas las series Nextion;
 - ensamble externo, no poblado en PCBA;
+- footprint mecánico: `NFB:Nextion_SDExtender_External`;
 - fuente: https://itead.cc/product/nextion-micro-sd-card-extender/.
 
 ### Nextion BOX Speaker
@@ -49,6 +50,7 @@ Mapping lógico: `HMI_TX` del UNO → TXU0202 → `HMI_FIELD_RX` → RX de Nexti
 - conector hembra 2P pitch 1.25 mm `1.25T-2-2A`; cable 250 mm;
 - ITEAD exige **+0.5 A** sobre la recomendación de alimentación del display;
 - reserva de diseño para display + speaker: **5 V / 1.5 A**;
+- footprint mecánico: `NFB:Nextion_BOX_Speaker_External`;
 - verificar acceso/montaje del audio con la variante `-Y` durante first article;
 - fuente: https://itead.cc/product/nextion-box-speaker/.
 
@@ -60,8 +62,20 @@ Mapping lógico: `HMI_TX` del UNO → TXU0202 → `HMI_FIELD_RX` → RX de Nexti
 - DC externo 8–26 V; salida 5–5.5 V, 2 A máx.;
 - PCB 50 × 50 × 1.6 mm; volumen 50 × 50 × 12 mm;
 - incluye USB wire y XH2.54 4P wire;
+- footprint de referencia de servicio: `NFB:Nextion_Foca_Max_Service`;
 - para pantallas >4.3" ITEAD recomienda alimentación DC externa 8–26 V;
 - fuente: https://itead.cc/product/nextion-foca-max-5v2a-output-usb-to-ttl-serial-converter-board/.
+
+## Footprints mecánicos congelados
+
+Las cuatro huellas siguientes son **referencias mecánicas externas, sin pads**, y están marcadas para quedar excluidas de BOM/position files de la PCBA:
+
+- `NFB:Nextion_NX8048P050_011C_Y_Enclosure` — 160.04 × 107.07 mm, profundidad máxima documentada 21.2 mm.
+- `NFB:Nextion_SDExtender_External` — 17.1 × 41.48 mm, espesor 2.5 mm.
+- `NFB:Nextion_BOX_Speaker_External` — 31 × 28 mm, altura 14.8 mm.
+- `NFB:Nextion_Foca_Max_Service` — 50 × 50 mm, altura total 12 mm; servicio solamente.
+
+No se insertan estas huellas externas dentro de `NFB_Insight_PCBA_v2.kicad_pcb`; el PCB de producción conserva el checkpoint PR19C.
 
 ## Gate de potencia — obligatorio antes de PR20A/release
 
@@ -86,5 +100,9 @@ No se reduce margen ni se relaja una regla para hacer caber el HMI.
 - `hardware/hmi_system_contract.json`
 - `bom/insight_hmi_system_bom.csv`
 - `kicad/lib/nfb_footprints.pretty/Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod`
+- `kicad/lib/nfb_footprints.pretty/Nextion_SDExtender_External.kicad_mod`
+- `kicad/lib/nfb_footprints.pretty/Nextion_BOX_Speaker_External.kicad_mod`
+- `kicad/lib/nfb_footprints.pretty/Nextion_Foca_Max_Service.kicad_mod`
 - `hardware/z2_digital_contract.json`
 - `hardware/power_architecture_contract.json`
+- materializador canónico: `tools/apply_hmi_nextion_decision_v2.py`
