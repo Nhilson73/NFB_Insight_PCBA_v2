@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "product": "NFB Insight PCBA v2",
+  "status": "HMI_SYSTEM_DECISION_NEXTION_NX8048P050_011C_Y",
+  "decision_date": "2026-08-14",
+  "architecture_role": "EXTERNAL_HMI_ASSEMBLY_CONNECTED_TO_Z2_J_HMI",
+  "selected_display": {
+    "manufacturer": "Nextion / ITEAD",
+    "series": "Intelligent Series",
+    "mpn": "NX8048P050-011C-Y",
+    "sku": "6920075776553",
+    "display_size_in": 5.0,
+    "touch": "CAPACITIVE",
+    "enclosure": true,
+    "resolution_px": [
+      800,
+      480
+    ],
+    "mcu_mhz": 200,
+    "flash_mb": 128,
+    "sram_kb": 512,
+    "eeprom_bytes": 1024,
+    "rtc": "CR1220",
+    "gpio_count": 8,
+    "audio_supported": true,
+    "video_supported": true,
+    "input_power": {
+      "voltage_v": 5.0,
+      "current_a_recommended": 1.0
+    },
+    "usart_connector_vendor_description": "XH2.54 4P",
+    "working_temperature_c": [
+      -20,
+      70
+    ],
+    "storage_temperature_c": [
+      -30,
+      85
+    ],
+    "mechanical": {
+      "front_envelope_mm": [
+        160.04,
+        107.07
+      ],
+      "rear_body_mm": [
+        151.64,
+        104.78
+      ],
+      "max_depth_mm": 21.2,
+      "source": "https://cdn.nextion.tech/wp-content/uploads/2020/12/NX8048P050-011X-Y-Dimension.pdf",
+      "footprint": "NFB:Nextion_NX8048P050_011C_Y_Enclosure"
+    },
+    "sources": {
+      "product": "https://itead.cc/product/5-0-nextion-intelligent-series-hmi-touch-display-with-enclosure/",
+      "datasheet": "https://nextion.tech/datasheets/NX8048P050-011C-Y/",
+      "dimension": "https://cdn.nextion.tech/wp-content/uploads/2020/12/NX8048P050-011X-Y-Dimension.pdf"
+    }
+  },
+  "pcba_interface": {
+    "ref": "J_HMI",
+    "role": "BOARD_SIDE_CABLE_INTERFACE",
+    "board_connector_mpn": "S4B-XH-A(LF)(SN)",
+    "board_connector_footprint": "Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal",
+    "board_connector_pitch_mm": 2.5,
+    "nextion_interface_vendor_description": "XH2.54 4P",
+    "routing_frozen": true,
+    "footprint_change_on_pcba": false,
+    "reason": "PR19C ya cerró HMI_RX/HMI_TX; ITEAD publica XH2.54 4P pero no un MPN JST exacto. Se conserva la geometría de J_HMI y se exige prueba de apareamiento del arnés en first article antes de release.",
+    "pinout_board": {
+      "1": "5V_RAIL",
+      "2": "GND",
+      "3": "HMI_FIELD_RX",
+      "4": "HMI_FIELD_TX"
+    },
+    "signal_mapping": {
+      "NFB_HMI_FIELD_RX": "Nextion TX",
+      "NFB_HMI_FIELD_TX": "Nextion RX",
+      "power": "5V_RAIL",
+      "return": "GND"
+    },
+    "translator": "TXU0202DCUR",
+    "field_esd": "PESD5V0U1UL,315"
+  },
+  "selected_accessories": [
+    {
+      "id": "HMI_SD_EXT",
+      "manufacturer": "Nextion / ITEAD",
+      "product": "Nextion Micro SD Card Extender",
+      "model": "SDExtender",
+      "qty_per_system": 1,
+      "classification": "PRODUCTION_EXTERNAL_ACCESSORY",
+      "dimensions_mm": [
+        17.1,
+        41.48,
+        2.5
+      ],
+      "mass_g": 7.0,
+      "filesystem": "FAT32 microSD",
+      "source": "https://itead.cc/product/nextion-micro-sd-card-extender/",
+      "pcba_population": false
+    },
+    {
+      "id": "HMI_SPEAKER",
+      "manufacturer": "Nextion / ITEAD",
+      "product": "Nextion BOX Speaker",
+      "model": "Nextion BOX Speaker",
+      "qty_per_system": 1,
+      "classification": "PRODUCTION_EXTERNAL_ACCESSORY",
+      "dimensions_mm": [
+        31.0,
+        28.0,
+        14.8
+      ],
+      "mass_g": 21.2,
+      "input_power_w": 1.5,
+      "frequency_hz": [
+        100,
+        3000
+      ],
+      "connector": "1.25 mm pitch 2-pin female (1.25T-2-2A)",
+      "wire_length_mm": 250,
+      "power_increment_a": 0.5,
+      "source": "https://itead.cc/product/nextion-box-speaker/",
+      "pcba_population": false,
+      "first_article_check": "Confirmar acceso/montaje del conector de audio con la variante -Y con enclosure."
+    },
+    {
+      "id": "HMI_FOCA_MAX",
+      "manufacturer": "Nextion / ITEAD",
+      "product": "Nextion Foca Max 5V2A Output USB To TTL Serial Converter Board",
+      "model": "Foca Max",
+      "qty_per_lab_kit": 1,
+      "classification": "SERVICE_PROGRAMMING_TOOL_NOT_INSTALLED",
+      "usb_uart": "CP2102",
+      "max_baud_bps": 2000000,
+      "ttl_level_v": 3.3,
+      "dc_input_v": [
+        8,
+        26
+      ],
+      "output_v": [
+        5.0,
+        5.5
+      ],
+      "output_current_a_max": 2.0,
+      "pcb_dimensions_mm": [
+        50.0,
+        50.0,
+        1.6
+      ],
+      "overall_dimensions_mm": [
+        50.0,
+        50.0,
+        12.0
+      ],
+      "included": [
+        "USB wire x1",
+        "XH2.54 4P wire x1"
+      ],
+      "source": "https://itead.cc/product/nextion-foca-max-5v2a-output-usb-to-ttl-serial-converter-board/",
+      "pcba_population": false,
+      "usage": "Programación/bring-up. Para displays >4.3 in ITEAD recomienda alimentar Foca Max con DC externo 8-26 V."
+    }
+  ],
+  "power_integration": {
+    "display_current_a": 1.0,
+    "speaker_increment_a": 0.5,
+    "reserved_hmi_current_a_with_audio": 1.5,
+    "reserved_hmi_power_w_with_audio": 7.5,
+    "current_5v_rail_design_limit_a": 1.5,
+    "current_5v_rail_also_feeds": [
+      "pH module",
+      "ORP module",
+      "DO module",
+      "3.3V LDO input",
+      "TXU0202 VCCB/support"
+    ],
+    "status": "POWER_ECO_REQUIRED_BEFORE_PRODUCT_RELEASE",
+    "decision": "No declarar el HMI+speaker liberado sobre 5V_RAIL mientras el presupuesto continuo siga en 1.5 A. PR20A no debe congelar potencia sin cerrar este gate.",
+    "acceptable_closure": [
+      "revalidar térmica/corriente y elevar formalmente el presupuesto continuo del rail con margen para todas las cargas",
+      "o introducir una alimentación 5 V dedicada para HMI mediante un ECO eléctrico explícito"
+    ]
+  },
+  "firmware_and_service": {
+    "transport": "UART TTL mediante TXU0202; D0=HMI_RX, D1=HMI_TX",
+    "project_source_extension": ".HMI",
+    "compiled_distribution_extension": ".tft",
+    "deployment_methods": [
+      "microSD mediante SDExtender",
+      "UART/USB mediante Foca Max en banco"
+    ],
+    "repository_policy": "Versionar fuentes HMI y binario .tft liberado por versión; no depender de archivos locales no trazados."
+  },
+  "release_gates": [
+    "First-article mating test entre J_HMI S4B-XH-A y el arnés XH2.54 4P seleccionado.",
+    "Cerrar power ECO para 1.5 A de reserva HMI+speaker más las demás cargas 5 V.",
+    "Confirmar acceso del speaker y SDExtender en el enclosure -Y.",
+    "Validar UART bidireccional a 5 V field-side mediante TXU0202.",
+    "Validar actualización .tft por SDExtender y programación de banco con Foca Max.",
+    "Revisar EMC/pre-compliance del cable HMI final en el producto integrado."
+  ]
+}

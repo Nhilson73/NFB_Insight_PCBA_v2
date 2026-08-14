@@ -13,7 +13,9 @@
       "arduino/docs-content UNO Q datasheet/power specification",
       "other official Arduino UNO Q repositories"
     ],
-    "uno_q_secondary": ["https://docs.arduino.cc/hardware/uno-q/"],
+    "uno_q_secondary": [
+      "https://docs.arduino.cc/hardware/uno-q/"
+    ],
     "shield_components_primary": "manufacturer datasheets/product pages",
     "arduino_docs_content_snapshot": {
       "commit": "196feda03787005572a059f030677b8a1de9bcd2",
@@ -27,7 +29,10 @@
   },
   "input": {
     "nominal_v": 12.0,
-    "allowed_v": [10.8, 13.2],
+    "allowed_v": [
+      10.8,
+      13.2
+    ],
     "recommended_external_supply": "12 V / 5 A certified external PSU",
     "connector_mpn": "1757242",
     "connector_family": "Phoenix Contact MSTBA 2,5/2-G-5,08",
@@ -55,15 +60,29 @@
     "efuse": {
       "ref": "U_EFUSE",
       "mpn": "TPS259470ARPWR",
-      "vin_range_v": [2.7, 23.0],
+      "vin_range_v": [
+        2.7,
+        23.0
+      ],
       "current_capability_a": 5.5,
       "target_current_limit_a": 4.5,
       "production_rilm_ohm": 750,
       "production_ilim_typ_a": 4.452,
-      "uvov_ladder_ohm": [470000, 11000, 47000],
-      "production_dvdt_cap_f": 3.3e-9,
-      "production_itimer_cap_f": 2.2e-9,
-      "features": ["reverse_polarity", "true_reverse_current_blocking", "overcurrent", "overvoltage", "soft_start", "thermal_shutdown"]
+      "uvov_ladder_ohm": [
+        470000,
+        11000,
+        47000
+      ],
+      "production_dvdt_cap_f": 3.3e-09,
+      "production_itimer_cap_f": 2.2e-09,
+      "features": [
+        "reverse_polarity",
+        "true_reverse_current_blocking",
+        "overcurrent",
+        "overvoltage",
+        "soft_start",
+        "thermal_shutdown"
+      ]
     },
     "tvs": {
       "ref": "D_IN_TVS",
@@ -82,9 +101,23 @@
   "star_split": {
     "source": "12V_PROTECTED",
     "branches": [
-      {"net": "12V_HOST_VIN", "purpose": "Arduino UNO Q VIN", "continuous_budget_a": 1.5},
-      {"net": "12V_LOGIC", "purpose": "shield low-voltage regulators", "continuous_budget_a": 1.0},
-      {"net": "12V_ACT", "purpose": "pump + CO2 solenoid only", "continuous_budget_a": 1.5, "local_fuse_required": true, "fuse_mpn": "045401.5MR"}
+      {
+        "net": "12V_HOST_VIN",
+        "purpose": "Arduino UNO Q VIN",
+        "continuous_budget_a": 1.5
+      },
+      {
+        "net": "12V_LOGIC",
+        "purpose": "shield low-voltage regulators",
+        "continuous_budget_a": 1.0
+      },
+      {
+        "net": "12V_ACT",
+        "purpose": "pump + CO2 solenoid only",
+        "continuous_budget_a": 1.5,
+        "local_fuse_required": true,
+        "fuse_mpn": "045401.5MR"
+      }
     ],
     "chiller_power_on_pcba": false,
     "chiller_interface": "control signal only"
@@ -96,12 +129,18 @@
       "ref": "U_5V",
       "mpn": "TPSM33625RDNR",
       "type": "2.5A synchronous buck power module",
-      "vin_range_v": [3.0, 36.0],
+      "vin_range_v": [
+        3.0,
+        36.0
+      ],
       "vout_v": 5.0,
       "rated_current_a": 2.5,
       "design_continuous_limit_a": 1.5,
       "switching_frequency_hz": 1000000,
-      "feedback_ohm": [40200, 10000],
+      "feedback_ohm": [
+        40200,
+        10000
+      ],
       "spread_spectrum": true,
       "emi_note": "CISPR 11 Class B compliant-capable with appropriate layout/filtering; final integrated product requires pre-compliance."
     },
@@ -113,7 +152,23 @@
       "purpose": "keep shield 5V off until UNO Q IOREF is alive"
     },
     "power_good_net": "5V_PGOOD",
-    "loads": ["pH module", "ORP module", "DO module", "HMI", "3.3V LDO input"]
+    "loads": [
+      "pH module",
+      "ORP module",
+      "DO module",
+      "HMI",
+      "3.3V LDO input"
+    ],
+    "hmi_integration": {
+      "system_contract": "hardware/hmi_system_contract.json",
+      "selected_display": "NX8048P050-011C-Y",
+      "display_current_a": 1.0,
+      "speaker_increment_a": 0.5,
+      "reserved_current_a_with_audio": 1.5,
+      "current_design_limit_a": 1.5,
+      "status": "POWER_ECO_REQUIRED_BEFORE_PRODUCT_RELEASE",
+      "reason": "HMI+speaker iguala por sí solo el límite continuo actual y 5V_RAIL tiene cargas adicionales."
+    }
   },
   "shield_3v3": {
     "net": "3V3_RAIL",
@@ -127,10 +182,19 @@
       "rated_current_a": 0.5,
       "design_continuous_limit_a": 0.25,
       "enable_source": "5V_PGOOD",
-      "input_cap_f": 1e-6,
-      "output_cap_f": 1e-6
+      "input_cap_f": 1e-06,
+      "output_cap_f": 1e-06
     },
-    "loads": ["MPR pressure", "DS18B20", "HX711", "DFR1103", "I2C pullups", "TXU0202 VCCA", "watchdog", "ESD/support logic"],
+    "loads": [
+      "MPR pressure",
+      "DS18B20",
+      "HX711",
+      "DFR1103",
+      "I2C pullups",
+      "TXU0202 VCCA",
+      "watchdog",
+      "ESD/support logic"
+    ],
     "reason": "preserve independent sequenced shield power domain and avoid accidental back-feed"
   },
   "power_sequence": [
@@ -146,7 +210,9 @@
     "actuator_12v_w_design": 18.0,
     "total_w_design": 43.5,
     "recommended_supply_w": 60.0,
-    "note": "60 W adapter leaves margin; chiller power is external."
+    "note": "60 W adapter leaves margin; chiller power is external.",
+    "selected_hmi_with_audio_w": 7.5,
+    "hmi_power_gate": "OPEN_POWER_ECO_REQUIRED"
   },
   "actuator_policy": {
     "pump_peak_a_assumption": 0.8,
@@ -162,14 +228,24 @@
     "input_connector_mpn": "1757242",
     "actuator_fuse_mpn": "045401.5MR",
     "efuse_rilm_ohm": 750,
-    "efuse_uvov_ladder_ohm": [470000, 11000, 47000],
-    "efuse_dvdt_cap_f": 3.3e-9,
-    "efuse_itimer_cap_f": 2.2e-9,
+    "efuse_uvov_ladder_ohm": [
+      470000,
+      11000,
+      47000
+    ],
+    "efuse_dvdt_cap_f": 3.3e-09,
+    "efuse_itimer_cap_f": 2.2e-09,
     "buck_frequency_hz": 1000000,
-    "buck_feedback_ohm": [40200,10000],
-    "buck_output_nominal_cap_f": 4.4e-5,
-    "ldo_input_output_cap_f": 1e-6,
-    "footprint_audit_blockers": ["TPS259470A_RPW10", "TPSM33625_RDN11"],
+    "buck_feedback_ohm": [
+      40200,
+      10000
+    ],
+    "buck_output_nominal_cap_f": 4.4e-05,
+    "ldo_input_output_cap_f": 1e-06,
+    "footprint_audit_blockers": [
+      "TPS259470A_RPW10",
+      "TPSM33625_RDN11"
+    ],
     "placement_in_scope": false,
     "routing_in_scope": false
   },
@@ -182,12 +258,46 @@
     "Final series input EMI network and IEC 61000-4-5 values require bench/lab pre-compliance."
   ],
   "sources": [
-    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md","kind":"official_github_primary"},
-    {"priority":1,"owner":"Arduino","repository":"docs-content","commit":"196feda03787005572a059f030677b8a1de9bcd2","path":"content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md","kind":"official_github_primary"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TPS259470ARPWR"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TPSM33625RDNR"},
-    {"priority":2,"manufacturer":"Texas Instruments","part":"TLV75533PDBVR"},
-    {"priority":2,"manufacturer":"Phoenix Contact","part":"1757242"},
-    {"priority":2,"manufacturer":"Littelfuse","part":"045401.5MR"}
+    {
+      "priority": 1,
+      "owner": "Arduino",
+      "repository": "docs-content",
+      "commit": "196feda03787005572a059f030677b8a1de9bcd2",
+      "path": "content/hardware/02.uno/boards/uno-q/tutorials/03.power-specification/content.md",
+      "kind": "official_github_primary"
+    },
+    {
+      "priority": 1,
+      "owner": "Arduino",
+      "repository": "docs-content",
+      "commit": "196feda03787005572a059f030677b8a1de9bcd2",
+      "path": "content/hardware/02.uno/boards/uno-q/datasheet/datasheet.md",
+      "kind": "official_github_primary"
+    },
+    {
+      "priority": 2,
+      "manufacturer": "Texas Instruments",
+      "part": "TPS259470ARPWR"
+    },
+    {
+      "priority": 2,
+      "manufacturer": "Texas Instruments",
+      "part": "TPSM33625RDNR"
+    },
+    {
+      "priority": 2,
+      "manufacturer": "Texas Instruments",
+      "part": "TLV75533PDBVR"
+    },
+    {
+      "priority": 2,
+      "manufacturer": "Phoenix Contact",
+      "part": "1757242"
+    },
+    {
+      "priority": 2,
+      "manufacturer": "Littelfuse",
+      "part": "045401.5MR"
+    }
   ]
 }
