@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  probe-or-validate:
+  candidate-or-final:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -22,21 +22,68 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Probe previo 5V_HMI
-        if: ${{ !hashFiles('hardware/hmi_power_eco.json') }}
-        run: python3 tools/probe_hmi_power_eco.py
-      - name: Gate ECO materializado
-        if: ${{ hashFiles('hardware/hmi_power_eco.json') != '' }}
+      - name: Compilar tooling ECO
         run: |
-          python3 tools/validate_hmi_power_eco.py
-          python3 tools/validate_hmi_system.py
+          python3 -m py_compile tools/apply_hmi_power_eco.py tools/materialize_pr19d_hmi_power.py tools/finalize_hmi_power_eco.py tools/validate_hmi_power_eco.py
+          python3 -m py_compile tools/validate_routing_phase.py tools/validate_routing_batches.py tools/validate_routing_contract.py tools/validate_z2_production.py tools/validate_root_eda.py
+      - name: Materializar candidato desde main PR19C
+        if: ${{ !hashFiles('hardware/hmi_power_eco.json') }}
+        run: |
+          python3 tools/probe_hmi_power_eco.py
+          python3 tools/apply_hmi_power_eco.py
+          python3 tools/normalize_pr15_schematics.py
+          python3 tools/migrate_pr15_verified_footprints.py
+          python3 tools/materialize_pr19d_hmi_power.py
+          python3 tools/finalize_hmi_power_eco.py
+      - name: DRC KiCad 10.0.5
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_power_drc.json --severity-all
+      - name: Gate PR19D acumulativo
+        run: python3 tools/validate_hmi_power_eco.py /tmp/hmi_power_drc.json
+      - name: Gate Z2 y routing contracts
+        run: |
           python3 tools/validate_z2_production.py
           python3 tools/validate_routing_batches.py
-          kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/hmi_power_drc.json --severity-all
+          python3 tools/validate_routing_contract.py
+      - name: Gate root EDA + ERC
+        run: |
+          python3 tools/normalize_pr15_schematics.py --check
+          python3 tools/migrate_pr15_verified_footprints.py --check
+          python3 tools/validate_root_eda.py
+          kicad-cli sch erc kicad/NFB_Insight_PCBA_v2.kicad_sch --output /tmp/hmi_power_root_erc.rpt --severity-all --exit-code-violations
+      - name: Resumen DRC
+        if: always()
+        run: |
           python3 - <<'PY'
-          import json
-          d=json.load(open('/tmp/hmi_power_drc.json',encoding='utf-8'))
-          e=[v for v in d.get('violations',[]) if v.get('severity')=='error']
-          if e: raise SystemExit(f'DRC errors={len(e)} primero={e[0]}')
-          print('DRC_ERRORS=0 UNCONNECTED=',len(d.get('unconnected_items',[])))
+          import json, pathlib
+          p=pathlib.Path('/tmp/hmi_power_drc.json')
+          if p.exists():
+              d=json.load(open(p,encoding='utf-8'))
+              counts={}
+              for v in d.get('violations',[]): counts[v.get('type','?')]=counts.get(v.get('type','?'),0)+1
+              print('DRC_ERRORS=',sum(v.get('severity')=='error' for v in d.get('violations',[])))
+              print('WARNINGS=',counts)
+              print('UNCONNECTED=',len(d.get('unconnected_items',[])))
           PY
+      - name: Guardar candidato
+        if: ${{ github.event_name == 'push' && !hashFiles('hardware/hmi_power_eco.json') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hmi-power-pr19d-candidate
+          path: |
+            hardware/hmi_power_eco.json
+            hardware/hmi_system_contract.json
+            hardware/z2_digital_contract.json
+            hardware/z2_production_netlist.json
+            hardware/routing_contract.json
+            hardware/routing_batches_contract.json
+            hardware/pr19d_hmi_power_routing_manifest.json
+            hardware/power_architecture_contract.json
+            bom/insight_hmi_system_bom.csv
+            bom/insight_z2_production_bom.csv
+            docs/HMI_POWER_ECO_PR19D.md
+            kicad/NFB_Insight_PCBA_v2.kicad_pcb
+            kicad/z2_interface.kicad_sch
+            kicad/lib/nfb_generated.kicad_sym
+            kicad/lib/nfb_footprints.pretty/RECOM_R78K5_0_2_0L_External.kicad_mod
+            /tmp/hmi_power_drc.json
+            /tmp/hmi_power_root_erc.rpt
