@@ -2,7 +2,9 @@
 """Materializa PR19D: net local 5V_HMI sobre checkpoint PR19C.
 
 No toca placement, outline ni routing UART. Usa F.Cu solo para escapes SMD y
-In2.Cu para la distribución local de potencia.
+In2.Cu para la distribución local de potencia. El VSSOP usa un neck-down de
+0.20 mm únicamente hasta liberar el pitch de pines; DRC mantiene 0.20 mm de
+clearance y la distribución vuelve a 0.40 mm.
 """
 from __future__ import annotations
 import json
@@ -45,25 +47,27 @@ def main():
         pos=pad.GetPosition(); endpoints.append({'ref':ref,'pad':pn,'before':'5V_RAIL','after':'5V_HMI','x_mm':mm(pos.x),'y_mm':mm(pos.y)})
         pad.SetNet(net)
 
-    # Geometría deliberadamente simple; In2 estaba reservado a potencia y sin cobre en PR19C.
+    # In2 estaba reservado a potencia y sin cobre en PR19C. El ramal C_HMI_B
+    # se desplaza a X=150.0 para liberar la vía HMI_FIELD_TX en (152.75,18.5).
     u=(157.035,17.775); vu=(158.20,17.775)
     c=(148.815,20.835); vc=(148.815,22.20)
-    j=(151.635,3.635); a=(153.00,12.00); bu=(158.20,12.00); bc=(153.00,22.20)
+    j=(151.635,3.635); a=(150.00,12.00); bu=(158.20,12.00); bc=(150.00,22.20)
     segs=[]; vias=[]
-    segs.append(segment(b,net,pcbnew.F_Cu,u,vu))
+    segs.append(segment(b,net,pcbnew.F_Cu,u,vu,width=0.20))
     vias.append(via(b,net,vu))
-    segs.append(segment(b,net,pcbnew.F_Cu,c,vc))
+    segs.append(segment(b,net,pcbnew.F_Cu,c,vc,width=0.40))
     vias.append(via(b,net,vc))
-    segs.append(segment(b,net,pcbnew.In2_Cu,j,a))
-    segs.append(segment(b,net,pcbnew.In2_Cu,a,bu))
-    segs.append(segment(b,net,pcbnew.In2_Cu,bu,vu))
-    segs.append(segment(b,net,pcbnew.In2_Cu,a,bc))
-    segs.append(segment(b,net,pcbnew.In2_Cu,bc,vc))
+    segs.append(segment(b,net,pcbnew.In2_Cu,j,a,width=0.40))
+    segs.append(segment(b,net,pcbnew.In2_Cu,a,bu,width=0.40))
+    segs.append(segment(b,net,pcbnew.In2_Cu,bu,vu,width=0.40))
+    segs.append(segment(b,net,pcbnew.In2_Cu,a,bc,width=0.40))
+    segs.append(segment(b,net,pcbnew.In2_Cu,bc,vc,width=0.40))
 
     manifest={
       'schema_version':1,'status':'HMI_POWER_ROUTING_PR19D','target_nets':['5V_HMI'],'baseline':{'segments':917,'vias':119},
       'new_segment_count':len(segs),'new_via_count':len(vias),'new_segments':segs,'new_vias':vias,'endpoints':endpoints,
       'policies':{'in1_signal_tracks':0,'zones_added':0,'existing_routing_removed':0,'uart_routing_changed':0,'future_batch_copper':0},
+      'escape_policy':{'U_HMI_LVL.7_width_mm':0.20,'max_neckdown_length_mm':1.20,'distribution_width_mm':0.40,'clearance_mm_unchanged':0.20},
       'intent':'Local 5V_HMI only. HMI display/audio high current remains external; PCBA route feeds TXU0202 VCCB/C_HMI_B.'
     }
     pcbnew.SaveBoard(str(PCB),b); OUT.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
