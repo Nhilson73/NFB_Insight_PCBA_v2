@@ -12,7 +12,13 @@ Z2=ROOT/'hardware'/'z2_digital_contract.json'
 POWER=ROOT/'hardware'/'power_architecture_contract.json'
 BOM=ROOT/'bom'/'insight_hmi_system_bom.csv'
 Z2BOM=ROOT/'bom'/'insight_z2_production_bom.csv'
-FP=ROOT/'kicad'/'lib'/'nfb_footprints.pretty'/'Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod'
+FP_DIR=ROOT/'kicad'/'lib'/'nfb_footprints.pretty'
+FOOTPRINTS={
+    'HMI_DISPLAY':('Nextion_NX8048P050_011C_Y_Enclosure.kicad_mod','NFB:Nextion_NX8048P050_011C_Y_Enclosure','160.04','107.07'),
+    'HMI_SD_EXT':('Nextion_SDExtender_External.kicad_mod','NFB:Nextion_SDExtender_External','17.1','41.48'),
+    'HMI_SPEAKER':('Nextion_BOX_Speaker_External.kicad_mod','NFB:Nextion_BOX_Speaker_External','31','28'),
+    'HMI_FOCA_MAX':('Nextion_Foca_Max_Service.kicad_mod','NFB:Nextion_Foca_Max_Service','50','50'),
+}
 DOC=ROOT/'docs'/'HMI_NEXTION_NX8048P050.md'
 PCB=ROOT/'kicad'/'NFB_Insight_PCBA_v2.kicad_pcb'
 
@@ -24,8 +30,12 @@ def load(p):
 
 
 def main():
-    for p in (CONTRACT,Z2,POWER,BOM,Z2BOM,FP,DOC,PCB):
+    for p in (CONTRACT,Z2,POWER,BOM,Z2BOM,DOC,PCB):
         if not p.exists(): fail(f'falta {p.relative_to(ROOT)}')
+    for filename,_,_,_ in FOOTPRINTS.values():
+        p=FP_DIR/filename
+        if not p.exists(): fail(f'falta {p.relative_to(ROOT)}')
+
     c=load(CONTRACT); z2=load(Z2); power=load(POWER)
     if c.get('status')!='HMI_SYSTEM_DECISION_NEXTION_NX8048P050_011C_Y': fail('status HMI incorrecto')
     d=c['selected_display']
@@ -63,24 +73,21 @@ def main():
     items={r['item_id']:r for r in rows}
     if set(items)!={'HMI_DISPLAY','HMI_SD_EXT','HMI_SPEAKER','HMI_FOCA_MAX','J_HMI'}: fail('BOM sistema HMI no es exacto')
     if items['HMI_DISPLAY']['mpn_modelo']!='NX8048P050-011C-Y': fail('BOM no contiene display exacto')
-    if items['HMI_DISPLAY']['footprint_o_mecanica']!='NFB:Nextion_NX8048P050_011C_Y_Enclosure': fail('BOM no enlaza footprint mecánico')
+    for item_id,(_,expected_fp,dim_a,dim_b) in FOOTPRINTS.items():
+        if items[item_id]['footprint_o_mecanica']!=expected_fp: fail(f'{item_id}: BOM no enlaza {expected_fp}')
+        text=(FP_DIR/FOOTPRINTS[item_id][0]).read_text(encoding='utf-8')
+        if '(pad ' in text: fail(f'{item_id}: huella externa no debe tener pads de PCBA')
+        if dim_a not in text or dim_b not in text: fail(f'{item_id}: huella no documenta envelope esperado')
     if items['HMI_FOCA_MAX']['rol_producto']!='SERVICE_PROGRAMMING_TOOL_NOT_INSTALLED': fail('Foca Max no debe poblar producto')
 
     with Z2BOM.open(newline='',encoding='utf-8') as fh: zrows=list(csv.DictReader(fh))
     j=next((r for r in zrows if r['ref']=='J_HMI'),None)
     if not j or j['mpn_o_familia']!='S4B-XH-A(LF)(SN)' or 'NX8048P050-011C-Y' not in j['nota']: fail('BOM Z2 no traza J_HMI al sistema seleccionado')
 
-    fpt=FP.read_text(encoding='utf-8')
-    for token in ('Nextion_NX8048P050_011C_Y_Enclosure','160.04','107.07','EXTERNAL HMI - NOT PCBA'):
-        if token not in fpt: fail(f'footprint mecánico sin {token}')
-    if '(pad ' in fpt: fail('footprint externo no debe tener pads de PCBA')
-
-    # La inmutabilidad del PCB se verifica contra git en el workflow y con DRC KiCad;
-    # aquí solo exigimos que exista el checkpoint de producción.
     if PCB.stat().st_size < 100000: fail('PCB production checkpoint demasiado pequeño/no reconocible')
 
     print('OK HMI: NX8048P050-011C-Y + SDExtender + BOX Speaker + Foca Max trazados')
-    print('- footprint externo: 160.04 x 107.07 mm; J_HMI PCBA preservado post-PR19C')
+    print('- 4 huellas mecánicas externas cargables; J_HMI PCBA preservado post-PR19C')
     print('- potencia: 5 V/1.5 A reservados para HMI+audio; POWER ECO sigue ABIERTO antes de PR20A/release')
     return 0
 
