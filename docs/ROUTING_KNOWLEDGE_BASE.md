@@ -11,7 +11,7 @@ La regla de trabajo desde Fase 5 es **divide y vencerás**: cada lote de cobre d
 La jerarquía de autoridad para routing es:
 
 1. `hardware/routing_contract.json` — reglas eléctricas, netclasses, capas, anchos y clearances congelados en PR18.
-2. `hardware/routing_batches_contract.json` — partición de las 59 nets en lotes de cierre incremental.
+2. `hardware/routing_batches_contract.json` — partición vigente de 60 nets; PR19D añadió `5V_HMI` después de PR19C sin reescribir manifests históricos.
 3. `hardware/placement_manifest.json` — placement PR17 + cadena ECO vigente.
 4. JSON/BOM de Z1/Z2/Z3/Z4 — conectividad y footprints de producción.
 5. `kicad/NFB_Insight_PCBA_v2.kicad_dru` — reglas custom efectivas de KiCad.
@@ -42,7 +42,7 @@ Ningún router, script u optimización puede debilitar los contratos anteriores 
 - `In2.Cu`: distribución de potencia y troncales de baja impedancia; sin analógica sensible.
 - `B.Cu`: señales low-speed / control / telemetría long-haul cuando sea necesario.
 
-## Partición de las 59 nets
+## Partición vigente de las 60 nets
 
 La partición es exhaustiva y mutuamente excluyente:
 
@@ -117,6 +117,16 @@ Estas cuatro redes se revisan como dominio sensible. `PUMP_CURRENT_ADC` debe cru
 - `UNO_IOREF_3V3`
 
 B.Cu es el corredor preferente para long-haul low-speed; F.Cu se preserva para escapes locales, analógica y loops compactos.
+
+### PR19D — 1 net ECO de potencia HMI
+
+- `5V_HMI`
+
+PR19D fue insertado después de PR19C para cerrar el ECO abierto por la selección de Nextion + BOX Speaker. `5V_HMI` nace en un subensamble externo 5 V / 2 A y entra a Z2 por `J_HMI.1`; en la PCBA solo alimenta `U_HMI_LVL.7` y `C_HMI_B.1`. No existe net-tie ni puente a `5V_RAIL`.
+
+Routing cerrado: 7 segmentos + 2 vías; acumulado 924/121; DRC=0; `In1.Cu` sin señales; zones=0. El escape de `U_HMI_LVL.7` usa neck-down 0.20 mm por ≤1.20 mm únicamente para liberar el VSSOP, conservando clearance ≥0.20 mm y retornando a 0.40 mm.
+
+**Gate PR19D:** `5V_HMI` 1/1 conectada, UART HMI previa intacta, placement/outline congelados, ninguna net PR20A/PR20B adelantada.
 
 ### PR20A — 10 nets de potencia + actuadores
 

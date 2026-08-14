@@ -87,7 +87,8 @@ savej('hardware/z2_production_netlist.json',n)
 
 # 4) BOM Z2: refs intact, notas explícitas
 zp=ROOT/'bom/insight_z2_production_bom.csv'
-with zp.open(newline='',encoding='utf-8') as f: rows=list(csv.DictReader(f)); fields=f.fieldnames
+with zp.open(newline='',encoding='utf-8') as f:
+    reader=csv.DictReader(f); rows=list(reader); fields=reader.fieldnames
 for r in rows:
     if r['ref']=='J_HMI': r['nota']='5V_HMI/GND/RX/TX; side-entry -Y. 5V_HMI proviene del subensamble externo RECOM; display/audio NO cargan 5V_RAIL.'
     elif r['ref']=='U_HMI_LVL': r['nota']='TXU0202: VCCA=3V3_RAIL, VCCB=5V_HMI dedicado; UART D0/D1 preservado.'
@@ -97,7 +98,8 @@ with zp.open('w',newline='',encoding='utf-8') as f:
 
 # 5) BOM sistema HMI: componentes exactos del subensamble de potencia
 bp=ROOT/'bom/insight_hmi_system_bom.csv'
-with bp.open(newline='',encoding='utf-8') as f: rows=list(csv.DictReader(f)); fields=f.fieldnames
+with bp.open(newline='',encoding='utf-8') as f:
+    reader=csv.DictReader(f); rows=list(reader); fields=reader.fieldnames
 rows=[r for r in rows if r['item_id'] not in {'HMI_PWR_REG','HMI_PWR_FUSE_HOLDER','HMI_PWR_FUSE'}]
 rows += [
  {'categoria':'HMI_POWER','item_id':'HMI_PWR_REG','qty':'1','rol_producto':'PRODUCTION_EXTERNAL_POWER_ASSEMBLY','fabricante':'RECOM','mpn_modelo':'R-78K5.0-2.0L','sku':'','footprint_o_mecanica':'NFB:RECOM_R78K5_0_2_0L_External','poblacion_pcba':'NO','alimentacion':'6.5-36V -> 5V/2A, 10W','interfaz':'SIP3 / harness externo','fuente':RECOM_URL,'nota':'No aislado; versión L horizontal 8.5mm; alimenta 5V_HMI.'},

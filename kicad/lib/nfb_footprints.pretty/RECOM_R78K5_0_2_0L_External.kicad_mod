@@ -1,0 +1,13 @@
+(footprint "RECOM_R78K5_0_2_0L_External"
+  (version 20240108)
+  (generator pcbnew)
+  (layer "F.Cu")
+  (descr "EXTERNAL MECHANICAL REFERENCE ONLY - RECOM R-78K5.0-2.0L horizontal low-profile HMI power module; body reference 17.5 x 11.5 mm; installed height 8.5 mm. Not on NFB main PCBA.")
+  (tags "RECOM R-78K5.0-2.0L external HMI power")
+  (attr exclude_from_pos_files exclude_from_bom)
+  (fp_rect (start -8.75 -5.75) (end 8.75 5.75) (stroke (width 0.25) (type default)) (fill none) (layer "F.Fab"))
+  (fp_rect (start -8.75 -5.75) (end 8.75 5.75) (stroke (width 0.20) (type dash)) (fill none) (layer "Dwgs.User"))
+  (fp_text reference "HMI_PWR_EXT" (at 0 -7) (layer "F.Fab") (effects (font (size 1.2 1.2) (thickness 0.2))))
+  (fp_text value "R-78K5.0-2.0L" (at 0 7) (layer "F.Fab") (effects (font (size 1.2 1.2) (thickness 0.2))))
+  (fp_text user "EXTERNAL 5V_HMI - NOT MAIN PCBA" (at 0 0) (layer "F.Fab") (effects (font (size 1.2 1.2) (thickness 0.2))))
+)

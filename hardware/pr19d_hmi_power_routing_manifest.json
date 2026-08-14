@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "status": "HMI_POWER_ROUTING_PR19D",
+  "target_nets": [
+    "5V_HMI"
+  ],
+  "baseline": {
+    "segments": 917,
+    "vias": 119
+  },
+  "new_segment_count": 7,
+  "new_via_count": 2,
+  "new_segments": [
+    {
+      "net": "5V_HMI",
+      "layer": "F.Cu",
+      "start_mm": [
+        157.035,
+        17.775
+      ],
+      "end_mm": [
+        158.2,
+        17.775
+      ],
+      "width_mm": 0.2
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "F.Cu",
+      "start_mm": [
+        148.815,
+        20.835
+      ],
+      "end_mm": [
+        148.815,
+        22.2
+      ],
+      "width_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "In2.Cu",
+      "start_mm": [
+        151.635,
+        3.635
+      ],
+      "end_mm": [
+        150.0,
+        12.0
+      ],
+      "width_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "In2.Cu",
+      "start_mm": [
+        150.0,
+        12.0
+      ],
+      "end_mm": [
+        158.2,
+        12.0
+      ],
+      "width_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "In2.Cu",
+      "start_mm": [
+        158.2,
+        12.0
+      ],
+      "end_mm": [
+        158.2,
+        17.775
+      ],
+      "width_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "In2.Cu",
+      "start_mm": [
+        150.0,
+        12.0
+      ],
+      "end_mm": [
+        150.0,
+        22.2
+      ],
+      "width_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "layer": "In2.Cu",
+      "start_mm": [
+        150.0,
+        22.2
+      ],
+      "end_mm": [
+        148.815,
+        22.2
+      ],
+      "width_mm": 0.4
+    }
+  ],
+  "new_vias": [
+    {
+      "net": "5V_HMI",
+      "at_mm": [
+        158.2,
+        17.775
+      ],
+      "diameter_mm": 0.8,
+      "drill_mm": 0.4
+    },
+    {
+      "net": "5V_HMI",
+      "at_mm": [
+        148.815,
+        22.2
+      ],
+      "diameter_mm": 0.8,
+      "drill_mm": 0.4
+    }
+  ],
+  "endpoints": [
+    {
+      "ref": "J_HMI",
+      "pad": "1",
+      "before": "5V_RAIL",
+      "after": "5V_HMI",
+      "x_mm": 151.635,
+      "y_mm": 3.635
+    },
+    {
+      "ref": "U_HMI_LVL",
+      "pad": "7",
+      "before": "5V_RAIL",
+      "after": "5V_HMI",
+      "x_mm": 157.035,
+      "y_mm": 17.775
+    },
+    {
+      "ref": "C_HMI_B",
+      "pad": "1",
+      "before": "5V_RAIL",
+      "after": "5V_HMI",
+      "x_mm": 148.815,
+      "y_mm": 20.835
+    }
+  ],
+  "policies": {
+    "in1_signal_tracks": 0,
+    "zones_added": 0,
+    "existing_routing_removed": 0,
+    "uart_routing_changed": 0,
+    "future_batch_copper": 0
+  },
+  "escape_policy": {
+    "U_HMI_LVL.7_width_mm": 0.2,
+    "max_neckdown_length_mm": 1.2,
+    "distribution_width_mm": 0.4,
+    "clearance_mm_unchanged": 0.2
+  },
+  "intent": "Local 5V_HMI only. HMI display/audio high current remains external; PCBA route feeds TXU0202 VCCB/C_HMI_B."
+}

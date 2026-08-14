@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "HMI_POWER_ECO_PR19D",
+  "product": "NFB Insight PCBA v2",
+  "decision_date": "2026-08-14",
+  "trigger": "NX8048P050-011C-Y + BOX Speaker reserve 5V/1.5A, equal to the entire historical 5V_RAIL continuous design limit.",
+  "decision": "Move display/audio power off main PCBA. Use protected external 12V->5V/2A HMI branch and introduce local PCBA net 5V_HMI.",
+  "external_components": {
+    "converter": "R-78K5.0-2.0L",
+    "fuse_holder": "0FHM0001ZXJ",
+    "fuse": "0997002.WXN"
+  },
+  "pcba_change": {
+    "new_net": "5V_HMI",
+    "endpoints": [
+      "J_HMI.1",
+      "U_HMI_LVL.7",
+      "C_HMI_B.1"
+    ],
+    "removed_from_net": "5V_RAIL",
+    "placement_change": false,
+    "outline_change": false,
+    "existing_routing_removed": false,
+    "uart_routing_change": false
+  },
+  "routing_batch": "PR19D",
+  "baseline_copper": {
+    "segments": 917,
+    "vias": 119,
+    "zones": 0
+  },
+  "gates": [
+    "5V_RAIL had zero copper before split",
+    "PR19D routes only 5V_HMI",
+    "In1.Cu remains signal-free",
+    "DRC errors=0",
+    "HMI_FIELD_RX/TX and HMI_RX/TX copper unchanged",
+    "placement and outline unchanged"
+  ],
+  "routing_status": "5V_HMI_1_OF_1_ROUTED",
+  "design_closure": "CLOSED",
+  "smd_escape_policy": {
+    "ref_pad": "U_HMI_LVL.7",
+    "package": "VSSOP-8_DCU",
+    "escape_width_mm": 0.2,
+    "max_escape_length_mm": 1.2,
+    "distribution_width_mm": 0.4,
+    "clearance_mm": 0.2,
+    "reason": "El pitch VSSOP no admite 0.40 mm entre pads adyacentes conservando 0.20 mm de clearance; el neck-down termina al liberar el encapsulado."
+  }
+}

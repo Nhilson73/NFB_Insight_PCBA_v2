@@ -67,7 +67,7 @@
     "footprint_change_on_pcba": false,
     "reason": "PR19C ya cerró HMI_RX/HMI_TX; ITEAD publica XH2.54 4P pero no un MPN JST exacto. Se conserva la geometría de J_HMI y se exige prueba de apareamiento del arnés en first article antes de release.",
     "pinout_board": {
-      "1": "5V_RAIL",
+      "1": "5V_HMI",
       "2": "GND",
       "3": "HMI_FIELD_RX",
       "4": "HMI_FIELD_TX"
@@ -75,11 +75,14 @@
     "signal_mapping": {
       "NFB_HMI_FIELD_RX": "Nextion TX",
       "NFB_HMI_FIELD_TX": "Nextion RX",
-      "power": "5V_RAIL",
+      "power": "5V_HMI",
       "return": "GND"
     },
     "translator": "TXU0202DCUR",
-    "field_esd": "PESD5V0U1UL,315"
+    "field_esd": "PESD5V0U1UL,315",
+    "power_origin": "EXTERNAL_HMI_POWER_ASSEMBLY",
+    "routing_note": "PR19D cerró exclusivamente 5V_HMI. HMI UART PR19A/PR19C y placement permanecen congelados.",
+    "routing_checkpoint": "PR19D_5V_HMI"
   },
   "selected_accessories": [
     {
@@ -172,15 +175,14 @@
       "pH module",
       "ORP module",
       "DO module",
-      "3.3V LDO input",
-      "TXU0202 VCCB/support"
+      "3.3V LDO input"
     ],
-    "status": "POWER_ECO_REQUIRED_BEFORE_PRODUCT_RELEASE",
-    "decision": "No declarar el HMI+speaker liberado sobre 5V_RAIL mientras el presupuesto continuo siga en 1.5 A. PR20A no debe congelar potencia sin cerrar este gate.",
+    "status": "POWER_ECO_CLOSED_EXTERNAL_5V_HMI",
+    "decision": "HMI+speaker no longer load NFB 5V_RAIL. Dedicated external R-78K5.0-2.0L provides 5V_HMI/2A, protected by a 2A MINI branch fuse.",
     "acceptable_closure": [
-      "revalidar térmica/corriente y elevar formalmente el presupuesto continuo del rail con margen para todas las cargas",
-      "o introducir una alimentación 5 V dedicada para HMI mediante un ECO eléctrico explícito"
-    ]
+      "CLOSED: external dedicated 5V_HMI assembly selected and versioned."
+    ],
+    "pcba_5v_hmi_load": "TXU0202 VCCB + C_HMI_B only; HMI display/audio current bypasses main PCBA."
   },
   "firmware_and_service": {
     "transport": "UART TTL mediante TXU0202; D0=HMI_RX, D1=HMI_TX",
@@ -194,10 +196,84 @@
   },
   "release_gates": [
     "First-article mating test entre J_HMI S4B-XH-A y el arnés XH2.54 4P seleccionado.",
-    "Cerrar power ECO para 1.5 A de reserva HMI+speaker más las demás cargas 5 V.",
+    "Validar 5V_HMI externo: R-78K5.0-2.0L + 0FHM0001ZXJ + 0997002.WXN, incluyendo prueba térmica/corriente y arranque.",
     "Confirmar acceso del speaker y SDExtender en el enclosure -Y.",
     "Validar UART bidireccional a 5 V field-side mediante TXU0202.",
     "Validar actualización .tft por SDExtender y programación de banco con Foca Max.",
     "Revisar EMC/pre-compliance del cable HMI final en el producto integrado."
-  ]
+  ],
+  "dedicated_power_assembly": {
+    "status": "SELECTED_POWER_ECO_CLOSED",
+    "architecture": "12V_SYSTEM -> 2A branch fuse -> RECOM R-78K5.0-2.0L -> 5V_HMI -> Nextion + BOX Speaker; 5V_HMI also returns low-current to J_HMI.1",
+    "location": "external, adjacent to HMI inside product enclosure; not populated on NFB main PCBA",
+    "input": {
+      "nominal_v": 12.0,
+      "source": "same certified system PSU, branch split upstream of NFB PCBA eFuse"
+    },
+    "fuse_holder": {
+      "manufacturer": "Littelfuse",
+      "mpn": "0FHM0001ZXJ",
+      "series": "MINI-FHM",
+      "rating_v_max": 58,
+      "wire_awg": 14,
+      "ip_rating": "IP67",
+      "status": "ACTIVE",
+      "source": "https://www.littelfuse.com/products/fuses-overcurrent-protection/fuse-holders-fuse-blocks-accessories/fuse-holders/in-line-fuse-holders/mini-fhm/0fhm0001zxj"
+    },
+    "fuse": {
+      "manufacturer": "Littelfuse",
+      "mpn": "0997002.WXN",
+      "series": "997 MINI",
+      "rating_v": 58,
+      "rating_a": 2.0,
+      "status": "ACTIVE",
+      "source": "https://www.littelfuse.com/products/fuses-overcurrent-protection/fuses/automotive-fuses/blade-fuses-shunt/mini/997/0997002-wxn"
+    },
+    "converter": {
+      "manufacturer": "RECOM",
+      "mpn": "R-78K5.0-2.0L",
+      "series": "R-78K-2.0(L)",
+      "topology": "non-isolated switching regulator",
+      "vin_v": [
+        6.5,
+        36.0
+      ],
+      "vout_v": 5.0,
+      "iout_a": 2.0,
+      "power_w": 10.0,
+      "efficiency_max_pct": 96.0,
+      "mounting": "THT, pre-formed 90 degree leads, horizontal",
+      "low_profile_height_mm": 8.5,
+      "body_reference_mm": [
+        11.5,
+        8.5,
+        17.5
+      ],
+      "certifications": [
+        "CB",
+        "EN 62368-1"
+      ],
+      "protection": [
+        "undervoltage",
+        "short-circuit"
+      ],
+      "source": "https://recom-power.com/en/products/switching-regulators/switching-regulators-sip/rec-p-R-78K5.0-2.0L.html",
+      "series_source": "https://recom-power.com/en/rec-s-R-78K-2.0.html",
+      "mechanical_footprint": "NFB:RECOM_R78K5_0_2_0L_External"
+    },
+    "output": {
+      "net": "5V_HMI",
+      "design_load_a": 1.5,
+      "converter_rating_a": 2.0,
+      "headroom_a": 0.5,
+      "headroom_pct": 33.333
+    },
+    "grounding": "non-isolated converter; common system GND; no separate ground island",
+    "release_checks": [
+      "verify 5V_HMI at J_HMI under display+speaker worst case",
+      "thermal check of external converter at enclosure ambient",
+      "verify 2A branch fuse does not nuisance-trip during HMI startup",
+      "EMC/pre-compliance with final harness"
+    ]
+  }
 }

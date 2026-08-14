@@ -9,10 +9,10 @@ HX711,J_LOADCELL,1,connector,"MSTBA 2,5/4-G-5,08",1757268,"Connector_Phoenix_MST
 HX711,C_HX_100N,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
 HX711,C_HX_10U,1,capacitor,10uF 10V X5R,GRM21BR61A106KE19L,Capacitor_SMD:C_0805_2012Metric,POPULATE,
 HX711,C_HX_VBG,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
-HMI,J_HMI,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,Board-side para Nextion NX8048P050-011C-Y; 5V/GND/RX/TX; side-entry -Y. ITEAD denomina el arnés XH2.54 4P; conservar footprint ruteado S4B-XH-A 2.50 mm y validar mating first article. BOM de sistema: bom/insight_hmi_system_bom.csv.
-HMI,U_HMI_LVL,1,level_translator,TXU0202,TXU0202DCUR,NFB:TI_DCU0008A_TXU0202,POPULATE,Traductor UART bidireccional por dos canales de dirección fija.
+HMI,J_HMI,1,connector,JST XH 4p side-entry,S4B-XH-A(LF)(SN),Connector_JST:JST_XH_S4B-XH-A_1x04_P2.50mm_Horizontal,POPULATE,5V_HMI/GND/RX/TX; side-entry -Y. 5V_HMI proviene del subensamble externo RECOM; display/audio NO cargan 5V_RAIL.
+HMI,U_HMI_LVL,1,level_translator,TXU0202,TXU0202DCUR,NFB:TI_DCU0008A_TXU0202,POPULATE,"TXU0202: VCCA=3V3_RAIL, VCCB=5V_HMI dedicado; UART D0/D1 preservado."
 HMI,C_HMI_A,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
-HMI,C_HMI_B,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,
+HMI,C_HMI_B,1,capacitor,100nF 25V X7R,GRM155R71E104KE14D,Capacitor_SMD:C_0402_1005Metric,POPULATE,Desacoplo VCCB del TXU0202 sobre 5V_HMI dedicado.
 HMI,D_HMI_RX,1,esd,PESD5V0U1UL,"PESD5V0U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD 5V single-line a GND en lado de campo.
 HMI,D_HMI_TX,1,esd,PESD5V0U1UL,"PESD5V0U1UL,315",Diode_SMD:D_SOD-882,POPULATE,ESD 5V single-line a GND en lado de campo.
 WATCHDOG,U_WDT,1,supervisor_watchdog,TPS3823-30 1.6s,TPS3823-30DBVR,Package_TO_SOT_SMD:SOT-23-5,POPULATE,Watchdog 1.6s; firmware alimenta WDI cada 400ms.

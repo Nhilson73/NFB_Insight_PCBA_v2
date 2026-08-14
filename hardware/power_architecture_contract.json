@@ -33,7 +33,7 @@
       10.8,
       13.2
     ],
-    "recommended_external_supply": "12 V / 5 A certified external PSU",
+    "recommended_external_supply": "12 V / 6 A certified external PSU (12 V / 5 A minimum analytical baseline only after system-current validation)",
     "connector_mpn": "1757242",
     "connector_family": "Phoenix Contact MSTBA 2,5/2-G-5,08",
     "input_net": "12V_IN_RAW"
@@ -156,18 +156,13 @@
       "pH module",
       "ORP module",
       "DO module",
-      "HMI",
       "3.3V LDO input"
     ],
     "hmi_integration": {
-      "system_contract": "hardware/hmi_system_contract.json",
-      "selected_display": "NX8048P050-011C-Y",
-      "display_current_a": 1.0,
-      "speaker_increment_a": 0.5,
-      "reserved_current_a_with_audio": 1.5,
-      "current_design_limit_a": 1.5,
-      "status": "POWER_ECO_REQUIRED_BEFORE_PRODUCT_RELEASE",
-      "reason": "HMI+speaker iguala por sí solo el límite continuo actual y 5V_RAIL tiene cargas adicionales."
+      "status": "CLOSED_EXTERNAL_DEDICATED_5V_HMI",
+      "main_pcba_5v_rail_feeds_hmi": false,
+      "field_net": "5V_HMI",
+      "system_contract": "hardware/hmi_system_contract.json"
     }
   },
   "shield_3v3": {
@@ -209,10 +204,13 @@
     "shield_5v_w_design": 7.5,
     "actuator_12v_w_design": 18.0,
     "total_w_design": 43.5,
-    "recommended_supply_w": 60.0,
-    "note": "60 W adapter leaves margin; chiller power is external.",
+    "recommended_supply_w": 72.0,
+    "note": "12V/6A (72W) recomendado para recuperar margen de sistema. Rama HMI se divide antes del eFuse de PCBA y lleva fusible 2A propio.",
     "selected_hmi_with_audio_w": 7.5,
-    "hmi_power_gate": "OPEN_POWER_ECO_REQUIRED"
+    "hmi_power_gate": "CLOSED_EXTERNAL_DEDICATED_5V_HMI",
+    "external_hmi_w_design": 7.5,
+    "external_hmi_input_w_screen_at_90pct": 8.333,
+    "system_total_w_screen_with_hmi": 51.833
   },
   "actuator_policy": {
     "pump_peak_a_assumption": 0.8,
@@ -299,5 +297,12 @@
       "manufacturer": "Littelfuse",
       "part": "045401.5MR"
     }
-  ]
+  ],
+  "external_hmi_power": {
+    "split_point": "system 12V harness upstream of NFB PCBA eFuse",
+    "branch_fuse": "Littelfuse 0997002.WXN 2A in 0FHM0001ZXJ",
+    "converter": "RECOM R-78K5.0-2.0L 5V/2A",
+    "output_net": "5V_HMI",
+    "main_pcba_high_current_path": false
+  }
 }
