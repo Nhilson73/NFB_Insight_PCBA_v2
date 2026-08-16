@@ -24,9 +24,9 @@ def addseg(b,n,l,a,z,w):
  t=pcbnew.PCB_TRACK(b);t.SetNet(n);t.SetLayer(l);t.SetWidth(iu(w));t.SetStart(P(*a));t.SetEnd(P(*z));b.Add(t)
 def addvia(b,n,p,d=.9,dr=.45):
  v=pcbnew.PCB_VIA(b);v.SetNet(n);v.SetPosition(P(*p));v.SetWidth(iu(d));v.SetDrill(iu(dr));v.SetLayerPair(pcbnew.F_Cu,pcbnew.B_Cu);b.Add(v)
-def remove_segments(b,name,layer,geoms):
+def remove_segments(b,tracks,name,layer,geoms):
  want={canon(*g) for g in geoms};got=[]
- for t in list(b.GetTracks()):
+ for t in tracks:
   if isinstance(t,pcbnew.PCB_VIA) or t.GetNetname()!=name or t.GetLayer()!=layer:continue
   a,z=t.GetStart(),t.GetEnd();A=(mm(a.x),mm(a.y));Z=(mm(z.x),mm(z.y))
   if canon(A,Z) in want:got.append([A,Z]);b.Remove(t)
@@ -34,11 +34,13 @@ def remove_segments(b,name,layer,geoms):
  return got
 def main():
  b=pcbnew.LoadBoard(str(PCB));en=net(b,'CO2_EN_DRV');ol=net(b,'CO2_OPENLOAD_N');act=net(b,'12V_ACT')
- rem_en=remove_segments(b,'CO2_EN_DRV',pcbnew.B_Cu,[((216.8,15.2),(213.705,15.2)),((213.705,15.2),(213.705,21.5))])
- # rodear por abajo del extremo ACT_FAULT_N en y22.5
+ # Snapshot único: pcbnew/SWIG puede invalidar Tracks() después de Remove().
+ tracks=list(b.GetTracks())
+ rem_en=remove_segments(b,tracks,'CO2_EN_DRV',pcbnew.B_Cu,[((216.8,15.2),(213.705,15.2)),((213.705,15.2),(213.705,21.5))])
+ rem_ol=remove_segments(b,tracks,'CO2_OPENLOAD_N',pcbnew.B_Cu,[((219.8,16.0),(218.5,20.8))])
+ # rodear CO2_EN por debajo del extremo ACT_FAULT_N en y22.5
  for a,z in zip([(216.8,15.2),(211.0,15.2),(211.0,23.25),(213.705,23.25)],[(211.0,15.2),(211.0,23.25),(213.705,23.25),(213.705,21.5)]):addseg(b,en,pcbnew.B_Cu,a,z,.2)
- rem_ol=remove_segments(b,'CO2_OPENLOAD_N',pcbnew.B_Cu,[((219.8,16.0),(218.5,20.8))])
- # exterior derecho, lejos de la ventana de potencia x219.9/y18.45
+ # CO2_OPENLOAD al exterior derecho, lejos de la ventana de potencia x219.9/y18.45
  for a,z in zip([(219.8,16.0),(223.0,16.0),(223.0,22.5),(218.5,22.5)],[(223.0,16.0),(223.0,22.5),(218.5,22.5),(218.5,20.8)]):addseg(b,ol,pcbnew.B_Cu,a,z,.2)
  # isla power: vía-en-pad del capacitor y portal del pin8, ambas de clase 0.9/0.45
  addvia(b,act,(213.99,17.255)); addvia(b,act,(219.9,18.45))
