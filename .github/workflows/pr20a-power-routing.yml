@@ -12,6 +12,7 @@ on:
       - 'tools/run_pr20a_power_router_v2.py'
       - 'tools/run_pr20a_power_router_v3.py'
       - 'tools/run_pr20a_power_router_v4.py'
+      - 'tools/run_pr20a_power_router_v5.py'
       - '.github/workflows/pr20a-power-routing.yml'
   pull_request:
     branches: [main]
@@ -57,7 +58,7 @@ jobs:
       - name: Validar partición 60 nets
         run: python3 tools/validate_routing_batches.py
       - name: Materializar candidato PR20A en runner
-        run: python3 tools/run_pr20a_power_router_v4.py
+        run: python3 tools/run_pr20a_power_router_v5.py
       - name: DRC KiCad 10.0.5
         run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr20a_candidate.json --severity-all
       - name: Resumen físico y conectividad PR20A
