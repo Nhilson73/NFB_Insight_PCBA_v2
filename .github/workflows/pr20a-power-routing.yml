@@ -3,12 +3,18 @@ on:
   push:
     branches: [agent/pr20a-power-routing]
     paths:
-      - 'tools/probe_pr20a_co2_local_eco_v3.py'
+      - 'tools/run_pr20a_power_router_v8.py'
+      - 'tools/materialize_pr20a_power_router.py'
+      - 'tools/run_pr20a_power_router_v3.py'
+      - 'tools/run_pr20a_power_router_v4.py'
+      - 'tools/run_pr20a_power_router_v5.py'
+      - 'tools/run_pr20a_power_router_v6.py'
+      - 'tools/run_pr20a_power_router_v7.py'
       - '.github/workflows/pr20a-power-routing.yml'
 permissions:
   contents: read
 jobs:
-  co2-local-eco-v3:
+  candidate-v8:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -20,5 +26,32 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Probar ECO local CO2 v3 + isla 12V_ACT
-        run: python3 tools/probe_pr20a_co2_local_eco_v3.py
+      - name: Validar partición 60 nets
+        run: python3 tools/validate_routing_batches.py
+      - name: Materializar candidato integrado PR20A
+        run: python3 tools/run_pr20a_power_router_v8.py
+      - name: DRC KiCad 10.0.5
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr20a_v8.json --severity-all
+      - name: Resumen PR20A 10/10
+        run: |
+          python3 - <<'PY'
+          import json,re
+          from collections import Counter
+          p=json.load(open('/tmp/pr20a_v8.json',encoding='utf-8'))
+          man=json.load(open('hardware/pr20a_power_routing_manifest.json',encoding='utf-8'))
+          errs=[v for v in p.get('violations',[]) if v.get('severity')=='error']
+          warns=[v for v in p.get('violations',[]) if v.get('severity')=='warning']
+          targets=man['target_nets']; leaks={n:0 for n in targets}
+          for u in p.get('unconnected_items',[]):
+              s=json.dumps(u,ensure_ascii=False)
+              for n in targets:
+                  if re.search(rf'(?<![A-Za-z0-9_]){re.escape(n)}(?![A-Za-z0-9_])',s): leaks[n]+=1
+          print('DRC_ERRORS',len(errs),dict(Counter(v.get('type','?') for v in errs)))
+          print('WARNINGS',len(warns),dict(Counter(v.get('type','?') for v in warns)))
+          print('UNCONNECTED',len(p.get('unconnected_items',[])))
+          print('PR20A_UNCONNECTED',leaks)
+          print('MANIFEST_COUNTS',man['new_segment_count'],man['new_via_count'],man['actual_final_totals'])
+          if errs:
+              print('FIRST_ERRORS',json.dumps(errs[:20],ensure_ascii=False,indent=2)); raise SystemExit(1)
+          if any(leaks.values()): raise SystemExit('ERROR: PR20A no quedó 10/10 conectada')
+          PY
