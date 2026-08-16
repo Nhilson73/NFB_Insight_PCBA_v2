@@ -3,12 +3,12 @@ on:
   push:
     branches: [agent/pr20a-power-routing]
     paths:
-      - 'tools/probe_pr20a_co2_microvias.py'
+      - 'tools/probe_pr20a_co2_microvias_fast.py'
       - '.github/workflows/pr20a-power-routing.yml'
 permissions:
   contents: read
 jobs:
-  co2-microvia-probe:
+  co2-microvia-fast:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -20,5 +20,5 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Barrer microportales pin8 y C_CO2_DRV
-        run: python3 tools/probe_pr20a_co2_microvias.py
+      - name: Probar microportales focalizados CO2
+        run: python3 tools/probe_pr20a_co2_microvias_fast.py
