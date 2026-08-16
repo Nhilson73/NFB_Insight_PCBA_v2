@@ -3,12 +3,12 @@ on:
   push:
     branches: [agent/pr20a-power-routing]
     paths:
-      - 'tools/probe_pr20a_co2_power_portals_v2.py'
+      - 'tools/probe_pr20a_co2_ilim_eco.py'
       - '.github/workflows/pr20a-power-routing.yml'
 permissions:
   contents: read
 jobs:
-  co2-portal-probe-v2:
+  co2-ilim-eco-probe:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -20,5 +20,5 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Probar entrada superior CO2
-        run: python3 tools/probe_pr20a_co2_power_portals_v2.py
+      - name: Probar ECO CO2_ILIM + acceso 12V_ACT
+        run: python3 tools/probe_pr20a_co2_ilim_eco.py
