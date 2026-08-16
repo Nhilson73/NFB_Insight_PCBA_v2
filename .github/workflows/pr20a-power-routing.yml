@@ -1,0 +1,30 @@
+name: PR20A power routing
+on:
+  push:
+    branches: [agent/pr20a-power-routing]
+    paths:
+      - 'tools/probe_pr20a_power.py'
+      - '.github/workflows/pr20a-power-routing.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
+      - 'hardware/pr20a_power_routing_manifest.json'
+      - 'hardware/routing_batches_contract.json'
+      - 'hardware/routing_contract.json'
+      - 'hardware/placement_manifest.json'
+      - 'tools/validate_pr20a_power.py'
+      - '.github/workflows/pr20a-power-routing.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe geométrico PR20A
+        run: python3 tools/probe_pr20a_power.py
