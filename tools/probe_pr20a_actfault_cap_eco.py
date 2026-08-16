@@ -31,7 +31,9 @@ def main():
   a=t.GetStart();z=t.GetEnd();A=(mm(a.x),mm(a.y));Z=(mm(z.x),mm(z.y))
   if key(A,Z) in remove:
    removed.append([A,Z]);b.Remove(t)
- if len(removed)!=3:raise SystemExit(f'ERROR: ECO esperaba remover 3 segmentos, removió {len(removed)} {removed}')
+ # El baseline PR19C contiene la vertical (213,16)<->(213,17.75) duplicada en ambos sentidos.
+ # Se retiran 4 objetos / 3 geometrías únicas y se reemplazan por una sola ruta equivalente.
+ if len(removed)!=4:raise SystemExit(f'ERROR: ECO esperaba remover 4 segmentos (3 geometrías), removió {len(removed)} {removed}')
  # Nuevo ramal pump: conserva endpoint (213,17.75) y vía tree (212.5,16).
  seg(b,fault,pcbnew.F_Cu,(213.0,17.75),(211.75,17.75),.2)
  seg(b,fault,pcbnew.F_Cu,(211.75,17.75),(211.75,16.0),.2)
