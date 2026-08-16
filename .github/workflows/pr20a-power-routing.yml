@@ -4,6 +4,7 @@ on:
     branches: [agent/pr20a-power-routing]
     paths:
       - 'tools/probe_pr20a_power.py'
+      - 'tools/materialize_pr20a_power.py'
       - '.github/workflows/pr20a-power-routing.yml'
   pull_request:
     branches: [main]
@@ -28,3 +29,46 @@ jobs:
       - uses: actions/checkout@v4
       - name: Probe geométrico PR20A
         run: python3 tools/probe_pr20a_power.py
+
+  candidate:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:10.0.5
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar KiCad
+        run: |
+          mkdir -p "$HOME/.config/kicad/10.0"
+          cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
+          cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
+      - name: Validar partición 60 nets
+        run: python3 tools/validate_routing_batches.py
+      - name: Materializar candidato PR20A en runner
+        run: python3 tools/materialize_pr20a_power.py
+      - name: DRC KiCad 10.0.5
+        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr20a_candidate.json --severity-all
+      - name: Resumen físico y conectividad PR20A
+        run: |
+          python3 - <<'PY'
+          import json,re
+          p=json.load(open('/tmp/pr20a_candidate.json',encoding='utf-8'))
+          errors=[v for v in p.get('violations',[]) if v.get('severity')=='error']
+          warnings=[v for v in p.get('violations',[]) if v.get('severity')=='warning']
+          targets=['12V_IN_RAW','12V_PROTECTED','12V_HOST_VIN','12V_LOGIC','12V_ACT','5V_RAIL','3V3_RAIL','PUMP_OUT1','PUMP_OUT2','CO2_SOL_POS']
+          leaks={n:0 for n in targets}
+          for u in p.get('unconnected_items',[]):
+              s=json.dumps(u,ensure_ascii=False)
+              for n in targets:
+                  if re.search(rf'(?<![A-Za-z0-9_]){re.escape(n)}(?![A-Za-z0-9_])',s): leaks[n]+=1
+          print('DRC_ERRORS',len(errors))
+          print('WARNINGS',len(warnings))
+          print('UNCONNECTED',len(p.get('unconnected_items',[])))
+          print('PR20A_UNCONNECTED',leaks)
+          if errors:
+              print('FIRST_ERRORS',json.dumps(errors[:12],ensure_ascii=False,indent=2))
+              raise SystemExit(1)
+          if any(leaks.values()):
+              raise SystemExit('ERROR: PR20A no quedó 10/10 conectada')
+          PY
