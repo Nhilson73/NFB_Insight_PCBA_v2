@@ -34,6 +34,12 @@ def pad_layers(pad) -> list[str]:
             pass
     return out
 
+def via_diameter_mm(via) -> float:
+    try:
+        return mm(via.GetWidth(pcbnew.F_Cu))
+    except TypeError:
+        return mm(via.GetWidth())
+
 def main() -> int:
     b=pcbnew.LoadBoard(str(PCB))
     by={n:[] for n in TARGET}
@@ -59,13 +65,12 @@ def main() -> int:
         pos=t.GetPosition()
         if isinstance(t, pcbnew.PCB_VIA):
             copper[n]["vias"]+=1
-            copper[n]["items"].append({"kind":"via","x_mm":mm(pos.x),"y_mm":mm(pos.y),"diameter_mm":mm(t.GetWidth()),"drill_mm":mm(t.GetDrillValue())})
+            copper[n]["items"].append({"kind":"via","x_mm":mm(pos.x),"y_mm":mm(pos.y),"diameter_mm":via_diameter_mm(t),"drill_mm":mm(t.GetDrillValue())})
         else:
             copper[n]["segments"]+=1
             s,e=t.GetStart(),t.GetEnd()
             copper[n]["items"].append({"kind":"segment","layer":layer_names.get(t.GetLayer(),str(t.GetLayer())),"start_mm":[mm(s.x),mm(s.y)],"end_mm":[mm(e.x),mm(e.y)],"width_mm":mm(t.GetWidth())})
 
-    # Obstáculos útiles: footprints y vías existentes en Z3/Z4, además de vías existentes cerca de endpoints PR20A.
     fps=[]
     for fp in b.GetFootprints():
         pos=fp.GetPosition(); x,y=mm(pos.x),mm(pos.y); z=zone_for_x(x)
@@ -79,11 +84,11 @@ def main() -> int:
         if not isinstance(t,pcbnew.PCB_VIA): continue
         p=t.GetPosition(); x,y=mm(p.x),mm(p.y)
         if zone_for_x(x) in {"Z3","Z4"}:
-            vias.append({"net":t.GetNetname(),"x_mm":x,"y_mm":y,"diameter_mm":mm(t.GetWidth()),"drill_mm":mm(t.GetDrillValue())})
+            vias.append({"net":t.GetNetname(),"x_mm":x,"y_mm":y,"diameter_mm":via_diameter_mm(t),"drill_mm":mm(t.GetDrillValue())})
     vias.sort(key=lambda d:(d["x_mm"],d["y_mm"],d["net"]))
 
     out={"targets":by,"existing_target_copper":copper,"z3_z4_footprints":fps,"z3_z4_existing_vias":vias,
-         "totals":{"tracks":sum(1 for t in b.GetTracks() if not isinstance(t,pcbnew.PCB_VIA)),"vias":sum(1 for t in b.GetTracks() if isinstance(t,pcbnew.PCB_VIA)),"zones":b.Zones().size()}}
+         "totals":{"tracks":sum(1 for t in b.GetTracks() if not isinstance(t,pcbnew.PCB_VIA)),"vias":sum(1 for t in b.GetTracks() if isinstance(t,pcbnew.PCB_VIA)),"zones":len(b.Zones())}}
     print("PR20A_PROBE_BEGIN")
     print(json.dumps(out,sort_keys=True,separators=(",",":")))
     print("PR20A_PROBE_END")
