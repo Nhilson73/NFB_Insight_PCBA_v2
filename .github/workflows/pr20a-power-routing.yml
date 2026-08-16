@@ -3,28 +3,12 @@ on:
   push:
     branches: [agent/pr20a-power-routing]
     paths:
-      - 'tools/materialize_pr20a_power_router.py'
-      - 'tools/run_pr20a_power_router_v3.py'
-      - 'tools/run_pr20a_power_router_v4.py'
-      - 'tools/run_pr20a_power_router_v5.py'
-      - 'tools/run_pr20a_power_router_v6.py'
-      - 'tools/run_pr20a_power_router_v7.py'
-      - '.github/workflows/pr20a-power-routing.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'kicad/NFB_Insight_PCBA_v2.kicad_pcb'
-      - 'hardware/pr20a_power_routing_manifest.json'
-      - 'hardware/routing_batches_contract.json'
-      - 'hardware/routing_contract.json'
-      - 'hardware/placement_manifest.json'
-      - 'tools/validate_pr20a_power.py'
+      - 'tools/probe_pr20a_act_corridors.py'
       - '.github/workflows/pr20a-power-routing.yml'
 permissions:
   contents: read
 jobs:
-  candidate:
-    if: github.event_name == 'push'
+  corridor-probe:
     runs-on: ubuntu-latest
     container:
       image: kicad/kicad:10.0.5
@@ -36,32 +20,5 @@ jobs:
           mkdir -p "$HOME/.config/kicad/10.0"
           cp /usr/share/kicad/template/sym-lib-table "$HOME/.config/kicad/10.0/sym-lib-table"
           cp /usr/share/kicad/template/fp-lib-table "$HOME/.config/kicad/10.0/fp-lib-table"
-      - name: Validar partición 60 nets
-        run: python3 tools/validate_routing_batches.py
-      - name: Materializar candidato PR20A en runner
-        run: python3 tools/run_pr20a_power_router_v7.py
-      - name: DRC KiCad 10.0.5
-        run: kicad-cli pcb drc kicad/NFB_Insight_PCBA_v2.kicad_pcb --format json --output /tmp/pr20a_candidate.json --severity-all
-      - name: Resumen físico y conectividad PR20A
-        run: |
-          python3 - <<'PY'
-          import json,re
-          from collections import Counter
-          p=json.load(open('/tmp/pr20a_candidate.json',encoding='utf-8'))
-          errors=[v for v in p.get('violations',[]) if v.get('severity')=='error']
-          warnings=[v for v in p.get('violations',[]) if v.get('severity')=='warning']
-          targets=['12V_IN_RAW','12V_PROTECTED','12V_HOST_VIN','12V_LOGIC','12V_ACT','5V_RAIL','3V3_RAIL','PUMP_OUT1','PUMP_OUT2','CO2_SOL_POS']
-          leaks={n:0 for n in targets}
-          for u in p.get('unconnected_items',[]):
-              s=json.dumps(u,ensure_ascii=False)
-              for n in targets:
-                  if re.search(rf'(?<![A-Za-z0-9_]){re.escape(n)}(?![A-Za-z0-9_])',s): leaks[n]+=1
-          print('DRC_ERRORS',len(errors),dict(Counter(v.get('type','?') for v in errors)))
-          print('WARNINGS',len(warnings),dict(Counter(v.get('type','?') for v in warnings)))
-          print('UNCONNECTED',len(p.get('unconnected_items',[])))
-          print('PR20A_UNCONNECTED',leaks)
-          if errors:
-              print('FIRST_ERRORS',json.dumps(errors[:12],ensure_ascii=False,indent=2))
-              raise SystemExit(1)
-          if any(leaks.values()): raise SystemExit('ERROR: PR20A no quedó 10/10 conectada')
-          PY
+      - name: Barrer corredores 12V_ACT
+        run: python3 tools/probe_pr20a_act_corridors.py
